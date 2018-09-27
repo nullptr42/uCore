@@ -1,0 +1,8 @@
+SET(UCORE_LD_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/layout.ld)
+SET(UCORE_LD_FLAGS "-z max-page-size=4096")
+
+# Source files
+FILE(GLOB PLATFORM_SRC
+    "${CMAKE_CURRENT_LIST_DIR}/*.c"
+    "${CMAKE_CURRENT_LIST_DIR}/*.asm"
+)
