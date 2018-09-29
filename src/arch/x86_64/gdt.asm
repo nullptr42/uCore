@@ -9,11 +9,15 @@ section .text
 
 global gdt_reload
 
+; Reload GDT register
+;   rdi(arg0) = GDT pointer
+;   rsi(arg1) = code segment
+;   rdx(arg2) = data segment
 gdt_reload:
     lgdt [rdi]
 
     ; Load segments
-    mov ax, 0x10
+    mov rax, rdx
     mov ds, ax
     mov es, ax
     mov fs, ax
@@ -22,7 +26,7 @@ gdt_reload:
 
     ; Far return
     mov rax, .gdt_done
-    push 0x08
+    push rsi
     push rax
     db 0x48 ; REX-prefix
     retf

@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-extern void gdt_init();
+#include "gdt.h"
 
 void kernel_main() {
     gdt_init();
