@@ -1,0 +1,31 @@
+; # --------------------------------------------------------------------- #
+; Copyright (C) 2018-present Frederic Meyer. All rights reserved.         |
+;                                                                         |
+; Use of this source code is governed by a BSD-style license that can be  |
+; found in the LICENSE file.                                              |
+; # --------------------------------------------------------------------- #
+
+section .text
+
+global gdt_reload
+
+gdt_reload:
+    lgdt [rdi]
+
+    ; Load segments
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+
+    ; Far return
+    mov rax, .gdt_done
+    push 0x08
+    push rax
+    db 0x48 ; REX-prefix
+    retf
+    
+.gdt_done:
+    ret

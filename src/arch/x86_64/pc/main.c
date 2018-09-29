@@ -1,6 +1,10 @@
 #include <stdint.h>
 
+extern void gdt_init();
+
 void kernel_main() {
+    gdt_init();
+
     uint16_t* vram = (void*)(0xB8000);
     char* str = "µCore Microkernel 0.1";
     
