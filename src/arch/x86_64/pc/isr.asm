@@ -49,9 +49,9 @@ handle_irq_common:
     ; Save segment registers (ds, fs, gs)
     ; However it is unclear if we will ever need fs or gs.
     mov ax, ds
-    push ax
-    push fs
     push gs
+    push fs
+    push ax
 
     ; Permit data access with kernel permissions.
     mov ax, SEG_KDATA,
@@ -64,10 +64,10 @@ handle_irq_common:
     mov rsp, rax
 
     ; Restore segment registers
-    pop gs
-    pop fs
     pop ax
     mov ds, ax
+    pop fs
+    pop gs
 
     ; Restore general purpose registers.
     pop rax
