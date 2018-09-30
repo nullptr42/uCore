@@ -11,7 +11,7 @@ SET(CMAKE_CXX_COMPILER x86_64-elf-g++)
 SET(UCORE_ASM_LANG "ASM_NASM")
 SET(CMAKE_ASM_NASM_OBJECT_FORMAT "elf64")
 
-SET(COMPILE_FLAGS "-mno-red-zone -mcmodel=kernel")
+SET(COMPILE_FLAGS "-mno-red-zone -mcmodel=kernel -mno-sse")
 
 # Source files
 FILE(GLOB ISA_SRC
