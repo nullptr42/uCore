@@ -9,9 +9,26 @@ section .text
 
 SEG_KDATA equ 0x10
 
-global isr_test
+extern handle_interrupt
 
-isr_test:
+; Stub for ISR without error code
+%macro isr_stub 1
+    global isr_routine_%1
+    isr_routine_%1:
+        push 0
+        push %1
+        jmp handle_irq_common
+%endmacro
+
+; Stub for ISR where an error code is on the stack
+%macro isr_stub_err 1
+    global isr_routine_%1
+    isr_routine_%1:
+        push %1
+        jmp handle_irq_common
+%endmacro
+
+handle_irq_common:
     ; Save general purpose registers.
     push r15
     push r14
@@ -42,6 +59,10 @@ isr_test:
     mov fs, ax
     mov gs, ax
 
+    mov rdi, rsp
+    call handle_interrupt
+    mov rsp, rax
+
     ; Restore segment registers
     pop gs
     pop fs
@@ -65,4 +86,59 @@ isr_test:
     pop r14
     pop r15
 
+    ; Remove error code & interrupt number from stack.
+    add rsp, 16
+
     iretq
+
+; Stubs for exceptions
+isr_stub_err 0x00
+isr_stub_err 0x01
+isr_stub_err 0x02
+isr_stub_err 0x03
+isr_stub_err 0x04
+isr_stub_err 0x05
+isr_stub_err 0x06
+isr_stub_err 0x07
+isr_stub_err 0x08
+isr_stub_err 0x09
+isr_stub_err 0x0A
+isr_stub_err 0x0B
+isr_stub_err 0x0C
+isr_stub_err 0x0D
+isr_stub_err 0x0E
+isr_stub_err 0x0F
+isr_stub_err 0x10
+isr_stub_err 0x11
+isr_stub_err 0x12
+isr_stub_err 0x13
+isr_stub_err 0x14
+isr_stub_err 0x15
+isr_stub_err 0x16
+isr_stub_err 0x17
+isr_stub_err 0x18
+isr_stub_err 0x19
+isr_stub_err 0x1A
+isr_stub_err 0x1B
+isr_stub_err 0x1C
+isr_stub_err 0x1D
+isr_stub_err 0x1E
+isr_stub_err 0x1F
+
+; Stubs for Hardware IRQs
+isr_stub 0x20
+isr_stub 0x21
+isr_stub 0x22
+isr_stub 0x23
+isr_stub 0x24
+isr_stub 0x25
+isr_stub 0x26
+isr_stub 0x27
+isr_stub 0x28
+isr_stub 0x29
+isr_stub 0x2A
+isr_stub 0x2B
+isr_stub 0x2C
+isr_stub 0x2D
+isr_stub 0x2E
+isr_stub 0x2F
