@@ -8,7 +8,7 @@ void kernel_main() {
     gdt_init();
     idt_init();
 
-    uint16_t* vram = (void*)(0xB8000);
+    uint16_t* vram = (void*)(0xFFFFFFFF800B8000);
     char* str = "µCore Microkernel 0.1";
     
     char c;
