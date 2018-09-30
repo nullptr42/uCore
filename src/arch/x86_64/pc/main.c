@@ -2,8 +2,11 @@
 
 #include "gdt.h"
 
+void idt_init();
+
 void kernel_main() {
     gdt_init();
+    idt_init();
 
     uint16_t* vram = (void*)(0xB8000);
     char* str = "µCore Microkernel 0.1";
@@ -13,5 +16,6 @@ void kernel_main() {
         *vram++ = c | 0x0700;
     }
 
-    while (1) ;
+    asm("sti");
+    for(;;) asm("hlt");
 }
