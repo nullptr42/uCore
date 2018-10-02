@@ -11,10 +11,12 @@
 #include <stdint.h>
 
 struct cpu_state {
+    // Segment Registers
     uint64_t ds;
     uint64_t fs;
     uint64_t gs;
 
+    // General Purpose Registers
     uint64_t rax;
     uint64_t rcx;
     uint64_t rdx;
@@ -31,9 +33,11 @@ struct cpu_state {
     uint64_t r14;
     uint64_t r15;
 
+    // Interrupt Number and Error Code
     uint64_t intr;
     uint64_t error;
 
+    // Registers saved by CPU when calling into the ISR.
     uint64_t rip;
     uint64_t cs;
     uint64_t rflags;

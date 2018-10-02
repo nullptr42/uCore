@@ -1,21 +1,17 @@
 #include <stdint.h>
 
 #include "gdt.h"
+#include "console.h"
 
 void idt_init();
 
 void kernel_main() {
     gdt_init();
     idt_init();
+    print_init();
 
-    uint16_t* vram = (void*)(0xFFFFFFFF800B8000);
-    char* str = "µCore Microkernel 0.1";
+    kprint("uCore microkernel 0.1\n\n");
     
-    char c;
-    while ((c = *str++)) {
-        *vram++ = c | 0x0700;
-    }
-
     asm("sti");
     for(;;) asm("hlt");
 }
