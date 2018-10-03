@@ -2,7 +2,7 @@ ENTRY(_start)
 OUTPUT_FORMAT(elf64-x86-64)
 
 SECTIONS {
-    . = 0xFFFFFFFF80200000;
+    . = 0xFFFFFFFF80100000;
 
     kernel_start = .;
 
