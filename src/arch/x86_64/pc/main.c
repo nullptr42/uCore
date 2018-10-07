@@ -13,7 +13,7 @@ void kernel_main() {
 
     char buffer[255];
 
-    snprintf(buffer, 255, "this is a test %+8.4d %i\n", 123, -12321);
+    snprintf(buffer, 255, "hello world: %#10x %#10o %%\n", 0xDEADBEEF, 0xDEADBEEF);
     kprint(buffer);
     
     asm("sti");

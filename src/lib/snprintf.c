@@ -172,22 +172,99 @@ static inline void append(struct print_state* state, char c) {
     }
 }
 
-static inline void append_string(struct print_state* state, const char* str) {
-    if (state->pad_len > 0) {
-        /* TODO: implement strlen */
-        size_t len = 0;
-        const char* tmp = str;
+static inline void append_string(struct print_state* state, const char* string) {
+    int i = 0;
+    while (string[i])
+        append(state, string[i++]);
+}
 
-        while (*tmp++) len++;
+static inline bool fmt_unsigned_int(struct print_state* state,
+                                    int base,
+                                    const char* alphabet,
+                                    const char* prefix,
+                                    va_list arg) {
+    int digits = 0;
+    uintmax_t value;
 
-        int difference = state->pad_len - len;
-        if (difference > 0) {
-            while (difference--)
-                append(state, state->pad_chr);
-        }
+    /* Get number to print */
+    switch (state->length) {
+        case NONE:
+        case CHAR:
+        case SHORT_INT:
+            value = va_arg(arg, unsigned int);
+            break;
+        case LONG_INT:
+            value = va_arg(arg, unsigned long int);
+            break;
+        case LONG_LONG_INT:
+            value = va_arg(arg, unsigned long long int);
+            break;
+        case INTMAX:
+            value = va_arg(arg, uintmax_t);
+            break;
+        case SIZE:
+            value = va_arg(arg, size_t);
+            break;
+        case PTRDIFF:
+            value = va_arg(arg, ptrdiff_t);
+            break;
+        default:
+            return false;
     }
 
-    while (*str) append(state, *str++);
+    int prefix_length = 0;
+
+    /* Determine prefix length if needed */
+    if (state->pound) {
+        /* TODO: implement strlen */
+        while (prefix[prefix_length])
+            prefix_length++;
+    }
+
+    uintmax_t temp = value;
+
+    /* Count number of digits */
+    while (temp) { digits++; temp /= base; }
+
+    if (digits == 0)
+        digits = 1;
+
+    /* "For integer specifiers (d, i, o, u, x, X):
+     *  precision specifies the minimum number of digits to be written."
+     */
+    if (state->precision > digits)
+        digits = state->precision;
+
+    int size = digits + prefix_length;
+
+    /* Determine required string length */
+    if (state->pad_len > size)
+        size = state->pad_len;
+
+    char buffer[size+1];
+    int  digits_start = size - digits;
+        
+    /* Print all digits */    
+    temp = value;
+    for (int i = digits - 1; i >= 0; i--) {
+        buffer[digits_start + i] = alphabet[temp % base];
+        temp /= base;
+    }
+    buffer[size] = '\0';        
+
+    /* Pad string to width */
+    for (int i = 0; i < digits_start; i++)
+        buffer[i] = state->pad_chr;
+
+    /* Print number system prefix (e.g. base 16 0x) */
+    if (state->pound) {
+        int start = (state->pad_chr == '0') ? 0 : (digits_start - prefix_length);
+        for (int i = 0; i < prefix_length; i++)
+            buffer[start + i] = prefix[i];
+    }
+
+    append_string(state, buffer);
+    return true;
 }
 
 static inline bool fmt_signed_int(struct print_state* state, va_list arg) {
@@ -210,10 +287,10 @@ static inline bool fmt_signed_int(struct print_state* state, va_list arg) {
         case INTMAX:
             value = va_arg(arg, intmax_t);
             break;
-        case SIZE:
+        case SIZE: /* checkme */
             value = va_arg(arg, size_t);
             break;
-        case PTRDIFF:
+        case PTRDIFF: /* checkme */
             value = va_arg(arg, ptrdiff_t);
             break;
         default:
@@ -242,9 +319,9 @@ static inline bool fmt_signed_int(struct print_state* state, va_list arg) {
         size++;
     if (state->pad_len > size)
         size = state->pad_len;
-    char buffer[size+1];
 
-    int digits_start = size - digits;
+    char buffer[size+1];
+    int  digits_start = size - digits;
 
     /* Print all digits */    
     temp = value;
@@ -276,10 +353,25 @@ static inline bool fmt_signed_int(struct print_state* state, va_list arg) {
 
 static inline bool do_format(struct print_state* state, va_list arg) {
     switch (state->format[state->i]) {
+        /* Signed decimal */
         case 'd':
         case 'i':
         default:
             fmt_signed_int(state, arg);
+            break;
+
+        /* Unsigned integer */
+        case 'u':
+            fmt_unsigned_int(state, 10, "0123456789", "", arg);
+            break;
+        case 'o':
+            fmt_unsigned_int(state, 8, "01234567", "0", arg);
+            break;
+        case 'x':
+            fmt_unsigned_int(state, 16, "0123456789abcdef", "0x", arg);
+            break;
+        case 'X':
+            fmt_unsigned_int(state, 16, "0123456789ABCDEF", "0X", arg);
             break;
     }
     return true;
@@ -329,6 +421,11 @@ int vsnprintf(char* buffer, size_t size, const char* format, va_list arg) {
                 return state.total * -1;
             if (!parse_length(&state))
                 return state.total * -1;
+
+            /* Apparently glibc ignores '0'-padding when precision is defined.
+             * TODO: check if this is expected / standard behaviour. */
+            if (state.pad_chr == '0' && state.precision > 0)
+                state.pad_chr = ' ';
 
             /* Finally perform the formatting operation */
             if (!do_format(&state, arg))
