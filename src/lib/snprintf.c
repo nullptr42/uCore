@@ -163,10 +163,10 @@ static inline bool parse_length(struct print_state* state) {
     return true;
 }
 
-static inline void append(struct print_state* state, char c) {
+static inline void append(struct print_state* state, char chr) {
     state->total++;
     if (state->left > 0) {
-        state->buffer[0] = c;
+        state->buffer[0] = chr;
         state->buffer++;
         state->left--;
     }
@@ -176,6 +176,90 @@ static inline void append_string(struct print_state* state, const char* string) 
     int i = 0;
     while (string[i])
         append(state, string[i++]);
+}
+
+static inline bool fmt_signed_int(struct print_state* state, va_list arg) {
+    int digits = 0;
+    intmax_t value;
+
+    /* Get number to print */
+    switch (state->length) {
+        case NONE:
+        case CHAR:
+        case SHORT_INT:
+            value = va_arg(arg, int);
+            break;
+        case LONG_LONG_INT:
+            value = va_arg(arg, long long);
+            break;
+        case LONG_INT:
+            value = va_arg(arg, long);
+            break;
+        case INTMAX:
+            value = va_arg(arg, intmax_t);
+            break;
+        case SIZE: /* checkme */
+            value = va_arg(arg, size_t);
+            break;
+        case PTRDIFF: /* checkme */
+            value = va_arg(arg, ptrdiff_t);
+            break;
+        default:
+            return false; 
+    }
+
+    intmax_t temp = value;
+    bool show_sign = value < 0 || state->show_plus;
+
+    /* Count number of digits */
+    while (temp) { digits++; temp /= 10; }
+    
+    if (digits == 0)
+        digits = 1;
+
+    /* "For integer specifiers (d, i, o, u, x, X):
+     *  precision specifies the minimum number of digits to be written."
+     */
+    if (state->precision > digits)
+        digits = state->precision;
+
+    int size = digits;
+
+    /* Determine required string length */
+    if (show_sign)
+        size++;
+    if (state->pad_len > size)
+        size = state->pad_len;
+
+    char buffer[size+1];
+    int  digits_start = size - digits;
+
+    /* Print all digits */    
+    temp = value;
+    if (temp < 0)
+        temp *= -1;
+    for (int i = digits - 1; i >= 0; i--) {
+        buffer[digits_start + i] = '0' + (temp % 10);
+        temp /= 10;
+    }
+    buffer[size] = '\0';
+
+    /* Pad string to width */
+    for (int i = 0; i < digits_start; i++)
+        buffer[i] = state->pad_chr;
+
+    /* Place sign character */
+    if (show_sign) {
+        char sign = (value < 0) ? '-' : '+';
+
+        if (state->pad_chr == ' ')
+            buffer[digits_start-1] = sign;
+        else
+            buffer[0] = sign;
+    }
+
+    append_string(state, buffer);
+    return true;
 }
 
 static inline bool fmt_unsigned_int(struct print_state* state,
@@ -267,87 +351,36 @@ static inline bool fmt_unsigned_int(struct print_state* state,
     return true;
 }
 
-static inline bool fmt_signed_int(struct print_state* state, va_list arg) {
-    int digits = 0;
-    intmax_t value;
+static inline bool fmt_char(struct print_state* state, va_list arg) {
+    char chr = va_arg(arg, int);
 
-    /* Get number to print */
-    switch (state->length) {
-        case NONE:
-        case CHAR:
-        case SHORT_INT:
-            value = va_arg(arg, int);
-            break;
-        case LONG_LONG_INT:
-            value = va_arg(arg, long long);
-            break;
-        case LONG_INT:
-            value = va_arg(arg, long);
-            break;
-        case INTMAX:
-            value = va_arg(arg, intmax_t);
-            break;
-        case SIZE: /* checkme */
-            value = va_arg(arg, size_t);
-            break;
-        case PTRDIFF: /* checkme */
-            value = va_arg(arg, ptrdiff_t);
-            break;
-        default:
-            return false; 
+    /* TODO: GNU printf does ignore '0'-pad with %c.
+     * But is this standard? */
+    if (state->pad_len > 1) {
+        for (int i = 0; i < state->pad_len - 1; i++)
+            append(state, ' '); 
     }
+    append(state, chr);
+    return true;
+}
 
-    intmax_t temp = value;
-    bool show_sign = value < 0 || state->show_plus;
+static inline bool fmt_string(struct print_state* state, va_list arg) {
+    char* string = va_arg(arg, char*);
 
-    /* Count number of digits */
-    while (temp) { digits++; temp /= 10; }
+    int len = 0;
+    int pad = state->pad_len;
+
+    while (string[len])
+        len++;
+
+    /* TODO: GNU printf does ignore '0'-pad with %c.
+         * But is this standard? */
+    while (pad > len) {
+        append(state, ' ');
+        pad--;
+    }
     
-    if (digits == 0)
-        digits = 1;
-
-    /* "For integer specifiers (d, i, o, u, x, X):
-     *  precision specifies the minimum number of digits to be written."
-     */
-    if (state->precision > digits)
-        digits = state->precision;
-
-    int size = digits;
-
-    /* Determine required string length */
-    if (show_sign)
-        size++;
-    if (state->pad_len > size)
-        size = state->pad_len;
-
-    char buffer[size+1];
-    int  digits_start = size - digits;
-
-    /* Print all digits */    
-    temp = value;
-    if (temp < 0)
-        temp *= -1;
-    for (int i = digits - 1; i >= 0; i--) {
-        buffer[digits_start + i] = '0' + (temp % 10);
-        temp /= 10;
-    }
-    buffer[size] = '\0';
-
-    /* Pad string to width */
-    for (int i = 0; i < digits_start; i++)
-        buffer[i] = state->pad_chr;
-
-    /* Place sign character */
-    if (show_sign) {
-        char sign = (value < 0) ? '-' : '+';
-
-        if (state->pad_chr == ' ')
-            buffer[digits_start-1] = sign;
-        else
-            buffer[0] = sign;
-    }
-
-    append_string(state, buffer);
+    append_string(state, string);
     return true;
 }
 
@@ -372,6 +405,19 @@ static inline bool do_format(struct print_state* state, va_list arg) {
             break;
         case 'X':
             fmt_unsigned_int(state, 16, "0123456789ABCDEF", "0X", arg);
+            break;
+
+        /* String & Char */
+        case 'c':
+            fmt_char(state, arg);
+            break;
+        case 's':
+            fmt_string(state, arg);
+            break;
+
+        /* Misc. */
+        case 'n':
+            *(va_arg(arg, int*)) = (int)state->total;
             break;
     }
     return true;

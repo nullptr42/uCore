@@ -13,7 +13,10 @@ void kernel_main() {
 
     char buffer[255];
 
-    snprintf(buffer, 255, "hello world: %#10x %#10o %%\n", 0xDEADBEEF, 0xDEADBEEF);
+    int num;
+    snprintf(buffer, 255, "hel%nlo world: %#10x %#10o %% %2c %20s\n", &num, 0xDEADBEEF, 0xDEADBEEF, 'x', "VeryNice");
+    kprint(buffer);
+    snprintf(buffer, 255, "num=%d\n", num);
     kprint(buffer);
     
     asm("sti");
