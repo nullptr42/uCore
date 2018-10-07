@@ -12,5 +12,6 @@ void print_init();
 
 void kputc(char c);
 void kprint(const char* str);
+int kprintf(const char* format, ...);
 
 #endif //_X86_64_CONSOLE_H_

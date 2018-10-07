@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <lib/lib.h>
 #include <arch/x86_64/io-port.h>
 
 static const int terminal_width  = 80;
@@ -118,4 +119,23 @@ void kprint(const char* str) {
         print_char(c);
     }
     update_cursor();
+}
+
+int kprintf(const char* format, ...) {
+    va_list arg1, arg2;
+    
+    va_start(arg1, format);
+    va_copy(arg2, arg1);
+    
+    int total = vsnprintf(NULL, 0, format, arg2);
+
+    if (total > -1) {
+        char buffer[total+1];
+
+        vsnprintf(buffer, total+1, format, arg1);
+        kprint(buffer);
+    }    
+    
+    va_end(arg1);
+    return total;
 }
