@@ -2,6 +2,7 @@
 
 #include "gdt.h"
 #include "console.h"
+#include <lib/lib.h>
 
 void idt_init();
 
@@ -10,7 +11,10 @@ void kernel_main() {
     idt_init();
     print_init();
 
-    kprint("uCore microkernel 0.1\n\n");
+    char buffer[255];
+
+    snprintf(buffer, 255, "this is a test %+8.4d %i\n", 123, -12321);
+    kprint(buffer);
     
     asm("sti");
     for(;;) asm("hlt");
