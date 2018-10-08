@@ -163,6 +163,14 @@ static inline bool parse_length(struct print_state* state) {
     return true;
 }
 
+static int get_left_pad(struct print_state* state) {
+    return state->justify_left ? 0 : state->pad_len;
+}
+
+static int get_right_pad(struct print_state* state) {
+    return state->justify_left ? state->pad_len : 0;
+}
+
 static inline void append(struct print_state* state, char chr) {
     state->total++;
     if (state->left > 0) {
@@ -174,12 +182,17 @@ static inline void append(struct print_state* state, char chr) {
 
 static inline void append_string(struct print_state* state, const char* string) {
     int i = 0;
+    int padding = get_right_pad(state);
+
     while (string[i])
         append(state, string[i++]);
+    while (i++ < padding)
+        append(state, ' ');
 }
 
 static inline bool fmt_signed_int(struct print_state* state, va_list arg) {
     int digits = 0;
+    int padding = get_left_pad(state);
     intmax_t value;
 
     /* Get number to print */
@@ -228,8 +241,8 @@ static inline bool fmt_signed_int(struct print_state* state, va_list arg) {
     /* Determine required string length */
     if (show_sign)
         size++;
-    if (state->pad_len > size)
-        size = state->pad_len;
+    if (padding > size)
+        size = padding;
 
     char buffer[size+1];
     int  digits_start = size - digits;
@@ -268,6 +281,7 @@ static inline bool fmt_unsigned_int(struct print_state* state,
                                     const char* prefix,
                                     va_list arg) {
     int digits = 0;
+    int padding = get_left_pad(state);
     uintmax_t value;
 
     /* Get number to print */
@@ -322,8 +336,8 @@ static inline bool fmt_unsigned_int(struct print_state* state,
     int size = digits + prefix_length;
 
     /* Determine required string length */
-    if (state->pad_len > size)
-        size = state->pad_len;
+    if (padding > size)
+        size = padding;
 
     char buffer[size+1];
     int  digits_start = size - digits;
@@ -354,13 +368,19 @@ static inline bool fmt_unsigned_int(struct print_state* state,
 static inline bool fmt_char(struct print_state* state, va_list arg) {
     char chr = va_arg(arg, int);
 
+    int padding = get_left_pad(state);
+    int size = (padding > 1) ? padding : 1;
+    char buffer[size+1];
+
     /* TODO: GNU printf does ignore '0'-pad with %c.
      * But is this standard? */
-    if (state->pad_len > 1) {
-        for (int i = 0; i < state->pad_len - 1; i++)
-            append(state, ' '); 
-    }
-    append(state, chr);
+    for (int i = 0; i < size - 1; i++)
+        buffer[i] = ' ';
+    
+    buffer[size - 1] = chr;
+    buffer[size] = '\0';
+    
+    append_string(state, buffer);
     return true;
 }
 
@@ -377,7 +397,7 @@ static inline bool fmt_string(struct print_state* state, va_list arg) {
         len++;
 
     /* TODO: GNU printf does ignore '0'-pad with %s.
-         * But is this standard? */
+     * But is this standard? */
     while (pad > len) {
         append(state, ' ');
         pad--;
