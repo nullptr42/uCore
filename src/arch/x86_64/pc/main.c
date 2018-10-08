@@ -17,6 +17,8 @@
 void fpu_init();
 void idt_init();
 
+void rdmsr(uint32_t reg, uint32_t* eax, uint32_t* edx);
+
 void kernel_main() {
     /* Enable FPU and SSE */
     fpu_init();
@@ -29,6 +31,17 @@ void kernel_main() {
     kprintf("%s %d.%d\n\n", _k_name, _k_version_major, _k_version_minor);
 
     if (apic_is_present()) {
+        uint32_t lapic_base_eax;
+        uint32_t lapic_base_edx;
+        uint64_t lapic_base;
+
+        kprint("[TRACE] APIC support detected.\n");
+
+        /* read and print address of the local apic mmio base */
+        rdmsr(0x1B, &lapic_base_eax, &lapic_base_edx);
+        lapic_base = ((uint64_t)lapic_base_edx<<32)|lapic_base_eax;
+        kprintf("[TRACE] Local-APIC base=0x%016llX\n", lapic_base);
+        
         apic_init();
     } else {
         //pic_init();

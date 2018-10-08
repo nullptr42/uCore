@@ -10,6 +10,7 @@ section .text
 global gdt_reload
 global idt_reload
 global _cpuid
+global rdmsr
 global fpu_init
 
 CR0_MONITOR_COPROC equ (1<< 1)
@@ -58,6 +59,22 @@ _cpuid:
     mov [rsi + 0x8], ecx
     mov [rsi + 0xC], edx
     
+    ret
+
+; Read contents of a Model Specific Register (MSR).
+;   rdi(arg0): register id
+;   rsi(arg1): eax output address
+;   rdx(arg2): edx output address 
+rdmsr:
+    mov r8, rdx
+    
+    ; Read register
+    mov ecx, edi
+    rdmsr
+
+    ; Store result and return.
+    mov [rsi], eax
+    mov [r8], edx
     ret
 
 fpu_init:
