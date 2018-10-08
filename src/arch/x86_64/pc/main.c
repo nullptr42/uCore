@@ -14,13 +14,18 @@
 
 #include <arch/x86_64/cpuid.h>
 
+void fpu_init();
 void idt_init();
 
 void kernel_main() {
+    /* Enable FPU and SSE */
+    fpu_init();
+
+    /* Setup flat segmentation and interrupt vector table. */
     gdt_init();
     idt_init();
-    print_init();
 
+    print_init();
     kprintf("%s %d.%d\n\n", _k_name, _k_version_major, _k_version_minor);
 
     asm("sti");
