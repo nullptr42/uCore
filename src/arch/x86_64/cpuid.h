@@ -17,6 +17,11 @@ struct cpuid_result {
     uint32_t edx;
 } __attribute__((packed));
 
-void _cpuid(uint32_t function, struct cpuid_result* result);
+enum cpuid_function {
+    CPUID_GETVENDORSTRING,
+    CPUID_GETFEATURES
+};
+
+void _cpuid(enum cpuid_function function, struct cpuid_result* result);
 
 #endif //_X86_64_CPUID_H_

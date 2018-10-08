@@ -5,11 +5,11 @@
  * found in the LICENSE file.
  */
 
-#ifndef _X86_64_CONSOLE_H_
-#define _X86_64_CONSOLE_H_
+#ifndef _ARCH_H_
+#define _ARCH_H_
 
-#include <arch/print.h>
+void kputc(char c);
+void kprint(const char* str);
+int  kprintf(const char* format, ...);
 
-void print_init();
-
-#endif //_X86_64_CONSOLE_H_
+#endif //_ARCH_H_

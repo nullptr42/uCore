@@ -12,7 +12,7 @@
 #include <lib/lib.h>
 #include <version.h>
 
-#include <arch/x86_64/cpuid.h>
+#include <arch/x86_64/apic.h>
 
 void fpu_init();
 void idt_init();
@@ -27,6 +27,12 @@ void kernel_main() {
 
     print_init();
     kprintf("%s %d.%d\n\n", _k_name, _k_version_major, _k_version_minor);
+
+    if (apic_is_present()) {
+        apic_init();
+    } else {
+        //pic_init();
+    }
 
     asm("sti");
     for(;;) asm("hlt");
