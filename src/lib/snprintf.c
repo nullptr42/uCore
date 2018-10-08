@@ -453,6 +453,7 @@ static inline void init_params(struct print_state* state) {
 }
 
 int vsnprintf(char* buffer, size_t size, const char* format, va_list arg) {
+    /* Maintain information such as formatting flags and buffer information */
     struct print_state state = {
         .buffer = buffer,
         .i      = 0,
@@ -461,8 +462,10 @@ int vsnprintf(char* buffer, size_t size, const char* format, va_list arg) {
         .format = format,
     };
 
+    /* Account for null-byte terminator */
     if (size > 0) state.left--;
 
+    /* Iterate format string */
     while (format[state.i]) {
         if (format[state.i] == '%') {
             state.i++;
