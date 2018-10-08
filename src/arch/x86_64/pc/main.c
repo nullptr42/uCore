@@ -12,6 +12,8 @@
 #include <lib/lib.h>
 #include <version.h>
 
+#include <arch/x86_64/cpuid.h>
+
 void idt_init();
 
 void kernel_main() {
@@ -20,7 +22,7 @@ void kernel_main() {
     print_init();
 
     kprintf("%s %d.%d\n\n", _k_name, _k_version_major, _k_version_minor);
-    
+
     asm("sti");
     for(;;) asm("hlt");
 }
