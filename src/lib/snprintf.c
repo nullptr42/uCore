@@ -434,6 +434,9 @@ static inline bool do_format(struct print_state* state, va_list arg) {
         case 'n':
             *(va_arg(arg, int*)) = (int)state->total;
             return true;
+        case 'p':
+            state->pound = true;
+            return fmt_unsigned_int(state, 16, "0123456789abcdef", "0x", arg);
     }
     
     return false;
