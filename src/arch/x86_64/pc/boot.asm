@@ -73,6 +73,37 @@ section .text
     .gdt_done:
         ret
 
+    [BITS 32]
+    compat_barrier:
+        mov eax, 0x80000001
+        cpuid
+        test edx, (1<<29)
+        jnz .return
+
+        ; Print "AMD64 cpu required. Cannot boot."
+        mov dword [0xB8000], 'AxMx'
+        mov dword [0xB8004], 'Dx6x'
+        mov dword [0xB8008], '4x x'
+        mov dword [0xB800C], 'cxpx'
+        mov dword [0xB8010], 'ux x'
+        mov dword [0xB8014], 'rxex'
+        mov dword [0xB8018], 'qxux'
+        mov dword [0xB801C], 'ixrx'
+        mov dword [0xB8020], 'exdx'
+        mov dword [0xB8024], '.x x'
+        mov dword [0xB8028], 'Cxax'
+        mov dword [0xB802C], 'nxnx'
+        mov dword [0xB8030], 'oxtx'
+        mov dword [0xB8034], ' xbx'
+        mov dword [0xB8038], 'oxox'
+        mov dword [0xB803C], 'tx.x'
+        cli
+    .loop:
+        hlt
+        jmp .loop
+    .return:
+        ret
+
     extern kernel_main
 
     KERNEL_VBASE equ 0xFFFFFFFF80000000
@@ -88,6 +119,8 @@ section .text
         ;   esi=multiboot header
         mov edi, eax
         mov esi, ebx
+
+        call compat_barrier
 
         ; Disable paging (in case it already was enabled)
         mov eax, cr0        ; read CR0
