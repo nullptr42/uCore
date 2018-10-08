@@ -370,10 +370,13 @@ static inline bool fmt_string(struct print_state* state, va_list arg) {
     int len = 0;
     int pad = state->pad_len;
 
+    if (string == NULL)
+        string = "(null)";
+
     while (string[len])
         len++;
 
-    /* TODO: GNU printf does ignore '0'-pad with %c.
+    /* TODO: GNU printf does ignore '0'-pad with %s.
          * But is this standard? */
     while (pad > len) {
         append(state, ' ');
@@ -389,38 +392,31 @@ static inline bool do_format(struct print_state* state, va_list arg) {
         /* Signed decimal */
         case 'd':
         case 'i':
-        default:
-            fmt_signed_int(state, arg);
-            break;
+            return fmt_signed_int(state, arg);
 
         /* Unsigned integer */
         case 'u':
-            fmt_unsigned_int(state, 10, "0123456789", "", arg);
-            break;
+            return fmt_unsigned_int(state, 10, "0123456789", "", arg);
         case 'o':
-            fmt_unsigned_int(state, 8, "01234567", "0", arg);
-            break;
+            return fmt_unsigned_int(state, 8, "01234567", "0", arg);
         case 'x':
-            fmt_unsigned_int(state, 16, "0123456789abcdef", "0x", arg);
-            break;
+            return fmt_unsigned_int(state, 16, "0123456789abcdef", "0x", arg);
         case 'X':
-            fmt_unsigned_int(state, 16, "0123456789ABCDEF", "0X", arg);
-            break;
+            return fmt_unsigned_int(state, 16, "0123456789ABCDEF", "0X", arg);
 
         /* String & Char */
         case 'c':
-            fmt_char(state, arg);
-            break;
+            return fmt_char(state, arg);
         case 's':
-            fmt_string(state, arg);
-            break;
+            return fmt_string(state, arg);
 
         /* Misc. */
         case 'n':
             *(va_arg(arg, int*)) = (int)state->total;
-            break;
+            return true;
     }
-    return true;
+    
+    return false;
 }
 
 static inline void init_params(struct print_state* state) {
