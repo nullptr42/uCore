@@ -388,7 +388,7 @@ static inline bool fmt_string(struct print_state* state, va_list arg) {
     char* string = va_arg(arg, char*);
 
     int len = 0;
-    int pad = state->pad_len;
+    int pad = get_left_pad(state);
 
     if (string == NULL)
         string = "(null)";
