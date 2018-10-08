@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include "state.h"
+#include <arch/x86_64/state.h>
 
 struct cpu_state* handle_interrupt(struct cpu_state* cpu) {
 
