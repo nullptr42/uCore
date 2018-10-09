@@ -14,6 +14,7 @@
 #include <version.h>
 
 #include <arch/x86_64/apic.h>
+#include <arch/x86_64/cpuid.h>
 
 void fpu_init();
 void idt_init();
@@ -38,13 +39,20 @@ void kernel_main(uint32_t magic, struct mb2_info* info) {
         _k_version_minor
     );
 
+    struct amd64_cpu cpu;
+
+    /* Get important information about the processor. */
+    cpuid_read(&cpu);
+    kprintf("cpu: vendor: %s\n", cpu.vendor);
+    kprintf("cpu: features: %#llx\n\n", cpu.features);
+
     /* Ensure we have been booted via Multiboot2. */
     if (magic != MB2_BOOTLOADER_MAGIC) {
         kprint("ERROR: uCore must be booted via a Multiboot2-compliant bootloader.");
         return;
     }
 
-    if (apic_is_present()) {
+    if (cpu.features & CPUID_FEAT_APIC) {//apic_is_present()) {
         uint32_t lapic_base_eax;
         uint32_t lapic_base_edx;
         uint64_t lapic_base;

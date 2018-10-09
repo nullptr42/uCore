@@ -51,14 +51,16 @@ idt_reload:
 ;   rdi(arg0): cpuid function
 ;   rsi(arg1): output structure
 _cpuid:
-    mov eax, edi
+    push rbx
     
+    mov eax, edi
     cpuid
     mov [rsi + 0x0], eax
     mov [rsi + 0x4], ebx
     mov [rsi + 0x8], ecx
     mov [rsi + 0xC], edx
-    
+
+    pop rbx
     ret
 
 ; Read contents of a Model Specific Register (MSR).
