@@ -9,7 +9,7 @@
 
 #include "gdt.h"
 #include "console.h"
-#include "multiboot2.h"
+#include "multiboot/multiboot2.h"
 #include <lib/lib.h>
 #include <version.h>
 

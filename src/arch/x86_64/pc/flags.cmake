@@ -5,4 +5,8 @@ SET(UCORE_LD_FLAGS "-z max-page-size=4096")
 FILE(GLOB PLATFORM_SRC
     "${CMAKE_CURRENT_LIST_DIR}/*.c"
     "${CMAKE_CURRENT_LIST_DIR}/*.asm"
+    "${CMAKE_CURRENT_LIST_DIR}/interrupt/*.c"
+    "${CMAKE_CURRENT_LIST_DIR}/interrupt/*.asm"
+    "${CMAKE_CURRENT_LIST_DIR}/multiboot/*.c"
+    "${CMAKE_CURRENT_LIST_DIR}/multiboot/*.asm"
 )
