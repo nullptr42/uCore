@@ -10,9 +10,10 @@
 #include "gdt.h"
 #include "console.h"
 #include "multiboot/multiboot2.h"
+#include "apic/pic.h"
+
 #include <lib/lib.h>
 #include <version.h>
-
 #include <arch/x86_64/apic.h>
 #include <arch/x86_64/cpuid.h>
 
@@ -30,6 +31,7 @@ void kernel_main(uint32_t magic, struct mb2_info* info) {
     /* Setup flat segmentation and interrupt vector table. */
     gdt_init();
     idt_init();
+    pic_init();
 
     print_init();
     kprintf(
@@ -59,14 +61,17 @@ void kernel_main(uint32_t magic, struct mb2_info* info) {
 
         kprint("[TRACE] APIC support detected.\n");
 
-        /* read and print address of the local apic mmio base */
+        /* Read and print address of the local apic mmio base */
         rdmsr(0x1B, &lapic_base_eax, &lapic_base_edx);
         lapic_base = ((uint64_t)lapic_base_edx<<32)|lapic_base_eax;
         kprintf("[TRACE] Local-APIC base=0x%016llX\n", lapic_base);
-        
+
+        /* Disable all interrupts and initialize APIC. */
+        pic_set_mask(0xFFFF);
         apic_init();
     } else {
-        //pic_init();
+        /* Enable all interrupts */
+        pic_set_mask(0);
     }
 
     /* Setup paging */

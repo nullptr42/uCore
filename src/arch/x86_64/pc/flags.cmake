@@ -9,4 +9,6 @@ FILE(GLOB PLATFORM_SRC
     "${CMAKE_CURRENT_LIST_DIR}/interrupt/*.asm"
     "${CMAKE_CURRENT_LIST_DIR}/multiboot/*.c"
     "${CMAKE_CURRENT_LIST_DIR}/multiboot/*.asm"
+    "${CMAKE_CURRENT_LIST_DIR}/apic/*.c"
+    "${CMAKE_CURRENT_LIST_DIR}/apic/*.asm"
 )
