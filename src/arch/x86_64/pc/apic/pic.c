@@ -48,3 +48,13 @@ void pic_init() {
     /* Enable all interrupts */
     pic_set_mask(0);  
 }
+
+void pic_send_eoi(int irq) {
+    if (irq >= 16)
+        return;
+    if (irq >= 8)
+        outb(PIC_IO_S_CMD, PIC_CMD_EOI);
+    else
+        outb(PIC_IO_M_CMD, PIC_CMD_EOI);
+    io_wait();
+}

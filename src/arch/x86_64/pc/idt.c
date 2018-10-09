@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2018-present Frederic Meyer. All rights reserved.
  *
@@ -17,14 +18,14 @@ static struct idt_pointer idt_ptr = {
     .pointer = &idt[0]
 };
 
-void isr_routine_0x20();
+void isr_routine_0x00();
 
 void idt_init() {
     for (int i = 0; i < IDT_NUM_ENT; i++) {
         idt_set_entry(&idt[i], NULL, 0, 0);
     }
     for (int i = 0; i < 0x20; i++) {
-        idt_set_entry(&idt[i], isr_routine_0x20, SEG_KCODE_LM, IDT_ACTIVE|IDT_RING_0|IDT_GATE_INTR|IDT_LM);
+        idt_set_entry(&idt[i], isr_routine_0x00, SEG_KCODE_LM, IDT_ACTIVE|IDT_RING_0|IDT_GATE_INTR|IDT_LM);
     }
     idt_reload(&idt_ptr);
 }

@@ -15,5 +15,6 @@
 
 void pic_set_mask(uint16_t irq_mask);
 void pic_init();
+void pic_send_eoi(int irq);
 
 #endif //_X86_64_PC_H_
