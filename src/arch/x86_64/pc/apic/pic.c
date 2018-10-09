@@ -21,10 +21,12 @@ enum pic_command {
     PIC_CMD_EOI   = 0x20
 };
 
+#define PIC_ICW4_8086 (0x01) /* 8086/88 (MCS-80/85) mode */
+
 void pic_set_mask(uint16_t irq_mask) {
-    outb(PIC_IO_M_DATA, irq_mask&0xFF);
+    outb(PIC_IO_M_DATA, (uint8_t)(irq_mask&0xFF));
     io_wait();
-    outb(PIC_IO_S_DATA, irq_mask>>8);
+    outb(PIC_IO_S_DATA, (uint8_t)(irq_mask>>8));
     io_wait();
 }
 
@@ -36,6 +38,8 @@ void pic_init() {
     io_wait();
     outb(PIC_IO_M_DATA, 4); /* Slave PIC is at IRQ2 */
     io_wait();
+    outb(PIC_IO_M_DATA, PIC_ICW4_8086);
+    io_wait();
 
     /* Setup slave PIC */
     outb(PIC_IO_S_CMD, PIC_INIT_ICW4);
@@ -44,9 +48,8 @@ void pic_init() {
     io_wait();
     outb(PIC_IO_S_DATA, 2); /* whatever this is */
     io_wait();
-
-    /* Enable all interrupts */
-    pic_set_mask(0);  
+    outb(PIC_IO_S_DATA, PIC_ICW4_8086);
+    io_wait();
 }
 
 void pic_send_eoi(int irq) {

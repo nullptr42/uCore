@@ -10,5 +10,6 @@
 
 struct cpu_state* handle_interrupt(struct cpu_state* cpu) {
     kprint("Hello World!\n");
+    kprintf("intr: %x\n", cpu->intr);
     return cpu;
 }
