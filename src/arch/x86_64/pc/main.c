@@ -16,8 +16,8 @@
 
 void fpu_init();
 void idt_init();
-
 void rdmsr(uint32_t reg, uint32_t* eax, uint32_t* edx);
+void pg_init();
 
 void kernel_main() {
     /* Enable FPU and SSE */
@@ -46,6 +46,9 @@ void kernel_main() {
     } else {
         //pic_init();
     }
+
+    /* Setup paging */
+    pg_init();
 
     asm("sti");
     for(;;) asm("hlt");
