@@ -9,6 +9,7 @@
 
 #include "gdt.h"
 #include "console.h"
+#include "multiboot2.h"
 #include <lib/lib.h>
 #include <version.h>
 
@@ -19,7 +20,9 @@ void idt_init();
 void rdmsr(uint32_t reg, uint32_t* eax, uint32_t* edx);
 void pg_init();
 
-void kernel_main() {
+void kernel_main(uint32_t magic, struct mb2_info* info) {
+    (void)info;
+
     /* Enable FPU and SSE */
     fpu_init();
 
@@ -29,6 +32,12 @@ void kernel_main() {
 
     print_init();
     kprintf("%s %d.%d\n\n", _k_name, _k_version_major, _k_version_minor);
+
+    /* Ensure we have been booted via Multiboot2. */
+    if (magic != MB2_BOOTLOADER_MAGIC) {
+        kprint("ERROR: uCore must be booted via a Multiboot2-compliant bootloader.");
+        return;
+    }
 
     if (apic_is_present()) {
         uint32_t lapic_base_eax;
