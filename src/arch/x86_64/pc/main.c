@@ -31,7 +31,12 @@ void kernel_main(uint32_t magic, struct mb2_info* info) {
     idt_init();
 
     print_init();
-    kprintf("%s %d.%d\n\n", _k_name, _k_version_major, _k_version_minor);
+    kprintf(
+        "%s Microkernel %d.%d\nCopyright (C) 2018-present Frederic Raphael Meyer\n\n",
+        _k_name,
+        _k_version_major,
+        _k_version_minor
+    );
 
     /* Ensure we have been booted via Multiboot2. */
     if (magic != MB2_BOOTLOADER_MAGIC) {
