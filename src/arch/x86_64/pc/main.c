@@ -67,8 +67,7 @@ void kernel_main(uint32_t magic, struct mb2_info* info) {
         kprintf("[TRACE] Local-APIC base=0x%016llX\n", lapic_base);
 
         /* Disable all interrupts and initialize APIC. */
-        //pic_set_mask(0xFFFF);
-        pic_set_mask(0);
+        pic_set_mask(0xFFFF);
         apic_init();
     } else {
         /* Enable all interrupts */

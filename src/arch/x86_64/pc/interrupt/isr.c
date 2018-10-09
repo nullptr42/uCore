@@ -9,7 +9,9 @@
 #include <arch/x86_64/pc/state.h>
 
 struct cpu_state* handle_interrupt(struct cpu_state* cpu) {
-    kprint("Hello World!\n");
-    kprintf("intr: %x\n", cpu->intr);
+    if (cpu->intr >= 0x20 && cpu->intr <= 0x2F) {
+        kprintf("hw irq: %x\n", cpu->intr);
+        pic_send_eoi(cpu->intr - 0x20);
+    }
     return cpu;
 }

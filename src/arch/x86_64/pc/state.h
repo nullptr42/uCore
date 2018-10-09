@@ -12,7 +12,7 @@
 
 struct cpu_state {
     /* Segment Registers */
-    uint64_t ds;
+    uint16_t ds;
     uint64_t fs;
     uint64_t gs;
 
@@ -43,6 +43,6 @@ struct cpu_state {
     uint64_t rflags;
     uint64_t rsp;
     uint64_t ss;
-};
+} __attribute__((packed));
 
 #endif //_X86_64_PC_STATE_H_
