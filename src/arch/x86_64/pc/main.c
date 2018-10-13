@@ -11,10 +11,10 @@
 #include "console.h"
 #include "multiboot/multiboot2.h"
 #include "apic/pic.h"
+#include "apic/apic.h"
 
 #include <lib/lib.h>
 #include <version.h>
-#include <arch/x86_64/apic.h>
 #include <arch/x86_64/cpuid.h>
 
 void fpu_init();
@@ -54,21 +54,10 @@ void kernel_main(uint32_t magic, struct mb2_info* info) {
         return;
     }
 
-    if (cpu.features & CPUID_FEAT_APIC) {
-        uint32_t lapic_base_eax;
-        uint32_t lapic_base_edx;
-        uint64_t lapic_base;
-
-        kprint("[TRACE] APIC support detected.\n");
-
-        /* Read and print address of the local apic mmio base */
-        rdmsr(0x1B, &lapic_base_eax, &lapic_base_edx);
-        lapic_base = ((uint64_t)lapic_base_edx<<32)|lapic_base_eax;
-        kprintf("[TRACE] Local-APIC base=0x%016llX\n", lapic_base);
-
-        /* Disable all interrupts and initialize APIC. */
+    if (lapic_is_present(&cpu)) {
+        /* Disable PIC and initialize APIC. */
         pic_set_mask(0xFFFF);
-        apic_init();
+        lapic_init();
     } else {
         /* Enable all interrupts */
         pic_set_mask(0);

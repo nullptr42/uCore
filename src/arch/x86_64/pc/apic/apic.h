@@ -5,12 +5,13 @@
  * found in the LICENSE file.
  */
 
-#ifndef _X86_64_APIC_H_
-#define _X86_64_APIC_H_
+#ifndef _X86_64_PC_APIC_H_
+#define _X86_64_PC_APIC_H_
 
 #include <stdbool.h>
+#include <arch/x86_64/cpuid.h>
 
-bool apic_is_present();
-void apic_init();
+bool lapic_is_present(struct amd64_cpu* cpu);
+void lapic_init();
 
-#endif //_X86_64_APIC_H_
+#endif //_X86_64_PC_APIC_H_

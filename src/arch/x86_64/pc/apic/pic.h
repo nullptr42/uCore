@@ -5,8 +5,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef _X86_64_PC_H_
-#define _X86_64_PC_H_
+#ifndef _X86_64_PC_PIC_H_
+#define _X86_64_PC_PIC_H_
 
 #include <stdint.h>
 
@@ -17,4 +17,4 @@ void pic_set_mask(uint16_t irq_mask);
 void pic_init();
 void pic_send_eoi(int irq);
 
-#endif //_X86_64_PC_H_
+#endif //_X86_64_PC_PIC_H_
