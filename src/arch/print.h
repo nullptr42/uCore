@@ -8,8 +8,11 @@
 #ifndef _ARCH_H_
 #define _ARCH_H_
 
+#include <stdarg.h>
+
 void kputc(char c);
 void kprint(const char* str);
 int  kprintf(const char* format, ...);
+int vkprintf(const char* format, va_list arg);
 
 #endif //_ARCH_H_

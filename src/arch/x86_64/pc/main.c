@@ -13,6 +13,7 @@
 #include "apic/pic.h"
 #include "apic/apic.h"
 
+#include <log.h>
 #include <lib/lib.h>
 #include <version.h>
 #include <arch/x86_64/cpuid.h>
@@ -28,7 +29,7 @@ static struct amd64_cpu cpu;
 /* information passed by the bootloader */
 static struct bootinfo bootinfo;
 
-void kernel_main(uint32_t magic, struct mb2_info* info) {
+void kernel_main(uint32_t magic, struct mb2_info* mb) {
     /* Enable FPU and SSE */
     fpu_init();
 
@@ -52,10 +53,15 @@ void kernel_main(uint32_t magic, struct mb2_info* info) {
     }
 
     /* Convert Multiboot2 information into our internal format. */
-    if (!bootinfo_from_mb2(&bootinfo, info)) {
+    if (!bootinfo_from_mb2(&bootinfo, mb)) {
         kprint("ERROR: unable to create \"bootinfo\" structure.");
         return;
     }
+
+    trace("boot: awesomeness=%d", 1337);
+    info("boot: awesomeness=%d", 1337);
+    warn("boot: awesomeness=%d", 1337);
+    error("boot: awesomeness=%d", 1337);
 
     /* Get important information about the processor. */
     cpuid_read(&cpu);

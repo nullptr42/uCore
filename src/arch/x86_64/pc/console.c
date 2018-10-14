@@ -6,6 +6,7 @@
  */
 
 #include <stdint.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <lib/lib.h>
 #include <arch/x86_64/io-port.h>
@@ -135,7 +136,25 @@ int kprintf(const char* format, ...) {
         vsnprintf(buffer, total+1, format, arg1);
         kprint(buffer);
     }    
-    
+
+    va_end(arg2);    
     va_end(arg1);
+    return total;
+}
+
+int vkprintf(const char* format, va_list arg) {
+    va_list arg2;
+    va_copy(arg2, arg);
+    
+    int total = vsnprintf(NULL, 0, format, arg);
+
+    if (total > -1) {
+        char buffer[total+1];
+
+        vsnprintf(buffer, total+1, format, arg2);
+        kprint(buffer);
+    }
+
+    va_end(arg2);
     return total;
 }
