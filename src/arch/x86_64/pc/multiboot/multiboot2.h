@@ -18,14 +18,17 @@ struct mb2_info {
     uint32_t reserved;
 } __attribute__((packed));
 
+enum mb2_tag_type {
+    MB_TAG_CMDLINE = 1,
+    MB_TAG_MODULE  = 3,
+    MB_TAG_MEMORY  = 4,
+    MB_TAG_MMAP    = 6
+};
+
 struct mb2_tag {
     uint32_t type;
     uint32_t size;
 } __attribute__((packed));
-
-enum mb2_tag_type {
-    MB_TAG_MODULE = 3
-};
 
 struct mb2_module_tag {
     struct mb2_tag tag;
@@ -33,6 +36,36 @@ struct mb2_module_tag {
     uint32_t mod_start;
     uint32_t mod_end;
     char string; /* array */
+} __attribute__((packed));
+
+struct mb2_memory_tag {
+    struct mb2_tag tag;
+
+    /* in kilobytes */
+    uint32_t mem_lower;
+    uint32_t mem_upper;    
+} __attribute__((packed));
+
+struct mb2_mmap_tag {
+    struct mb2_tag tag;
+
+    uint32_t entry_size;
+    uint32_t entry_version;
+} __attribute__((packed));
+
+enum mb2_mmap_type {
+    MB_MMAP_RESERVED  = 0,
+    MB_MMAP_AVAILABLE = 1,
+    MB_MMAP_ACPI_INFO = 3,
+    MB_MMAP_HIBERNATE = 4,
+    MB_MMAP_DEFECTIVE = 5
+};
+
+struct mb2_mmap_ent {
+    uint64_t base;
+    uint64_t length;
+    uint32_t type;
+    uint32_t reserved;
 } __attribute__((packed));
 
 bool multiboot2_verify(uint32_t magic);
