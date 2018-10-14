@@ -11,4 +11,8 @@ FILE(GLOB PLATFORM_SRC
     "${CMAKE_CURRENT_LIST_DIR}/multiboot/*.asm"
     "${CMAKE_CURRENT_LIST_DIR}/apic/*.c"
     "${CMAKE_CURRENT_LIST_DIR}/apic/*.asm"
+    "${CMAKE_CURRENT_LIST_DIR}/pm/*.c"
+    "${CMAKE_CURRENT_LIST_DIR}/pm/*.asm"
+    "${CMAKE_CURRENT_LIST_DIR}/vm/*.c"
+    "${CMAKE_CURRENT_LIST_DIR}/vm/*.asm"
 )

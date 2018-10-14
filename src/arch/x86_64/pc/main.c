@@ -19,7 +19,8 @@
 
 void fpu_init();
 void idt_init();
-void pg_init();
+void pm_init();
+void vm_init();
 
 /* processor information retrieved via cpuid */
 static struct amd64_cpu cpu;
@@ -55,16 +56,11 @@ void kernel_main(uint32_t magic, struct mb2_info* info) {
         kprint("ERROR: unable to create \"bootinfo\" structure.");
         return;
     }
-    /*for (int i = 0; i < bootinfo.num_mmap; i++) {
-        kprintf("[mmap] lo=%llp hi=%llp\n", bootinfo.mmap[i].base, bootinfo.mmap[i].last);
-    }
-    kprintf("[cmdline] %s\n", bootinfo.cmdline);
-    for (int i = 0; i < bootinfo.num_modules; i++) {
-        kprintf("[module] lo=%llp hi=%llp name=%s\n", bootinfo.modules[i].base, bootinfo.modules[i].last, bootinfo.modules[i].name);
-    }*/
 
     /* Get important information about the processor. */
     cpuid_read(&cpu);
+
+    pm_init();
 
     /* Setup interrupt controller and bootstrap other cores if possible... */
     if (lapic_is_present(&cpu)) {
@@ -77,7 +73,7 @@ void kernel_main(uint32_t magic, struct mb2_info* info) {
     }
 
     /* Setup paging */
-    pg_init();
+    vm_init();
 
     asm("sti");
     for(;;) asm("hlt");

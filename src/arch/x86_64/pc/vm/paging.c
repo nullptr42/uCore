@@ -51,7 +51,7 @@ void pg_init_ctx(struct pg_context* ctx) {
         ctx->pml4[i] = pg_kctx.pml4[i];
 }
 
-void pg_init() {
+void vm_init() {
     for (int i = 0; i < PML4_LO_ENT; i++)
         pg_kctx.pml4[i] = 0;
 
