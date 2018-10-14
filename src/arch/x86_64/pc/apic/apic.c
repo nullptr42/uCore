@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2018-present Frederic Meyer. All rights reserved.
  *
@@ -39,9 +40,9 @@ void lapic_init() {
     uint64_t base = lapic_get_base();
 
     /* enable the LAPIC */
-    kprintf("[lapic] base address is 0x%016llX\n", base);
+    info("lapic: base address is 0x%016llX", base);
     lapic_set_base(base);
-    kprint("[lapic] enabled the lapic.\n");
+    info("lapic: enabled Local-APIC.");
 
     /* start receiving interrupts 
      * this is triggering a page fault right now. */

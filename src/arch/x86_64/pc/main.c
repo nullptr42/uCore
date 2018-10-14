@@ -48,20 +48,15 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
 
     /* Ensure we have been booted via Multiboot2. */
     if (magic != MB2_BOOTLOADER_MAGIC) {
-        kprint("ERROR: uCore must be booted via a Multiboot2-compliant bootloader.");
+        error("bootinfo: bootloader isn't Multiboot2 compliant (magic number mismatch).");
         return;
     }
 
     /* Convert Multiboot2 information into our internal format. */
     if (!bootinfo_from_mb2(&bootinfo, mb)) {
-        kprint("ERROR: unable to create \"bootinfo\" structure.");
+        error("bootinfo: unable to create \"bootinfo\" structure from Multiboot2 data.");
         return;
     }
-
-    trace("boot: awesomeness=%d", 1337);
-    info("boot: awesomeness=%d", 1337);
-    warn("boot: awesomeness=%d", 1337);
-    error("boot: awesomeness=%d", 1337);
 
     /* Get important information about the processor. */
     cpuid_read(&cpu);
