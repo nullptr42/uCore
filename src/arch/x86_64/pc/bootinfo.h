@@ -12,13 +12,15 @@
 #include <stdbool.h>
 #include "multiboot/multiboot2.h"
 
-#define MAX_MODULES (255)
-#define MAX_MMAP (255)
+#define MAX_MODULES (256)
+#define MAX_MMAP (256)
 #define MAX_CMDLINE_LEN (2048) /* this probably already is overkill */
+
+#define MAX_MODULE_NAME_LEN (4)
 
 /* Represents a loadable service executable */
 struct module {
-    char* name;
+    char  name[MAX_MODULE_NAME_LEN+1];
     void* base;
     void* last;
 } __attribute__((packed));
@@ -29,6 +31,7 @@ struct memory {
     uint64_t last;
 } __attribute__((packed));
 
+/* Store information collected by the Bootloader */
 struct bootinfo {
     char cmdline[MAX_CMDLINE_LEN+1];
 

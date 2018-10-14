@@ -6,45 +6,139 @@
  */
 
 #include "bootinfo.h"
+#include <arch/print.h>
+#include <stddef.h>
 
-static bool callback(struct mb2_tag* tag, struct bootinfo* binf) {
+struct state {
+    struct bootinfo* binf;
+    bool has_mmap;
+    bool has_memory;
+};
+
+static bool callback(struct mb2_tag* tag, struct state* state) {
+    struct bootinfo* binf = state->binf;
+    
     switch (tag->type) {
+        case MB_TAG_CMDLINE: {
+            size_t length = tag->size - sizeof(struct mb2_tag);
+            char* cmdline = (void*)tag + sizeof(struct mb2_tag);
+            char* dst = &binf->cmdline[0];
+            
+            if (length >= MAX_CMDLINE_LEN) {
+                kprint("bootinfo: warn: cmdline exceeds maximum length, truncating...\n");
+                length = MAX_CMDLINE_LEN;
+                dst[MAX_CMDLINE_LEN] = '\0';
+            }
+            
+            while (length--) *dst++ = *cmdline++;
+
+            return true;
+        }
+
         case MB_TAG_MEMORY:
             binf->memory_lo = ((struct mb2_memory_tag*)tag)->mem_lower * 4096;
             binf->memory_hi = ((struct mb2_memory_tag*)tag)->mem_upper * 4096;
+
+            state->has_memory = true;
             return true;
+
         case MB_TAG_MMAP: {
             struct mb2_mmap_tag* mmap  = (void*)tag;
 
+            struct memory* memory = &binf->mmap[0];
             uint32_t size = (uint32_t)sizeof(struct mb2_mmap_tag);
             struct mb2_mmap_ent* entry = (void*)mmap + size;
-            
+
+            state->has_mmap = true;
+
+            /* Number of entries is defined through entry size and total structure size */
             while (size < tag->size) {
                 if (entry->type == MB_MMAP_AVAILABLE) {
-                    /* TODO: prevent buffer overrun... */
-                    struct memory* memory = &binf->mmap[binf->num_mmap++];
+                    /* Ensure the buffer will not be overrun */
+                    if (binf->num_mmap >= MAX_MMAP) {
+                        kprintf("bootinfo: warn: number of Multiboot2 MMAP entries exceeds maximum (%d)\n", MAX_MMAP);
+                        return true;
+                    }
 
+                    /* Copy start and end address into bootinfo structure */
                     memory->base = entry->base;
                     memory->last = entry->base + entry->length - 1;
+
+                    memory++;
+                    binf->num_mmap++;
                 }
                 
-                /* update size and entry address */
+                /* Update size and entry address */
                 size += mmap->entry_size;
                 entry = (void*)entry + mmap->entry_size;
             }
+            
             return true;
         }
+
+        case MB_TAG_MODULE: {
+            if (binf->num_modules == MAX_MODULES) {
+                kprintf("bootinfo: warn: number of modules exceeds maximum (%d)\n", MAX_MODULES);
+                return true;
+            }
+
+            struct module* module = &binf->modules[binf->num_modules++];
+            struct mb2_module_tag* entry = (void*)tag;
+            
+            module->base = (void*)(uint64_t)entry->mod_start;
+            module->last = (void*)(uint64_t)entry->mod_end;
+
+            int i = 0;
+            char* string = &entry->string;
+            
+            while (string[i]) {
+                if (i == MAX_MODULE_NAME_LEN) {
+                    module->name[MAX_MODULE_NAME_LEN] = '\0';
+                    kprintf("bootinfo: warn: module string length exceeds %d characters.\n", MAX_MODULE_NAME_LEN);
+                    break;
+                }
+                module->name[i] = string[i];
+                i++;
+            }
+            
+            break;
+        }
     }
+
     return false;
 }
 
 bool bootinfo_from_mb2(struct bootinfo* binf, struct mb2_info* mb2) {
-    /* initialize basic data */
+    struct state state = {
+        .binf = binf,
+        .has_mmap = false,
+        .has_memory = false
+    };
+    
+    /* Initialize basic data */
     binf->num_modules = 0;
     binf->num_mmap = 0;
+    binf->cmdline[0] = '\0';
 
-    /* retrieve memory information */
-    multiboot2_find_tags(mb2, MB_TAG_MEMORY, (tag_handler)callback, binf);
-    multiboot2_find_tags(mb2, MB_TAG_MMAP, (tag_handler)callback, binf);
+    /* Retrieve memory information */
+    multiboot2_find_tags(mb2, MB_TAG_MEMORY, (tag_handler)callback, &state);
+    multiboot2_find_tags(mb2, MB_TAG_MMAP, (tag_handler)callback, &state);
+
+    /* Retrieve command line */
+    multiboot2_find_tags(mb2, MB_TAG_CMDLINE, (tag_handler)callback, &state);
+
+    /* Retrieve module information */
+    multiboot2_find_tags(mb2, MB_TAG_MODULE, (tag_handler)callback, &state);
+
+    /* Check for missing information */
+    if (!state.has_memory) {
+        kprint("bootinfo: memory boundaries missing from Multiboot2 header.\n");
+        return false;
+    }
+    if (!state.has_mmap) {
+        kprint("bootinfo: memory map missing from Multiboot2 header.\n");
+        return false;
+    }
+
     return true;
 }

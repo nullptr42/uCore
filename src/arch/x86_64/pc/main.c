@@ -28,8 +28,6 @@ static struct amd64_cpu cpu;
 static struct bootinfo bootinfo;
 
 void kernel_main(uint32_t magic, struct mb2_info* info) {
-    (void)info;
-
     /* Enable FPU and SSE */
     fpu_init();
 
@@ -53,15 +51,20 @@ void kernel_main(uint32_t magic, struct mb2_info* info) {
     }
 
     /* Convert Multiboot2 information into our internal format. */
-    bootinfo_from_mb2(&bootinfo, info);
-    for (int i = 0; i < bootinfo.num_mmap; i++) {
-        kprintf("[mmap] lo=%p hi=%p\n", bootinfo.mmap[i].base, bootinfo.mmap[i].last);
+    if (!bootinfo_from_mb2(&bootinfo, info)) {
+        kprint("ERROR: unable to create \"bootinfo\" structure.");
+        return;
     }
+    /*for (int i = 0; i < bootinfo.num_mmap; i++) {
+        kprintf("[mmap] lo=%llp hi=%llp\n", bootinfo.mmap[i].base, bootinfo.mmap[i].last);
+    }
+    kprintf("[cmdline] %s\n", bootinfo.cmdline);
+    for (int i = 0; i < bootinfo.num_modules; i++) {
+        kprintf("[module] lo=%llp hi=%llp name=%s\n", bootinfo.modules[i].base, bootinfo.modules[i].last, bootinfo.modules[i].name);
+    }*/
 
     /* Get important information about the processor. */
     cpuid_read(&cpu);
-    kprintf("[cpu] vendor: %s\n", cpu.vendor);
-    kprintf("[cpu] features: %#llx\n\n", cpu.features);
 
     /* Setup interrupt controller and bootstrap other cores if possible... */
     if (lapic_is_present(&cpu)) {
