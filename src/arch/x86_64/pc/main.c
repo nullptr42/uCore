@@ -66,12 +66,11 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
     pm_init(&bootinfo);
 
     /* Test physical memory manager */
-    uint32_t pages[32];
-    if (pm_stack_alloc(32, pages) != PMM_OK)
+    uint32_t pages[6];
+    if (pm_stack_alloc(6, pages) != PMM_OK)
         error("main: something went wrong...");
-    for (int i = 0; i < 32; i++)
-        kprintf("%d ", pages[i]);
-    kprint("\n");
+    for (int i = 0; i < 6; i++)
+        kprintf("%d\n", pages[i]);
 
     /* Setup interrupt controller and bootstrap other cores if possible... */
     if (lapic_is_present(&cpu)) {
