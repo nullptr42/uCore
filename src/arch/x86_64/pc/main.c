@@ -20,7 +20,7 @@
 
 void fpu_init();
 void idt_init();
-void pm_init();
+void pm_init(struct bootinfo* binf);
 void vm_init();
 
 /* processor information retrieved via cpuid */
@@ -61,7 +61,8 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
     /* Get important information about the processor. */
     cpuid_read(&cpu);
 
-    pm_init();
+    /* Initialize the Physical Memory Manager */
+    pm_init(&bootinfo);
 
     /* Setup interrupt controller and bootstrap other cores if possible... */
     if (lapic_is_present(&cpu)) {

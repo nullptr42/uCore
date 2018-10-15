@@ -29,7 +29,8 @@ enum length {
     INTMAX,
     SIZE,
     PTRDIFF,
-    LONG_DOUBLE  
+    LONG_DOUBLE,
+    POINTER  
 };
 
 struct print_state {
@@ -306,6 +307,9 @@ static inline bool fmt_unsigned_int(struct print_state* state,
         case PTRDIFF:
             value = va_arg(arg, ptrdiff_t);
             break;
+        case POINTER:
+            value = (uintmax_t)va_arg(arg, void*);
+            break;
         default:
             return false;
     }
@@ -436,6 +440,7 @@ static inline bool do_format(struct print_state* state, va_list arg) {
             return true;
         case 'p':
             state->pound = true;
+            state->length = POINTER;
             return fmt_unsigned_int(state, 16, "0123456789abcdef", "0x", arg);
     }
     

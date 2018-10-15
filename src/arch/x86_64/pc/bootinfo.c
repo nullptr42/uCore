@@ -8,6 +8,7 @@
 #include "bootinfo.h"
 #include <arch/print.h>
 #include <stddef.h>
+#include <log.h>
 
 struct state {
     struct bootinfo* binf;
@@ -25,7 +26,7 @@ static bool callback(struct mb2_tag* tag, struct state* state) {
             char* dst = &binf->cmdline[0];
             
             if (length >= MAX_CMDLINE_LEN) {
-                kprint("bootinfo: warn: cmdline exceeds maximum length, truncating...\n");
+                warn("bootinfo: cmdline exceeds maximum length, truncating...\n");
                 length = MAX_CMDLINE_LEN;
                 dst[MAX_CMDLINE_LEN] = '\0';
             }
@@ -56,7 +57,7 @@ static bool callback(struct mb2_tag* tag, struct state* state) {
                 if (entry->type == MB_MMAP_AVAILABLE) {
                     /* Ensure the buffer will not be overrun */
                     if (binf->num_mmap >= MAX_MMAP) {
-                        kprintf("bootinfo: warn: number of Multiboot2 MMAP entries exceeds maximum (%d)\n", MAX_MMAP);
+                        warn("bootinfo: number of Multiboot2 MMAP entries exceeds maximum (%d)\n", MAX_MMAP);
                         return true;
                     }
 
@@ -78,7 +79,7 @@ static bool callback(struct mb2_tag* tag, struct state* state) {
 
         case MB_TAG_MODULE: {
             if (binf->num_modules == MAX_MODULES) {
-                kprintf("bootinfo: warn: number of modules exceeds maximum (%d)\n", MAX_MODULES);
+                warn("bootinfo: number of modules exceeds maximum (%d)\n", MAX_MODULES);
                 return true;
             }
 
@@ -94,7 +95,7 @@ static bool callback(struct mb2_tag* tag, struct state* state) {
             while (string[i]) {
                 if (i == MAX_MODULE_NAME_LEN) {
                     module->name[MAX_MODULE_NAME_LEN] = '\0';
-                    kprintf("bootinfo: warn: module string length exceeds %d characters.\n", MAX_MODULE_NAME_LEN);
+                    warn("bootinfo: module string length exceeds %d characters.\n", MAX_MODULE_NAME_LEN);
                     break;
                 }
                 module->name[i] = string[i];
@@ -132,11 +133,11 @@ bool bootinfo_from_mb2(struct bootinfo* binf, struct mb2_info* mb2) {
 
     /* Check for missing information */
     if (!state.has_memory) {
-        kprint("bootinfo: memory boundaries missing from Multiboot2 header.\n");
+        error("bootinfo: memory boundaries missing from Multiboot2 header.\n");
         return false;
     }
     if (!state.has_mmap) {
-        kprint("bootinfo: memory map missing from Multiboot2 header.\n");
+        error("bootinfo: memory map missing from Multiboot2 header.\n");
         return false;
     }
 

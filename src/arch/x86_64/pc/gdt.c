@@ -21,19 +21,18 @@ static struct gdt_pointer gdt_ptr = {
 
 void gdt_init() {
     // Null descriptor
-    gdt_set_entry(&gdt[0], 0, 0, 0, 0);
-
     // Kernel 64-bit Code Segment (selector=0x08)
-    gdt_set_entry(&gdt[1], 0, 0xFFFFF, GDT_GRANULARITY | GDT_LM, GDT_ACCESS_RING0 | GDT_EXEC);
-
     // Kernel Data Segment (selector=0x10)
-    gdt_set_entry(&gdt[2], 0, 0xFFFFF, GDT_GRANULARITY | GDT_PM_32, GDT_ACCESS_RING0);
-
     // User 64-bit Code Segment (selector=0x1B)
-    gdt_set_entry(&gdt[3], 0, 0xFFFFF, GDT_GRANULARITY | GDT_LM, GDT_ACCESS_RING3 | GDT_EXEC);
-
     // User Data Segment (selector=0x23)
-    gdt_set_entry(&gdt[4], 0, 0xFFFFF, GDT_GRANULARITY | GDT_PM_32, GDT_ACCESS_RING3);
     
+    /* Setup GDT according to listing above */ 
+    gdt_set_entry(&gdt[0], 0, 0, 0, 0);
+    gdt_set_entry(&gdt[1], 0, 0xFFFFF, GDT_GRANULARITY | GDT_LM, GDT_ACCESS_RING0 | GDT_EXEC);
+    gdt_set_entry(&gdt[2], 0, 0xFFFFF, GDT_GRANULARITY | GDT_PM_32, GDT_ACCESS_RING0);
+    gdt_set_entry(&gdt[3], 0, 0xFFFFF, GDT_GRANULARITY | GDT_LM, GDT_ACCESS_RING3 | GDT_EXEC);
+    gdt_set_entry(&gdt[4], 0, 0xFFFFF, GDT_GRANULARITY | GDT_PM_32, GDT_ACCESS_RING3);
+
+    /* Tell CPU to load the new GDT */ 
     gdt_reload(&gdt_ptr, 0x08, 0x10);
 }
