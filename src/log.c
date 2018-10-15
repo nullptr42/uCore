@@ -40,7 +40,7 @@ void info(const char* format, ...) {
     va_list arg;
     va_start(arg, format);
     
-    kprint("[info] ");
+    kprint("[info]  ");
     vkprintf(format, arg);
     kputc('\n');
 
@@ -54,7 +54,7 @@ void warn(const char* format, ...) {
     va_list arg;
     va_start(arg, format);
     
-    kprint("[warn] ");
+    kprint("[warn]  ");
     vkprintf(format, arg);
     kputc('\n');
 

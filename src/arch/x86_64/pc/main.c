@@ -12,6 +12,7 @@
 #include "bootinfo.h"
 #include "apic/pic.h"
 #include "apic/apic.h"
+#include "pm/pm.h"
 
 #include <log.h>
 #include <lib/lib.h>
@@ -63,6 +64,14 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
 
     /* Initialize the Physical Memory Manager */
     pm_init(&bootinfo);
+
+    /* Test physical memory manager */
+    uint32_t pages[32];
+    if (pm_stack_alloc(32, pages) != PMM_OK)
+        error("main: something went wrong...");
+    for (int i = 0; i < 32; i++)
+        kprintf("%d ", pages[i]);
+    kprint("\n");
 
     /* Setup interrupt controller and bootstrap other cores if possible... */
     if (lapic_is_present(&cpu)) {

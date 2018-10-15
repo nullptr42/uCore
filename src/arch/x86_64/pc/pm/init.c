@@ -9,6 +9,8 @@
 #include <arch/print.h>
 #include <arch/x86_64/pc/bootinfo.h>
 
+#include "stack.h"
+
 #define KERNEL_VBASE (0xFFFFFFFF80000000)
 
 extern const void kernel_start;
@@ -19,7 +21,7 @@ void pm_init(struct bootinfo* binf) {
     
     info("pm: initializing physical memory manager...");
 
-    /* Determine safe minimum address for physical pages stack */    
+    /* Determine lowest safe memory address */    
     for (int i = 0; i < binf->num_modules; i++) {
         struct module* module = &binf->modules[i];
         
@@ -31,5 +33,15 @@ void pm_init(struct bootinfo* binf) {
     if ((minimum % 4096) != 0)
         minimum += 4096 - (minimum % 4096); 
 
-    info("pm: minimum stack address is %llp", minimum);
+    info("pm: minimum address is %p", (void*)minimum);
+
+    /* Initialize the page stack, the primary source for pages */
+    if (!pm_init_stack(binf, (void*)minimum)) {
+        error("pm: unable to allocate page stack.");
+        /* TODO: panic... */
+        return;
+    }
+
+    kprint("\n");
 }
+
