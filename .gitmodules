@@ -1,0 +1,3 @@
+[submodule "src/libslab"]
+	path = src/libslab
+	url = https://github.com/reinixOS/libslab.git
