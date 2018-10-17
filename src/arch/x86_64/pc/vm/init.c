@@ -24,27 +24,31 @@
 typedef uint64_t ptentry_t;
 ptentry_t pml4[512] __pgalign;
 
-extern void vm_level2_a;
 extern void vm_level2_b;
 
 void vm_init() {
-    void* _pdpt_a = (void*)&vm_level2_a - KERNEL_VBASE;
     void* _pdpt_b = (void*)&vm_level2_b - KERNEL_VBASE;
+    void* _pml4 = (void*)&pml4[0] - KERNEL_VBASE;
+    
+    trace("vm: initializing paging...");
 
     /* Clear all entries */
     for (int i = 0; i < 512; i++)
         pml4[i] = 0;
-
-    //pml4[0]   = PT_MAPPED | PT_WRITEABLE | (ptentry_t)_pdpt_a;
     pml4[511] = PT_MAPPED | PT_WRITEABLE | (ptentry_t)_pdpt_b;
 
-    void* _pml4 = (void*)&pml4[0] - KERNEL_VBASE;
-    
+    trace("vm: setup recursive mapping...");
+    pml4[256] = PT_MAPPED | PT_WRITEABLE | (ptentry_t)_pml4;
+
     /* Enable the new context */
+    trace("vm: enabling new context...");
     asm("mov %0, %%cr3\n" : : "r" (_pml4));
 
     /* Throw a party if everything worked out! */
     trace("vm: survived!");
+
+    uint64_t* test = (void*)((256LL << 39) | (256LL << 30) | (256LL << 21) | (256LL << 12) | 0xFFFF000000000000ULL);
+    trace("vm: test recursive mapping 0x%08X equals 0x%08X?", pml4[511], test[511]);
 }
 
 
