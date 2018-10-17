@@ -84,6 +84,9 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
     for (int i = 0; i < 6; i++)
         kprintf("%d\n", pages[i]);
 
+    /* Initialize the Virtual Memory Manager */
+    vm_init();
+
     /* Setup interrupt controller and bootstrap other cores if possible... */
     if (lapic_is_present(&cpu)) {
         /* Disable PIC and initialize APIC. */
@@ -93,9 +96,6 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
         /* Enable all interrupts */
         pic_set_mask(0);
     }
-
-    /* Setup paging */
-    vm_init();
 
     asm("sti");
     for(;;) asm("hlt");

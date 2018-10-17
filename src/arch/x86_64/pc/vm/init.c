@@ -6,6 +6,7 @@
  */
 
 #include <stdint.h>
+#include <log.h>
 
 #define PT_MAPPED         (1<<0)
 #define PT_WRITEABLE      (1<<1)
@@ -18,30 +19,33 @@
 
 #define __pgalign __attribute__((aligned(0x1000)))
 
+#define KERNEL_VBASE (0xFFFFFFFF80000000)
+
 typedef uint64_t ptentry_t;
+ptentry_t pml4[512] __pgalign;
 
-struct vm_context {
-    ptentry_t pml4[512];
-};
-
-struct vm_context vm_kctx __pgalign;
+extern void vm_level2_a;
+extern void vm_level2_b;
 
 void vm_init() {
-    ptentry_t* pml4 = &vm_kctx.pml4[0];
-    
-    /* Do not map anything initially */
+    void* _pdpt_a = (void*)&vm_level2_a - KERNEL_VBASE;
+    void* _pdpt_b = (void*)&vm_level2_b - KERNEL_VBASE;
+
+    /* Clear all entries */
     for (int i = 0; i < 512; i++)
         pml4[i] = 0;
 
-    /* Recursive mapping the PML4 */
-    pml4[256] = (ptentry_t)(pml4) |
-                PT_MAPPED |
-                PT_WRITEABLE |
-                PT_NO_EXECUTE;
+    //pml4[0]   = PT_MAPPED | PT_WRITEABLE | (ptentry_t)_pdpt_a;
+    pml4[511] = PT_MAPPED | PT_WRITEABLE | (ptentry_t)_pdpt_b;
+
+    void* _pml4 = (void*)&pml4[0] - KERNEL_VBASE;
+    
+    /* Enable the new context */
+    asm("mov %0, %%cr3\n" : : "r" (_pml4));
+
+    /* Throw a party if everything worked out! */
+    trace("vm: survived!");
 }
-
-
-
 
 
 
@@ -54,42 +58,3 @@ void vm_init() {
  * 0xFFFFFFFF00000000 - 0xFFFFFFFF7FFFFFFF: Kernel Allocated Memory
  * 0xFFFFFFFF80000000 - 0xFFFFFFFFFFFFFFFF: Kernel Executable
  */
-/*
-#define KERNEL_VBASE (0xFFFFFFFF80000000)
-
-#define PML4_LO_ENT (256)
-#define PML4_HI_ENT (256)
-
-#define PDPT_PHYS_ENT (508)
-#define PDPT_KRNL_ENT (4)
-*/
-/* Represents a single page table entry */
-//typedef uint64_t ptentry_t;
-
-/* Represents a single address space */
-/*struct pg_context {
-    ptentry_t pml4[512];
-};
-
-static struct pg_context pg_kctx __pgalign;
-
-void pg_init_ctx(struct pg_context* ctx) {
-    for (int i = 0; i < PML4_LO_ENT; i++)
-        ctx->pml4[i] = 0;
-    for (int i = PML4_LO_ENT; i < PML4_HI_ENT; i++)
-        ctx->pml4[i] = pg_kctx.pml4[i];
-}
-
-void vm_init() {
-    for (int i = 0; i < PML4_LO_ENT; i++)
-        pg_kctx.pml4[i] = 0;
-
-    for (int i = PML4_LO_ENT; i < 512; i++) {
-        //pg_kctx.pml4[i] = (ptentry_t)(&pg_kpdpt[i - PML4_LO_ENT]) |
-        //                  PT_MAPPED |
-        //                  PT_WRITEABLE;
-    }
-
-    //asm("mov %0, %%cr3" : : "r" ((void*)&pg_kctx.pml4 - KERNEL_VBASE));
-}
-*/

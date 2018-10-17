@@ -24,7 +24,7 @@ static const int tab_width = 4;
 static int terminal_x;
 static int terminal_y;
 
-static uint16_t* buffer = (uint16_t*)0xB8000;
+static uint16_t* buffer = (uint16_t*)0xFFFFFFFF800B8000;
 
 /* VGA hardware ports */
 enum vga_ports {

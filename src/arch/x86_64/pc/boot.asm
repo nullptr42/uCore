@@ -29,6 +29,10 @@ GDT_GRAN equ (0x80)
 GDT_PM   equ (0x40)
 GDT_LM   equ (0x20)
 
+global vm_level2_a
+global vm_level2_b
+global vm_level1
+
 section .multiboot
 
     ; Multiboot 2 Header, must be aligned to 64-bit boundary.
@@ -179,7 +183,8 @@ section .text
     [BITS 64]
     do_call:
         mov rsp, stack_top
-        call kernel_main
+        mov rax, kernel_main
+        call rax
     stop:
         cli
     .loop:

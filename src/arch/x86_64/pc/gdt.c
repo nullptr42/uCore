@@ -34,5 +34,5 @@ void gdt_init() {
     gdt_set_entry(&gdt[4], 0, 0xFFFFF, GDT_GRANULARITY | GDT_PM_32, GDT_ACCESS_RING3);
 
     /* Tell CPU to load the new GDT */ 
-    gdt_reload(&gdt_ptr, 0x08, 0x10);
+    gdt_reload((void*)&gdt_ptr, 0x08, 0x10);
 }
