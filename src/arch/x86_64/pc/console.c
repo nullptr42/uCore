@@ -38,6 +38,10 @@ enum vga_registers {
     VGA_REG_CURSOR_LO = 15
 };
 
+/* Debug */
+void serial_init();
+void serial_debug(const char* string);
+
 static inline uint16_t get_address() {
     return terminal_y * terminal_width + terminal_x; 
 }
@@ -61,6 +65,7 @@ void print_init() {
     terminal_y = 0;
     for (int i = 0; i < qwords_per_page; i++)
         _buffer[i] = qword_empty;
+    serial_init();
 }
 
 static void scroll() {
@@ -116,6 +121,7 @@ void kputc(char c) {
 
 void kprint(const char* str) {
     char c;
+    serial_debug(str);
     while ((c = *str++)) {
         print_char(c);
     }

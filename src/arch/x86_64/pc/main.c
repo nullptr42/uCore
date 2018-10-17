@@ -21,7 +21,6 @@
 
 void fpu_init();
 void idt_init();
-void pm_init(struct bootinfo* binf);
 void vm_init();
 
 /* processor information retrieved via cpuid */
@@ -58,6 +57,19 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
         error("bootinfo: unable to create \"bootinfo\" structure from Multiboot2 data.");
         return;
     }
+
+#if 0
+    /* Framebuffer debug */
+    info("framebuffer: address=%p", bootinfo.fb.address);
+    info("framebuffer: pitch=%lu", bootinfo.fb.pitch);
+    info("framebuffer: width=%lu", bootinfo.fb.width);
+    info("framebuffer: height=%lu", bootinfo.fb.height);
+    info("framebuffer: bpp=%u", bootinfo.fb.bpp);
+    info("framebuffer: type=%u", bootinfo.fb.type);
+    info("framebuffer: r: shift=%u len=%u", bootinfo.fb.format.r_shift, bootinfo.fb.format.r_mask_len);
+    info("framebuffer: g: shift=%u len=%u", bootinfo.fb.format.g_shift, bootinfo.fb.format.g_mask_len);
+    info("framebuffer: b: shift=%u len=%u", bootinfo.fb.format.b_shift, bootinfo.fb.format.b_mask_len);
+#endif
 
     /* Get important information about the processor. */
     cpuid_read(&cpu);

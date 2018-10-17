@@ -14,9 +14,38 @@
 #define PT_DISABLE_CACHE  (1<<4)
 #define PT_WAS_USED       (1<<5)
 #define PT_HUGE_PAGES     (1<<7)
-#define PT_NO_EXECUTE     (1<<63)
+#define PT_NO_EXECUTE     (1LL<<63)
 
 #define __pgalign __attribute__((aligned(0x1000)))
+
+typedef uint64_t ptentry_t;
+
+struct vm_context {
+    ptentry_t pml4[512];
+};
+
+struct vm_context vm_kctx __pgalign;
+
+void vm_init() {
+    ptentry_t* pml4 = &vm_kctx.pml4[0];
+    
+    /* Do not map anything initially */
+    for (int i = 0; i < 512; i++)
+        pml4[i] = 0;
+
+    /* Recursive mapping the PML4 */
+    pml4[256] = (ptentry_t)(pml4) |
+                PT_MAPPED |
+                PT_WRITEABLE |
+                PT_NO_EXECUTE;
+}
+
+
+
+
+
+
+
 
 /*
  * Memory Map:
@@ -25,7 +54,7 @@
  * 0xFFFFFFFF00000000 - 0xFFFFFFFF7FFFFFFF: Kernel Allocated Memory
  * 0xFFFFFFFF80000000 - 0xFFFFFFFFFFFFFFFF: Kernel Executable
  */
-
+/*
 #define KERNEL_VBASE (0xFFFFFFFF80000000)
 
 #define PML4_LO_ENT (256)
@@ -33,12 +62,12 @@
 
 #define PDPT_PHYS_ENT (508)
 #define PDPT_KRNL_ENT (4)
-
+*/
 /* Represents a single page table entry */
-typedef uint64_t ptentry_t;
+//typedef uint64_t ptentry_t;
 
 /* Represents a single address space */
-struct pg_context {
+/*struct pg_context {
     ptentry_t pml4[512];
 };
 
@@ -63,3 +92,4 @@ void vm_init() {
 
     //asm("mov %0, %%cr3" : : "r" ((void*)&pg_kctx.pml4 - KERNEL_VBASE));
 }
+*/

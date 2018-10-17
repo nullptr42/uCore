@@ -22,7 +22,8 @@ enum mb2_tag_type {
     MB_TAG_CMDLINE = 1,
     MB_TAG_MODULE  = 3,
     MB_TAG_MEMORY  = 4,
-    MB_TAG_MMAP    = 6
+    MB_TAG_MMAP    = 6,
+    MB_TAG_FRAMEBUFFER = 8
 };
 
 struct mb2_tag {
@@ -66,6 +67,27 @@ struct mb2_mmap_ent {
     uint64_t length;
     uint32_t type;
     uint32_t reserved;
+} __attribute__((packed));
+
+struct mb2_fb_tag {
+    struct mb2_tag tag;
+
+    uint64_t address;
+    uint32_t pitch;
+    uint32_t width;
+    uint32_t height;
+    uint8_t  bpp;
+    uint8_t  type;
+    uint16_t reserved; /* according to documentation this should
+                        * be uint8_t but it only works like this ¯\_(ツ)_/¯ */
+
+    /* TFW assuming we are only using indexed mode. ;) */
+    uint8_t r_shift;
+    uint8_t r_mask_len;
+    uint8_t g_shift;
+    uint8_t g_mask_len;
+    uint8_t b_shift;
+    uint8_t b_mask_len;
 } __attribute__((packed));
 
 bool multiboot2_verify(uint32_t magic);

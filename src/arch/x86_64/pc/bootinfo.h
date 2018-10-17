@@ -43,6 +43,28 @@ struct bootinfo {
     uint64_t memory_lo;
     uint64_t memory_hi;
     struct memory mmap[MAX_MMAP];
+
+    /* Generic framebuffer information */
+    struct framebuffer {
+        bool present;
+        
+        void* address;
+        uint32_t pitch;
+        uint32_t width;
+        uint32_t height;
+        uint8_t  bpp;
+        uint8_t  type; /* hackish */
+
+        /* Color format descriptor */
+        struct format {
+            uint8_t r_shift;
+            uint8_t g_shift;
+            uint8_t b_shift;
+            uint8_t r_mask_len;
+            uint8_t g_mask_len;
+            uint8_t b_mask_len;
+        } format;
+    } fb;
 };
 
 bool bootinfo_from_mb2(struct bootinfo* binf, struct mb2_info* mb2);

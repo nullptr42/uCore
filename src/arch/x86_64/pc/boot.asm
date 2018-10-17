@@ -42,14 +42,24 @@ section .multiboot
         dd (mb_end - mb_start) ; header length
         dd 0x100000000 - (MAGIC + ARCH + (mb_end - mb_start)) ; checksum, prove we are multiboot 2
 
-        ; information request
+        ; Request Module Information
         dw 1  ; type
         dw 0  ; flags
         dd 12 ; size (bytes)
         dd 3  ; request module information
         dd 0  ; padding
 
-        ; end of tags indicating tag.
+        ; Request Framebuffer
+        ; Uncomment to test with framebuffer.
+        ;dw 5  ; type
+        ;dw 0  ; flags
+        ;dd 20 ; size (bytes)
+        ;dd 0  ; width
+        ;dd 0  ; height
+        ;dd 32 ; bit depth
+        ;dd 0  ; padding
+
+        ; End of Tags
         dw 0 ; type
         dw 0 ; flags
         dd 8 ; size

@@ -104,6 +104,32 @@ static bool callback(struct mb2_tag* tag, struct state* state) {
             
             break;
         }
+
+        case MB_TAG_FRAMEBUFFER: {
+            struct mb2_fb_tag* fb = (void*)tag;
+
+            /* We do not support palettes at the moment */
+            if (fb->type == 0)
+                return true;
+
+            /* Decode basic info */
+            binf->fb.present = true;
+            binf->fb.address = (void*)fb->address;
+            binf->fb.pitch = fb->pitch;
+            binf->fb.width = fb->width;
+            binf->fb.height = fb->height;
+            binf->fb.bpp = fb->bpp;
+            binf->fb.type = fb->type;
+
+            /* Decode color encoding */
+            binf->fb.format.r_shift = fb->r_shift;
+            binf->fb.format.g_shift = fb->g_shift;
+            binf->fb.format.b_shift = fb->b_shift;
+            binf->fb.format.r_mask_len = fb->r_mask_len;
+            binf->fb.format.g_mask_len = fb->g_mask_len;
+            binf->fb.format.b_mask_len = fb->b_mask_len;
+            return true;
+        }
     }
 
     return false;
@@ -120,6 +146,7 @@ bool bootinfo_from_mb2(struct bootinfo* binf, struct mb2_info* mb2) {
     binf->num_modules = 0;
     binf->num_mmap = 0;
     binf->cmdline[0] = '\0';
+    binf->fb.present = false;
 
     /* Retrieve memory information */
     multiboot2_find_tags(mb2, MB_TAG_MEMORY, (tag_handler)callback, &state);
@@ -130,6 +157,9 @@ bool bootinfo_from_mb2(struct bootinfo* binf, struct mb2_info* mb2) {
 
     /* Retrieve module information */
     multiboot2_find_tags(mb2, MB_TAG_MODULE, (tag_handler)callback, &state);
+
+    /* Retrieve any framebuffer information */
+    multiboot2_find_tags(mb2, MB_TAG_FRAMEBUFFER, (tag_handler)callback, &state);
 
     /* Check for missing information */
     if (!state.has_memory) {
