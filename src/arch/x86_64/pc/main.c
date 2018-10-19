@@ -58,31 +58,11 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
         return;
     }
 
-#if 0
-    /* Framebuffer debug */
-    info("framebuffer: address=%p", bootinfo.fb.address);
-    info("framebuffer: pitch=%lu", bootinfo.fb.pitch);
-    info("framebuffer: width=%lu", bootinfo.fb.width);
-    info("framebuffer: height=%lu", bootinfo.fb.height);
-    info("framebuffer: bpp=%u", bootinfo.fb.bpp);
-    info("framebuffer: type=%u", bootinfo.fb.type);
-    info("framebuffer: r: shift=%u len=%u", bootinfo.fb.format.r_shift, bootinfo.fb.format.r_mask_len);
-    info("framebuffer: g: shift=%u len=%u", bootinfo.fb.format.g_shift, bootinfo.fb.format.g_mask_len);
-    info("framebuffer: b: shift=%u len=%u", bootinfo.fb.format.b_shift, bootinfo.fb.format.b_mask_len);
-#endif
-
     /* Get important information about the processor. */
     cpuid_read(&cpu);
 
     /* Initialize the Physical Memory Manager */
     pm_init(&bootinfo);
-
-    /* Test physical memory manager */
-    uint32_t pages[6];
-    if (pm_stack_alloc(6, pages) != PMM_OK)
-        error("main: something went wrong...");
-    for (int i = 0; i < 6; i++)
-        kprintf("%d\n", pages[i]);
 
     /* Initialize the Virtual Memory Manager */
     vm_init();
@@ -96,12 +76,6 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
         /* Enable all interrupts */
         pic_set_mask(0);
     }
-
-    trace("main: this is a trace");
-    info("main: this in an information");
-    append("\t-> this is the coolest sub-log you have ever seen :)");
-    warn("main: you have been warned...");
-    error("main: all your base are belong to us!");
 
     asm("sti");
     for(;;) asm("hlt");
