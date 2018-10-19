@@ -16,6 +16,7 @@
 
 #include <log.h>
 #include <lib/lib.h>
+#include <lib/vt100-codes.h>
 #include <version.h>
 #include <arch/x86_64/cpuid.h>
 
@@ -40,7 +41,7 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
 
     print_init();
     kprintf(
-        "\x1B[2;36m%s \x1B[1;37m%d.%d\x1B[0m\n\n",
+        COLOR_CYAN "%s " COLOR_B_WHITE "Kernel %d.%d\n\n" CON_RESET,
         _k_name,
         _k_version_major,
         _k_version_minor

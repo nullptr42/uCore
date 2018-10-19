@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2018-present Frederic Meyer. All rights reserved.
  *
@@ -32,7 +33,7 @@ static void show_size(uint64_t size) {
         size /= 1024;
     }
 
-    info("pm: total %d %s of memory found.", size, unit);    
+    info("pm: Detected %d %s of memory.", size, unit);    
 }
 
 bool pm_init_stack(struct bootinfo* binf, void* minimum) {
@@ -81,7 +82,7 @@ bool pm_init_stack(struct bootinfo* binf, void* minimum) {
 
     if (stack.pages == NULL)
         return false;
-    info("pm: stack allocated @ %p", stack.pages);
+    trace("pm: Stack allocated @ %p", stack.pages);
 
     /* Release free pages into the stack */
     for (int i = 0; i < num_mmap; i++) {

@@ -19,7 +19,8 @@ extern const void kernel_end;
 void pm_init(struct bootinfo* binf) {
     uintptr_t minimum = (uintptr_t)&kernel_end - KERNEL_VBASE + 1;
     
-    trace("pm: initializing physical memory manager...");
+    trace("pm: Initializing Physical Memory Manager.");
+    trace("pm: Scanning Memory Map");
 
     /* Determine lowest safe memory address */    
     for (int i = 0; i < binf->num_modules; i++) {
@@ -33,11 +34,11 @@ void pm_init(struct bootinfo* binf) {
     if ((minimum % 4096) != 0)
         minimum += 4096 - (minimum % 4096); 
 
-    trace("pm: minimum address is %p", (void*)minimum);
+    append("\t-> Lowest usable address is: %p", (void*)minimum);
 
     /* Initialize the page stack, the primary source for pages */
     if (!pm_init_stack(binf, (void*)minimum)) {
-        error("pm: unable to allocate page stack.");
+        error("pm: Unable to allocate physical page stack!");
         /* TODO: panic... */
         return;
     }
