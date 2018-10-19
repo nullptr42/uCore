@@ -41,7 +41,10 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
 
     print_init();
     kprintf(
+        "Copyright (C) %d %s.\n"
         COLOR_CYAN "%s " COLOR_B_WHITE "Kernel %d.%d\n\n" CON_RESET,
+        _k_copyright_year,
+        _k_copyright_holder,
         _k_name,
         _k_version_major,
         _k_version_minor

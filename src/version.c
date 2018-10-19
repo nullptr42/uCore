@@ -5,6 +5,9 @@
  * found in the LICENSE file.
  */
 
+const int   _k_copyright_year = 2018;
+const char* _k_copyright_holder = "Frederic Meyer";
+
 const char* _k_name = "microsphere";
 const int   _k_version_major = 0;
 const int   _k_version_minor = 1;
