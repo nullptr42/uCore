@@ -9,22 +9,8 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <lib/lib.h>
+#include <lib/vt100.h>
 #include <arch/x86_64/io-port.h>
-
-static const int terminal_width  = 80;
-static const int terminal_height = 25;
-
-static const int qwords_per_line = 20;
-static const int qwords_per_page = 500;
-
-static const uint64_t qword_empty = 0x0720072007200720;
-
-static const int tab_width = 4;
-
-static int terminal_x;
-static int terminal_y;
-
-static uint16_t* buffer = (uint16_t*)0xFFFFFFFF800B8000;
 
 /* VGA hardware ports */
 enum vga_ports {
@@ -38,34 +24,93 @@ enum vga_registers {
     VGA_REG_CURSOR_LO = 15
 };
 
+/**
+ * @brief VGA-compatible text mode colors.
+ */
+enum console_color {
+    CONSOLE_BLACK    = 0,
+    CONSOLE_BLUE     = 1,
+    CONSOLE_GREEN    = 2,
+    CONSOLE_CYAN     = 3,
+    CONSOLE_RED      = 4,
+    CONSOLE_MAGENTA  = 5,
+    CONSOLE_BROWN    = 6,
+    CONSOLE_LGRAY    = 7,
+    CONSOLE_DGRAY    = 8,
+    CONSOLE_LBLUE    = 9,
+    CONSOLE_LGREEN   = 10,
+    CONSOLE_LCYAN    = 11,
+    CONSOLE_LRED     = 12,
+    CONSOLE_LMAGENTA = 13,
+    CONSOLE_YELLOW   = 14,
+    CONSOLE_WHITE    = 15,
+};
+
+static const int terminal_width  = 80;
+static const int terminal_height = 25;
+static const int qwords_per_line = 20;
+static const int qwords_per_page = 500;
+
+static const uint64_t qword_color_mul = 0x0100010001000100;
+static const uint64_t qword_spaces = 0x0020002000200020;
+
+static inline bool is_invalid_coordinate(int x, int y) {
+    return x < 0 || x >= terminal_width ||
+           y < 0 || y >= terminal_height;
+}
+
+static inline uint16_t get_address(int x, int y) {
+    return y * terminal_width + x;
+}
+
+/* Color Byte
+ * MSN: Background Color
+ * LSN: Foreground Color
+ */ 
+static uint8_t vga_color = 0x07;
+
+/* Map VT100 color to i386 VGA textmode color. */
+static const uint8_t color_map[16] = {
+    CONSOLE_BLACK, CONSOLE_RED     , CONSOLE_GREEN , CONSOLE_BROWN,
+    CONSOLE_BLUE , CONSOLE_MAGENTA , CONSOLE_CYAN  , CONSOLE_LGRAY,
+    CONSOLE_DGRAY, CONSOLE_LRED    , CONSOLE_LGREEN, CONSOLE_YELLOW,
+    CONSOLE_LBLUE, CONSOLE_LMAGENTA, CONSOLE_LCYAN , CONSOLE_WHITE
+};
+
+/* VGA buffer */
+static uint16_t* buffer = (uint16_t*)0xFFFFFFFF800B8000;
+
 /* Debug */
 void serial_init();
 void serial_debug(const char* string);
 
-static inline uint16_t get_address() {
-    return terminal_y * terminal_width + terminal_x; 
-}
+static void set_cursor(int x, int y) {
+    if (is_invalid_coordinate(x, y))
+        return;
 
-static void update_cursor() {    
-    uint16_t address = get_address();
+    uint16_t address = get_address(x, y);
 
     /* high byte */
     outb(VGA_PORT_REG, VGA_REG_CURSOR_HI);
     outb(VGA_PORT_DATA, address >> 8);
-
+        
     /* low byte */
     outb(VGA_PORT_REG, VGA_REG_CURSOR_LO);
-    outb(VGA_PORT_DATA, address & 0xFF);    
+    outb(VGA_PORT_DATA, address & 0xFF);
 }
 
-void print_init() {
-    uint64_t* _buffer = (void*)buffer;
+static void set_char(char c, int x, int y) {
+    if (is_invalid_coordinate(x, y))
+        return;
+    buffer[get_address(x, y)] = ((uint16_t)vga_color<<8)|c;
+}
 
-    terminal_x = 0;
-    terminal_y = 0;
-    for (int i = 0; i < qwords_per_page; i++)
-        _buffer[i] = qword_empty;
-    serial_init();
+static void set_fg_color(enum vt100_color color) {
+    vga_color = (vga_color&0xF0)|color_map[color];
+}
+
+static void set_bg_color(enum vt100_color color) {
+    vga_color = (vga_color&0x0F)|(color_map[color]<<4);
 }
 
 static void scroll() {
@@ -74,58 +119,59 @@ static void scroll() {
     uint64_t* dst = (void*)buffer;
     uint64_t* src = (void*)(buffer + terminal_width);
 
-    for (int i = 0; i < count; i++) {
+    /* Move everything one line up */
+    for (int i = 0; i < count; i++)
         dst[i] = src[i];
-    }
-    
+
+    /* Clear last line */
     dst += count;
-    for (int i = 0; i < qwords_per_line; i++) {
-        dst[i] = qword_empty;
-    }
+    for (int i = 0; i < qwords_per_line; i++)
+        dst[i] = (vga_color*qword_color_mul)|qword_spaces;
 }
 
-static inline void newline() {
-    terminal_x = 0;
-    terminal_y++;   
+/* VT100 glue */
+struct vt100_term term;
+struct vt100_driver driver = {
+    .set_cursor   = set_cursor,
+    .set_char     = set_char,
+    .set_fg_color = set_fg_color,
+    .set_bg_color = set_bg_color,
+    .scroll       = scroll
+};
+
+void print_init() {
+    uint64_t* _buffer = (void*)buffer;
+
+    /* Clear screen */
+    for (int i = 0; i < qwords_per_page; i++)
+        _buffer[i] = (vga_color*qword_color_mul)|qword_spaces;
+
+    /* Setup serial debug driver */
+    serial_init();
+
+    /* Setup VT100 driver */
+    driver.width  = terminal_width;
+    driver.height = terminal_height;
+
+    /* Setup VT100 terminal */
+    vt100_init(&term, &driver);
 }
 
-static inline void print_char(char c) {
-    if (terminal_y == terminal_height) {
-        terminal_y--;
-        scroll();
-    }
-    
-    switch (c) {
-        case '\n':
-            newline();
-            break;
-        case '\t':
-            terminal_x += tab_width - (terminal_x % tab_width);
-            if (terminal_x >= terminal_width) {
-                newline();
-            }
-            break;
-        default:
-            buffer[get_address()] = 0x0700 | c;
-            if (++terminal_x == terminal_width) {
-                newline();
-            }
-            break;
-    }
-}
+
+/* TODO: place these functions somewhere else */
 
 void kputc(char c) {
-    print_char(c);
-    update_cursor();
+    vt100_write(&term, c);
+    vt100_update_cursor(&term);
 }
 
 void kprint(const char* str) {
     char c;
     serial_debug(str);
     while ((c = *str++)) {
-        print_char(c);
+        vt100_write(&term, c);
     }
-    update_cursor();
+    vt100_update_cursor(&term);
 }
 
 int kprintf(const char* format, ...) {
