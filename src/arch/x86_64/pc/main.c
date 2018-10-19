@@ -40,7 +40,7 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
 
     print_init();
     kprintf(
-        "%s Microkernel %d.%d\nCopyright (C) 2018-present Frederic Raphael Meyer\n\n",
+        "\x1B[2;36m%s \x1B[1;37m%d.%d\x1B[0m\n\n",
         _k_name,
         _k_version_major,
         _k_version_minor
@@ -96,6 +96,12 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
         /* Enable all interrupts */
         pic_set_mask(0);
     }
+
+    trace("main: this is a trace");
+    info("main: this in an information");
+    append("\t-> this is the coolest sub-log you have ever seen :)");
+    warn("main: you have been warned...");
+    error("main: all your base are belong to us!");
 
     asm("sti");
     for(;;) asm("hlt");

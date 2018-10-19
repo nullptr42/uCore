@@ -22,5 +22,6 @@ void trace(const char* format, ...);
 void info(const char* format, ...);
 void warn(const char* format, ...);
 void error(const char* format, ...);
+void append(const char* format, ...);
 
 #endif //_LOG_H_
