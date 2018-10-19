@@ -26,9 +26,38 @@ ptentry_t pml4[512] __pgalign;
 
 extern void vm_level2_b;
 
+static inline void* build_address(int pml4, int pdpt, int pd, int pt) {
+    return (void*)(
+        ((uint64_t)pml4 << 39) |
+        ((uint64_t)pdpt << 30) |
+        ((uint64_t)pd   << 21) |
+        ((uint64_t)pt   << 12) |
+        0xFFFF000000000000ULL
+    );
+}
+
+static inline void* pml4_address() {
+    return build_address(256, 256, 256, 256);
+}
+
+static inline void* pdpt_address(int pdpt) {
+    return build_address(256, 256, 256, pdpt);
+}
+
+static inline void* pd_address(int pdpt, int pd) {
+    return build_address(256, 256, pdpt, pd);
+}
+
+static inline void* pt_address(int pdpt, int pd, int pt) {
+    return build_address(256, pdpt, pd, pt);
+}
+
+void panic();
+
 void vm_init() {
     void* _pdpt_b = (void*)&vm_level2_b - KERNEL_VBASE;
     void* _pml4 = (void*)&pml4[0] - KERNEL_VBASE;
+    uint64_t* pml4r = pml4_address(); /* recursive mapped PML4 table */ 
     
     trace("vm: Initializing Virtual Memory Mananger.");
     append("\t-> Setup initial PML4.");
@@ -45,11 +74,17 @@ void vm_init() {
     append("\t-> Enable new paging context (set cr0)...");
     asm("mov %0, %%cr3\n" : : "r" (_pml4));
 
+    /* Recursive map self-test */
+    for (int i = 0; i < 512; i++) {
+        if (pml4r[i] != pml4[i]) {
+            error("vm: Recursive map self-test failed PML4-index=%d", i);
+            panic();
+        }
+    }
+    append("\t-> Recursive map self-test completed.");
+
     /* Throw a party if everything worked out! */
     trace("vm: Survived!");
-
-    //uint64_t* test = (void*)((256LL << 39) | (256LL << 30) | (256LL << 21) | (256LL << 12) | 0xFFFF000000000000ULL);
-    //trace("vm: test recursive mapping 0x%08X equals 0x%08X?", pml4[511], test[511]);
     kprint("\n");
 }
 
