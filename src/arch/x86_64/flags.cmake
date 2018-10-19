@@ -8,7 +8,7 @@ SET(CMAKE_C_COMPILER   x86_64-elf-gcc)
 SET(CMAKE_CXX_COMPILER x86_64-elf-g++)
 
 # Assembler
-SET(UCORE_ASM_LANG "ASM_NASM")
+SET(MSPHERE_ASM_LANG "ASM_NASM")
 SET(CMAKE_ASM_NASM_OBJECT_FORMAT "elf64")
 
 SET(COMPILE_FLAGS "-mno-red-zone -mcmodel=kernel -mno-sse")

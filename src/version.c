@@ -5,6 +5,6 @@
  * found in the LICENSE file.
  */
 
-const char* _k_name = "uCore";
+const char* _k_name = "microsphere";
 const int   _k_version_major = 0;
 const int   _k_version_minor = 1;
