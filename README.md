@@ -1,3 +1,3 @@
-# uCore
+# microsphere
 
-µCore Microkernel
+microsphere Kernel 0.1
