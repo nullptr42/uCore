@@ -20,6 +20,8 @@
 #include <version.h>
 #include <arch/x86_64/cpuid.h>
 
+#include <libslab/slab.h>
+
 void fpu_init();
 void idt_init();
 void vm_init();
@@ -29,6 +31,14 @@ static struct amd64_cpu cpu;
 
 /* information passed by the bootloader */
 static struct bootinfo bootinfo;
+
+struct myobj {
+    uint64_t r[16];
+    uint64_t pc;
+};
+
+void* objs[10000];
+struct slab_cache myobj_cache;
 
 void kernel_main(uint32_t magic, struct mb2_info* mb) {
     /* Enable FPU and SSE */
@@ -79,6 +89,21 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
     } else {
         /* Enable all interrupts */
         pic_set_mask(0);
+    }
+
+    libslab_init(&myobj_cache, sizeof(struct myobj));
+
+    for (int i = 0; i < 3; i++) {
+        objs[i] = libslab_alloc(&myobj_cache);
+        info("libslab: allocated object @ 0x%08x (%d)", objs[i], i);
+    }
+    for (int i = 0; i < 2; i++) {
+        libslab_free(&myobj_cache, objs[i]);
+        info("libslab: freed object @ 0x%08x (%d)", objs[i], i);
+    }
+    for (int i = 0; i < 1; i++) {
+        objs[i] = libslab_alloc(&myobj_cache);
+        info("libslab: allocated object @ 0x%08x (%d)", objs[i], i);
     }
 
     asm("sti");
