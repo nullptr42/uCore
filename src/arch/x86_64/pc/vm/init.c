@@ -41,6 +41,8 @@ void vm_init() {
     uint64_t* pml4_old = (void*)&vm_level1;
     uint64_t* pml4_new = &vm_kctx.pml4[0];
 
+    struct pm_stack* stack = pm_get_stack();
+
     trace("vm: Initializing Virtual Memory Mananger.");
 
     uint64_t pml4_phys = (ptentry_t)&pml4_new[0] - KERNEL_VBASE;
@@ -69,12 +71,11 @@ void vm_init() {
     /* Initialize the virtual page frame allocator */
     vm_alloc_init();
 
-    /* Mapping the physical page stack */
-    struct pm_stack* stack = pm_get_stack();
-    int stack_size = stack->len * sizeof(uint32_t);
+    int   stack_size = stack->len * sizeof(uint32_t);
     void* stack_phys = stack->pages;
     void* stack_virt = vm_alloc(stack_size / 4096);
 
+    /* Mapping physical page stack */
     append("\t-> Mapping physical page stack @ %p...", stack_virt);
     vm_map_block(stack_virt, stack_phys, stack_size);
 
