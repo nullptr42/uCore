@@ -97,18 +97,12 @@ static int vm_alloc_large(int count) {
 
             /* Mark pages as allocated. */
             if (remain < 0) {
-                info("remain %d", remain);
-                for (int i = entry; i < entry2 - 1; i++) {
+                for (int i = entry; i < entry2 - 1; i++)
                     bitmap[i] = 0;
-                    info("allocing entry %d", i);
-                }
-                info("partially allocating entry %d", entry2-1);
                 bitmap[entry2-1] &= (qword_free << (remain * -1));
             } else {
-                info("no-remain");
-                for (int i = entry; i < entry2; i++) {
+                for (int i = entry; i < entry2; i++)
                     bitmap[i] = 0;
-                }
             }
 
             hint = entry2;
@@ -165,8 +159,6 @@ void vm_free(void* virtual, int count) {
     virtual -= ALLOC_BASE;
 
     int page = (int)((uint64_t)virtual / 4096);
-
-    info("vm_free: page=%d", page);
 
     /* TODO: this is kind of cheap. Optimize later. */
     for (int i = page; i < (page + count); i++) {

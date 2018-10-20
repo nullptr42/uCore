@@ -68,14 +68,6 @@ void vm_init() {
     /* Initialize the virtual page frame allocator */
     vm_alloc_init();
 
-    void* test1 = vm_alloc(100);
-    vm_free(test1, 100);
-    void* test2 = vm_alloc(130);
-    vm_free(test2, 130);
-
-    kprintf("vm_init: alloc returned %p (test1)\n", test1);
-    kprintf("vm_init: alloc returned %p (test2)\n", test2);
-
     /* Enable the new context */
     append("\t-> Enable new paging context (set cr3)...");
     asm("mov %0, %%cr3\n" : : "r" (pml4_phys));
