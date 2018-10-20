@@ -10,11 +10,11 @@
 #include "vm.h"
 
 /*
- * Memory Map (outdated, update me):
+ * Memory Map:
  * 0x0000000000000000 - 0xFFFF7FFFFFFFFFFF: Reserved for user processes.
- * 0xFFFF800000000000 - 0xFFFFFFFEFFFFFFFF: Physical Memory
- * 0xFFFFFFFF00000000 - 0xFFFFFFFF7FFFFFFF: Kernel Allocated Memory
- * 0xFFFFFFFF80000000 - 0xFFFFFFFFFFFFFFFF: Kernel Executable
+ * 0xFFFF800000000000 - 0xFFFFFFFEFFFFFFFF: Unmapped (maybe map Physical Memory?)
+ * 0xFFFFFFFF00000000 - 0xFFFFFFFF7FFFFFFF: Kernel Allocated Memory (2 GiB)
+ * 0xFFFFFFFF80000000 - 0xFFFFFFFFFFFFFFFF: Kernel Executable (2 GiB)
  */
 
 /* Virtual address of active PML4 table (via recursive mapping) */
@@ -68,6 +68,9 @@ void vm_init() {
     /* Enable the new context */
     append("\t-> Enable new paging context (set cr3)...");
     asm("mov %0, %%cr3\n" : : "r" (pml4_phys));
+
+    /* Initialize the virtual page frame allocator */
+    vm_alloc_init();
 
     /* Throw a party if everything worked out! */
     trace("vm: Survived!");
