@@ -11,6 +11,13 @@
 #include "status.h"
 #include <arch/x86_64/pc/bootinfo.h>
 
+struct pm_stack {
+    uint32_t* pages;
+    int pos;
+    int len;
+};
+
+struct pm_stack* pm_get_stack();
 bool pm_init_stack(struct bootinfo* binf, void* minimum);
 
 enum pmm_status pm_stack_alloc(int num, uint32_t* pages);

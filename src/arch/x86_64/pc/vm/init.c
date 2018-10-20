@@ -8,6 +8,7 @@
 #include <log.h>
 #include <arch/print.h>
 #include "vm.h"
+#include "../pm/stack.h"
 
 /*
  * Memory Map:
@@ -68,9 +69,21 @@ void vm_init() {
     /* Initialize the virtual page frame allocator */
     vm_alloc_init();
 
+    /* Mapping the physical page stack */
+    struct pm_stack* stack = pm_get_stack();
+    int stack_size = stack->len * sizeof(uint32_t);
+    void* stack_phys = stack->pages;
+    void* stack_virt = vm_alloc(stack_size / 4096);
+
+    append("\t-> Mapping physical page stack @ %p...", stack_virt);
+    vm_map_block(stack_virt, stack_phys, stack_size);
+
     /* Enable the new context */
     append("\t-> Enable new paging context (set cr3)...");
     asm("mov %0, %%cr3\n" : : "r" (pml4_phys));
+
+    /* Point physical page stack to its virtual address. */
+    stack->pages = stack_virt;
 
     /* Throw a party if everything worked out! */
     trace("vm: Survived!");

@@ -13,11 +13,7 @@
 #include "stack.h"
 
 /* Stack that stores free pages */
-static struct stack {
-    uint32_t* pages;
-    int pos;
-    int len;
-} stack;
+static struct pm_stack stack;
 
 static void show_size(uint64_t size) {
     char* unit = "B";
@@ -34,6 +30,10 @@ static void show_size(uint64_t size) {
     }
 
     info("pm: Detected %d %s of memory.", size, unit);    
+}
+
+struct pm_stack* pm_get_stack() {
+    return &stack;
 }
 
 bool pm_init_stack(struct bootinfo* binf, void* minimum) {
