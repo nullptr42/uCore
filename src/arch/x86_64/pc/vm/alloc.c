@@ -86,6 +86,8 @@ static int vm_alloc_large(int count) {
                     status = -1;
                     break;
                 }
+                remain -= PAGES_PER_ENTRY;
+                entry2++;;
             }
 
             /* TODO: use evil gotos instead. */
@@ -95,11 +97,15 @@ static int vm_alloc_large(int count) {
 
             /* Mark pages as allocated. */
             if (remain < 0) {
+                info("remain %d", remain);
                 for (int i = entry; i < entry2 - 1; i++) {
                     bitmap[i] = 0;
+                    info("allocing entry %d", i);
                 }
-                bitmap[entry2] &= (qword_free << (remain * -1));
+                info("partially allocating entry %d", entry2-1);
+                bitmap[entry2-1] &= (qword_free << (remain * -1));
             } else {
+                info("no-remain");
                 for (int i = entry; i < entry2; i++) {
                     bitmap[i] = 0;
                 }
@@ -120,7 +126,7 @@ void* vm_alloc(int count) {
         return NULL;
 
     int start;
-
+    hint = 0;
 retry:
     /* Depening on the number of pages requested
      * we can either use a slow or fast algorithm.
@@ -160,10 +166,12 @@ void vm_free(void* virtual, int count) {
 
     int page = (int)((uint64_t)virtual / 4096);
 
+    info("vm_free: page=%d", page);
+
     /* TODO: this is kind of cheap. Optimize later. */
     for (int i = page; i < (page + count); i++) {
-        int entry = i / 8;
-        int index = i % 8;
+        int entry = i / PAGES_PER_ENTRY;
+        int index = i % PAGES_PER_ENTRY;
 
         bitmap[entry] &= ~(1 << index);
     }
