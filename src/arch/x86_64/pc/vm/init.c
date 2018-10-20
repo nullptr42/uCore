@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "../pm/stack.h"
+#include <arch/print.h>
 
 #define PT_MAPPED         (1<<0)
 #define PT_WRITEABLE      (1<<1)
@@ -29,6 +30,17 @@ struct vm_context {
     ptentry_t pml4[512];
 };
 
+/* Virtual address of active PML4 table (via recursive mapping) */
+static ptentry_t* pml4_active;
+
+struct vm_context vm_kctx __pgalign;
+
+extern const void kernel_start;
+extern const void kernel_end;
+extern const void vm_level1;
+
+void panic();
+
 static inline void* build_address(int pml4, int pdpt, int pd, int pt) {
     return (void*)(
         ((uint64_t)pml4 << 39) |
@@ -39,30 +51,34 @@ static inline void* build_address(int pml4, int pdpt, int pd, int pt) {
     );
 }
 
-static inline void* pml4_address() {
-    return build_address(256, 256, 256, 256);
+static inline void* get_child_address(ptentry_t* parent, int index) {
+    return (void*)(((uint64_t)parent << 9) |
+                   (index << 12) | 
+                   0xFFFF000000000000ULL
+                  );
 }
 
-static inline void* pdpt_address(int pdpt) {
-    return build_address(256, 256, 256, pdpt);
+static ptentry_t* get_or_create_table(ptentry_t* parent, int index) {
+    ptentry_t* child = get_child_address(parent, index);
+    
+    /* Create table if it doesn't exist yet.*/
+    if (~parent[index] & PT_MAPPED) {
+        uint32_t new_page;
+        
+        /* Allocate a physical page to store the new table. */
+        if (pm_stack_alloc(1, &new_page) != PMM_OK) {
+            error("vm: unable to allocate a physical page.");
+            panic();
+        }
+
+        /* Map table in parent table and clear its contents. */        
+        parent[index] = PT_MAPPED | PT_WRITEABLE | ((ptentry_t)new_page * 4096);
+        for (int i = 0; i < 512; i++)
+            child[i] = 0;
+    }
+
+    return child;
 }
-
-static inline void* pd_address(int pdpt, int pd) {
-    return build_address(256, 256, pdpt, pd);
-}
-
-static inline void* pt_address(int pdpt, int pd, int pt) {
-    return build_address(256, pdpt, pd, pt);
-}
-
-void panic();
-
-struct vm_context vm_kctx __pgalign;
-
-extern const void kernel_start;
-extern const void kernel_end;
-
-extern const void vm_level1;
 
 void vm_map_page(void* virtual, uint32_t page) {
     int lvl4_idx = ((uint64_t)virtual >> 12) & 0x1FF;
@@ -70,51 +86,11 @@ void vm_map_page(void* virtual, uint32_t page) {
     int lvl2_idx = ((uint64_t)virtual >> 30) & 0x1FF;
     int lvl1_idx = ((uint64_t)virtual >> 39) & 0x1FF;
 
-    uint32_t new_page;
-    ptentry_t* pml4 = pml4_address();
-    ptentry_t* pdpt = NULL;
-    ptentry_t* pd = NULL;
-    ptentry_t* pt = NULL;
+    ptentry_t* pml4 = pml4_active;
+    ptentry_t* pdpt = get_or_create_table(pml4, lvl1_idx);
+    ptentry_t* pd = get_or_create_table(pdpt, lvl2_idx);
+    ptentry_t* pt = get_or_create_table(pd, lvl3_idx);
     
-    if (pml4[lvl1_idx] & PT_MAPPED) {
-        pdpt = pdpt_address(lvl1_idx);
-    } else {
-        if (pm_stack_alloc(1, &new_page) != PMM_OK) {
-            error("something went wrong (1)");
-            panic();
-        }
-        pml4[lvl1_idx] = PT_MAPPED | PT_WRITEABLE | ((ptentry_t)new_page * 4096);
-        pdpt = pdpt_address(lvl1_idx);
-        for (int i = 0; i < 512; i++)
-            pdpt[i] = 0;
-    }
-
-    if (pdpt[lvl2_idx] & PT_MAPPED) {
-        pd = pd_address(lvl1_idx, lvl2_idx);
-    } else {
-        if (pm_stack_alloc(1, &new_page) != PMM_OK) {
-            error("something went wrong (2)");
-            panic();
-        }
-        pdpt[lvl2_idx] = PT_MAPPED | PT_WRITEABLE | ((ptentry_t)new_page * 4096);
-        pd = pd_address(lvl1_idx, lvl2_idx);
-        for (int i = 0; i < 512; i++)
-            pd[i] = 0;
-    }
-
-    if (pd[lvl3_idx] & PT_MAPPED) {
-        pt = pt_address(lvl1_idx, lvl2_idx, lvl3_idx);
-    } else {
-        if (pm_stack_alloc(1, &new_page) != PMM_OK) {
-            error("something went wrong (3)");
-            panic();
-        }
-        pd[lvl3_idx] = PT_MAPPED | PT_WRITEABLE | ((ptentry_t)new_page * 4096);
-        pt = pt_address(lvl1_idx, lvl2_idx, lvl3_idx);
-        for (int i = 0; i < 512; i++)
-            pt[i] = 0;
-    }
-
     pt[lvl4_idx] = PT_MAPPED | PT_WRITEABLE | ((ptentry_t)page * 4096);
 }
 
@@ -125,6 +101,8 @@ void vm_init() {
     trace("vm: Initializing Virtual Memory Mananger.");
 
     uint64_t pml4_phys = (ptentry_t)&pml4_new[0] - KERNEL_VBASE;
+
+    pml4_active = build_address(256, 256, 256, 256);
 
     /* Setup recursive mapping to new PML4 in old and new PML4. 
      * This way we can use standard mapping functions to map the kernel 
@@ -158,10 +136,6 @@ void vm_init() {
     trace("vm: Survived!");
     kprint("\n");
 }
-
-
-
-
 
 /*
  * Memory Map:
