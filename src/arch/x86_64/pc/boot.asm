@@ -52,15 +52,16 @@ section .multiboot
         dd 3  ; request module information
         dd 0  ; padding
 
+%ifdef BOOT_GX
         ; Request Framebuffer
-        ; Uncomment to test with framebuffer.
-        ;dw 5  ; type
-        ;dw 0  ; flags
-        ;dd 20 ; size (bytes)
-        ;dd 0  ; width
-        ;dd 0  ; height
-        ;dd 32 ; bit depth
-        ;dd 0  ; padding
+        dw 5  ; type
+        dw 0  ; flags
+        dd 20 ; size (bytes)
+        dd 0  ; width
+        dd 0  ; height
+        dd 32 ; bit depth
+        dd 0  ; padding
+%endif
 
         ; End of Tags
         dw 0 ; type
