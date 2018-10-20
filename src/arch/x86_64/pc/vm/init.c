@@ -65,12 +65,12 @@ void vm_init() {
         (uint64_t)&kernel_end - (uint64_t)&kernel_start + 1
     );   
 
+    /* Initialize the virtual page frame allocator */
+    vm_alloc_init();
+
     /* Enable the new context */
     append("\t-> Enable new paging context (set cr3)...");
     asm("mov %0, %%cr3\n" : : "r" (pml4_phys));
-
-    /* Initialize the virtual page frame allocator */
-    vm_alloc_init();
 
     /* Throw a party if everything worked out! */
     trace("vm: Survived!");

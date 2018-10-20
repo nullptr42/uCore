@@ -37,6 +37,9 @@ void vm_map_page(void* virtual, uint32_t page);
 void vm_map_pages(void* virtual, uint32_t* pages, int num);
 void vm_map_block(void* virtual, void* physical, uint64_t size);
 
+void* vm_alloc(int count);
+void  vm_free(void* virtual, int count);
+
 extern ptentry_t* pml4_active;
 
 #endif //_X86_64_PC_VM_H_
