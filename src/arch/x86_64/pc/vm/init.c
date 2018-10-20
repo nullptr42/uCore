@@ -80,6 +80,8 @@ static ptentry_t* get_or_create_table(ptentry_t* parent, int index) {
     return child;
 }
 
+/* TODO: check for unaligned input addresses */
+
 void vm_map_page(void* virtual, uint32_t page) {
     int lvl4_idx = ((uint64_t)virtual >> 12) & 0x1FF;
     int lvl3_idx = ((uint64_t)virtual >> 21) & 0x1FF;
@@ -92,6 +94,27 @@ void vm_map_page(void* virtual, uint32_t page) {
     ptentry_t* pt = get_or_create_table(pd, lvl3_idx);
     
     pt[lvl4_idx] = PT_MAPPED | PT_WRITEABLE | ((ptentry_t)page * 4096);
+}
+
+void vm_map_pages(void* virtual, uint32_t* pages, int num) {
+    /* TODO: optimize me */
+    for (int i = 0; i < num; i++) {
+        vm_map_page(virtual, pages[i]);
+        virtual += 4096;
+    }
+}
+
+void vm_map_block(void* virtual, void* physical, uint64_t size) {
+    /* TODO: optimize me */
+    int num = size / 4096;
+    uint32_t start = (uint32_t)((uint64_t)physical / 4096);
+    
+    if ((size % 4096) != 0) num++;
+
+    for (int i = 0; i < num; i++) {
+        vm_map_page(virtual, start + i);
+        virtual += 4096;
+    }    
 }
 
 void vm_init() {
@@ -111,22 +134,17 @@ void vm_init() {
     pml4_old[256] = pml4_new[256] 
                   = PT_MAPPED | PT_WRITEABLE | pml4_phys;
 
-    /* Kernel start and end addresses */
-    void* addr = (void*)&kernel_start;
-    void* end  = (void*)&kernel_end;
-
     /* Map VGA buffer */
     append("\t-> Mapping VGA buffer...");
     vm_map_page((void*)0xFFFFFFFF800B8000, 0xB8000 / 4096);
 
     /* Map kernel */
     append("\t-> Mapping kernel executable...");
-    while (addr <= end) {
-        uint32_t page = (uint32_t)(((uint64_t)addr - KERNEL_VBASE)/4096);
-
-        vm_map_page(addr, page);
-        addr += 4096;
-    }    
+    vm_map_block(
+        (void*)&kernel_start,
+        (void*)&kernel_start - KERNEL_VBASE, 
+        (uint64_t)&kernel_end - (uint64_t)&kernel_start + 1
+    );   
 
     /* Enable the new context */
     append("\t-> Enable new paging context (set cr3)...");
