@@ -173,7 +173,7 @@ void vm_free(void* virtual, int count) {
         int entry = i / PAGES_PER_ENTRY;
         int index = i % PAGES_PER_ENTRY;
 
-        bitmap[entry] &= ~(1 << index);
+        bitmap[entry] |= ~(1 << index);
     }
 
     hint = page / PAGES_PER_ENTRY;
