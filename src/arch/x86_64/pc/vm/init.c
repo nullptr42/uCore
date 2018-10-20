@@ -5,8 +5,10 @@
  * found in the LICENSE file.
  */
 
-#include <stdint.h>
 #include <log.h>
+#include <stdint.h>
+#include <stddef.h>
+#include "../pm/stack.h"
 
 #define PT_MAPPED         (1<<0)
 #define PT_WRITEABLE      (1<<1)
@@ -22,9 +24,10 @@
 #define KERNEL_VBASE (0xFFFFFFFF80000000)
 
 typedef uint64_t ptentry_t;
-ptentry_t pml4[512] __pgalign;
 
-extern void vm_level2_b;
+struct vm_context {
+    ptentry_t pml4[512];
+};
 
 static inline void* build_address(int pml4, int pdpt, int pd, int pt) {
     return (void*)(
@@ -54,34 +57,102 @@ static inline void* pt_address(int pdpt, int pd, int pt) {
 
 void panic();
 
-void vm_init() {
-    void* _pdpt_b = (void*)&vm_level2_b - KERNEL_VBASE;
-    void* _pml4 = (void*)&pml4[0] - KERNEL_VBASE;
-    uint64_t* pml4r = pml4_address(); /* recursive mapped PML4 table */ 
+struct vm_context vm_kctx __pgalign;
+
+extern const void kernel_start;
+extern const void kernel_end;
+
+extern const void vm_level1;
+
+void vm_map_page(void* virtual, uint32_t page) {
+    int lvl4_idx = ((uint64_t)virtual >> 12) & 0x1FF;
+    int lvl3_idx = ((uint64_t)virtual >> 21) & 0x1FF;
+    int lvl2_idx = ((uint64_t)virtual >> 30) & 0x1FF;
+    int lvl1_idx = ((uint64_t)virtual >> 39) & 0x1FF;
+
+    uint32_t new_page;
+    ptentry_t* pml4 = pml4_address();
+    ptentry_t* pdpt = NULL;
+    ptentry_t* pd = NULL;
+    ptentry_t* pt = NULL;
     
-    trace("vm: Initializing Virtual Memory Mananger.");
-    append("\t-> Setup initial PML4.");
-    
-    /* Clear all entries */
-    for (int i = 0; i < 512; i++)
-        pml4[i] = 0;
-    pml4[511] = PT_MAPPED | PT_WRITEABLE | (ptentry_t)_pdpt_b;
-
-    append("\t-> Setup recursive mapping...");
-    pml4[256] = PT_MAPPED | PT_WRITEABLE | (ptentry_t)_pml4;
-
-    /* Enable the new context */
-    append("\t-> Enable new paging context (set cr0)...");
-    asm("mov %0, %%cr3\n" : : "r" (_pml4));
-
-    /* Recursive map self-test */
-    for (int i = 0; i < 512; i++) {
-        if (pml4r[i] != pml4[i]) {
-            error("vm: Recursive map self-test failed PML4-index=%d", i);
+    if (pml4[lvl1_idx] & PT_MAPPED) {
+        pdpt = pdpt_address(lvl1_idx);
+    } else {
+        if (pm_stack_alloc(1, &new_page) != PMM_OK) {
+            error("something went wrong (1)");
             panic();
         }
+        pml4[lvl1_idx] = PT_MAPPED | PT_WRITEABLE | ((ptentry_t)new_page * 4096);
+        pdpt = pdpt_address(lvl1_idx);
+        for (int i = 0; i < 512; i++)
+            pdpt[i] = 0;
     }
-    append("\t-> Recursive map self-test completed.");
+
+    if (pdpt[lvl2_idx] & PT_MAPPED) {
+        pd = pd_address(lvl1_idx, lvl2_idx);
+    } else {
+        if (pm_stack_alloc(1, &new_page) != PMM_OK) {
+            error("something went wrong (2)");
+            panic();
+        }
+        pdpt[lvl2_idx] = PT_MAPPED | PT_WRITEABLE | ((ptentry_t)new_page * 4096);
+        pd = pd_address(lvl1_idx, lvl2_idx);
+        for (int i = 0; i < 512; i++)
+            pd[i] = 0;
+    }
+
+    if (pd[lvl3_idx] & PT_MAPPED) {
+        pt = pt_address(lvl1_idx, lvl2_idx, lvl3_idx);
+    } else {
+        if (pm_stack_alloc(1, &new_page) != PMM_OK) {
+            error("something went wrong (3)");
+            panic();
+        }
+        pd[lvl3_idx] = PT_MAPPED | PT_WRITEABLE | ((ptentry_t)new_page * 4096);
+        pt = pt_address(lvl1_idx, lvl2_idx, lvl3_idx);
+        for (int i = 0; i < 512; i++)
+            pt[i] = 0;
+    }
+
+    pt[lvl4_idx] = PT_MAPPED | PT_WRITEABLE | ((ptentry_t)page * 4096);
+}
+
+void vm_init() {
+    uint64_t* pml4_old = (void*)&vm_level1;
+    uint64_t* pml4_new = &vm_kctx.pml4[0];
+
+    trace("vm: Initializing Virtual Memory Mananger.");
+
+    uint64_t pml4_phys = (ptentry_t)&pml4_new[0] - KERNEL_VBASE;
+
+    /* Setup recursive mapping to new PML4 in old and new PML4. 
+     * This way we can use standard mapping functions to map the kernel 
+     * to the new PML4 nicely and then switch to the new context. */
+    append("\t-> Setup recursive mapping...");
+    pml4_old[256] = pml4_new[256] 
+                  = PT_MAPPED | PT_WRITEABLE | pml4_phys;
+
+    /* Kernel start and end addresses */
+    void* addr = (void*)&kernel_start;
+    void* end  = (void*)&kernel_end;
+
+    /* Map VGA buffer */
+    append("\t-> Mapping VGA buffer...");
+    vm_map_page((void*)0xFFFFFFFF800B8000, 0xB8000 / 4096);
+
+    /* Map kernel */
+    append("\t-> Mapping kernel executable...");
+    while (addr <= end) {
+        uint32_t page = (uint32_t)(((uint64_t)addr - KERNEL_VBASE)/4096);
+
+        vm_map_page(addr, page);
+        addr += 4096;
+    }    
+
+    /* Enable the new context */
+    append("\t-> Enable new paging context (set cr3)...");
+    asm("mov %0, %%cr3\n" : : "r" (pml4_phys));
 
     /* Throw a party if everything worked out! */
     trace("vm: Survived!");

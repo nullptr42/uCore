@@ -29,8 +29,7 @@ GDT_GRAN equ (0x80)
 GDT_PM   equ (0x40)
 GDT_LM   equ (0x20)
 
-global vm_level2_a
-global vm_level2_b
+global vm_level2_b ; TODO: do we need this?
 global vm_level1
 
 section .multiboot
