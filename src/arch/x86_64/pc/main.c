@@ -13,6 +13,7 @@
 #include "apic/pic.h"
 #include "apic/apic.h"
 #include "pm/pm.h"
+#include "vm/vm.h"
 
 #include <log.h>
 #include <lib/lib.h>
@@ -24,7 +25,6 @@
 
 void fpu_init();
 void idt_init();
-void vm_init();
 
 /* processor information retrieved via cpuid */
 static struct amd64_cpu cpu;
@@ -39,6 +39,20 @@ struct myobj {
 
 void* objs[10000];
 struct slab_cache myobj_cache;
+
+static void fb_map() {
+    void*    phys = bootinfo.fb.address;
+    uint64_t size = bootinfo.fb.height * bootinfo.fb.pitch;
+
+    int pg_count = size / 4096;
+
+    if ((size % 4096) != 0)
+        pg_count++;
+
+    /* Allocate block of virtual memory and map framebuffer */
+    bootinfo.fb.address = vm_alloc(pg_count);
+    vm_map_block(bootinfo.fb.address, phys, size);
+}
 
 void kernel_main(uint32_t magic, struct mb2_info* mb) {
     /* Enable FPU and SSE */
@@ -80,6 +94,7 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
 
     /* Initialize the Virtual Memory Manager */
     vm_init();
+    fb_map();
 
     /* Setup interrupt controller and bootstrap other cores if possible... */
     if (lapic_is_present(&cpu)) {
