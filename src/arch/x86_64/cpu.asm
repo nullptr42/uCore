@@ -91,6 +91,8 @@ _wrmsr:
     ret
 
 fpu_init:
+    finit
+
     ; Enable coprocessor monitoring.
     ; "Controls interaction of WAIT/FWAIT instructions with TS flag in CR0"
     mov rax, cr0
