@@ -73,7 +73,12 @@ void vm_init() {
 
     int   stack_size = stack->len * sizeof(uint32_t);
     void* stack_phys = stack->pages;
-    void* stack_virt = vm_alloc(stack_size / 4096);
+    int   stack_cnt  = stack_size / 4096;
+
+    if ((stack_size % 4096) != 0)
+        stack_cnt++;
+
+    void* stack_virt = vm_alloc(stack_cnt);
 
     /* Mapping physical page stack */
     append("\t-> Mapping physical page stack @ %p...", stack_virt);

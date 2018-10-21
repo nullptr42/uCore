@@ -93,18 +93,20 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
 
     libslab_init(&myobj_cache, sizeof(struct myobj));
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 10000; i++) {
         objs[i] = libslab_alloc(&myobj_cache);
-        info("libslab: allocated object @ 0x%08x (%d)", objs[i], i);
+        //trace("libslab: allocated object @ 0x%08x (%d)", objs[i], i);
     }
     for (int i = 0; i < 2; i++) {
         libslab_free(&myobj_cache, objs[i]);
-        info("libslab: freed object @ 0x%08x (%d)", objs[i], i);
+        //trace("libslab: freed object @ 0x%08x (%d)", objs[i], i);
     }
     for (int i = 0; i < 1; i++) {
         objs[i] = libslab_alloc(&myobj_cache);
-        info("libslab: allocated object @ 0x%08x (%d)", objs[i], i);
+        trace("libslab: allocated object @ 0x%08x (%d)", objs[i], i);
     }
+
+    trace("libslab: test completed :)");
 
     asm("sti");
     for(;;) asm("hlt");
