@@ -16,7 +16,7 @@
 #define MAX_MMAP (256)
 #define MAX_CMDLINE_LEN (2048) /* this probably already is overkill */
 
-#define MAX_MODULE_NAME_LEN (4)
+#define MAX_MODULE_NAME_LEN (128)
 
 /* Represents a loadable service executable */
 struct module {

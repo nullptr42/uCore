@@ -25,7 +25,7 @@ static bool callback(struct mb2_tag* tag, struct state* state) {
             char* cmdline = (void*)tag + sizeof(struct mb2_tag);
             char* dst = &binf->cmdline[0];
             
-            if (length >= MAX_CMDLINE_LEN) {
+            if (length > MAX_CMDLINE_LEN+1) {
                 warn("bootinfo: cmdline exceeds maximum length, truncating...\n");
                 length = MAX_CMDLINE_LEN;
                 dst[MAX_CMDLINE_LEN] = '\0';
@@ -94,14 +94,14 @@ static bool callback(struct mb2_tag* tag, struct state* state) {
             
             while (string[i]) {
                 if (i == MAX_MODULE_NAME_LEN) {
-                    module->name[MAX_MODULE_NAME_LEN] = '\0';
                     warn("bootinfo: module string length exceeds %d characters.\n", MAX_MODULE_NAME_LEN);
                     break;
                 }
                 module->name[i] = string[i];
                 i++;
             }
-            
+
+            module->name[i] = '\0';
             break;
         }
 
