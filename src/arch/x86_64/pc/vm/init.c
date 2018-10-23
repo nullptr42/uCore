@@ -7,14 +7,17 @@
 
 #include <log.h>
 #include <arch/print.h>
+#include <stddef.h>
 #include "vm.h"
 #include "../pm/stack.h"
 
 /*
  * Memory Map:
  * 0x0000000000000000 - 0xFFFF7FFFFFFFFFFF: Reserved for user processes.
- * 0xFFFF800000000000 - 0xFFFFFFFEFFFFFFFF: Unmapped (maybe map Physical Memory?)
- * 0xFFFFFFFF00000000 - 0xFFFFFFFF7FFFFFFF: Kernel Allocated Memory (2 GiB)
+ * 0xFFFF800000000000 - 0xFFFF807FFFFFFFFF: Recursive mapping
+ * 0xFFFF808000000000 - 0xFFFF8080000FFFFF: First 1MiB of physical memory.
+ * 0xFFFF808000100000 - 0xFFFFFFFEFFFFFFFF: Unmapped (maybe map rest of Physical Memory?)
+ * 0xFFFFFFFF00000000 - 0xFFFFFFFF7FFFFFFF: Kernel Page Frames (2 GiB)
  * 0xFFFFFFFF80000000 - 0xFFFFFFFFFFFFFFFF: Kernel Executable (2 GiB)
  */
 
@@ -83,6 +86,10 @@ void vm_init() {
     /* Mapping physical page stack */
     append("\t-> Mapping physical page stack @ %p...", stack_virt);
     vm_map_block(stack_virt, stack_phys, stack_size);
+
+    /* Map first 1MiB of physical memory */
+    append("\t-> Mapping first 1 MiB of memory...");
+    vm_map_block((void*)0xFFFF808000000000, NULL, 1024*1024);
 
     /* Enable the new context */
     append("\t-> Enable new paging context (set cr3)...");
