@@ -40,8 +40,50 @@ static void lapic_set_base(uint64_t base) {
     _wrmsr(MSR_APIC_BASE, (base&0xFFFFFFFF), (base>>32));
 }
 
+/* TODO: place MPC code somewhere else? */
+
+/* Multiprocessor Configuration Table */
+struct mpc_table {
+    uint32_t magic;
+    uint16_t length;
+    uint8_t  revision;
+    uint8_t  checksum;
+    char     oem_id[8];
+    char     product_id[12];
+    uint32_t oem_tab;
+    uint16_t oem_tab_sz;
+    uint16_t entry_cnt;
+    uint32_t lapic_base;
+    uint16_t ext_tab_sz;
+    uint8_t  ext_tab_chk;
+} __attribute__((packed));
+
+/* Multiprocessor Floating Pointer Structure */
+struct mpc_pointer {
+    uint32_t magic;
+    uint32_t config_ptr;
+    uint8_t  length;
+    uint8_t  version;
+    uint8_t  checksum;
+    uint8_t  features[5];
+} __attribute__((packed));
+
+/* Multiprocessor Processor Entry */
+struct mpc_cpu {
+    uint8_t type;
+    uint8_t lapic_id;
+    uint8_t lapic_ver;
+    unsigned int enabled : 1;
+    unsigned int bsp : 1;
+    unsigned int reserved : 6;
+    uint32_t signature;
+    uint32_t features;
+} __attribute__((packed));
+
 static void find_mpc_table() {
     void* data = (void*)0xFFFF808000000000;
+    struct mpc_pointer* ptr = NULL;
+    struct mpc_table* config = NULL;
 
     /* TODO: atm we are scanning the entire first 1MiB.
      * However the specification allows us to narrow it down
@@ -49,9 +91,61 @@ static void find_mpc_table() {
      */
     for (int i = 0; i <= 0xFFFFC; i++) {
         if (*(uint32_t*)(data + i) == 0x5F504D5F) { /* _MP_ */
-            info("lapic: Floating Pointer Structure @ %p", data + i);
-            return;
+            ptr = data + i;
+            info("lapic: Floating Pointer Structure @ %p", ptr);
+            break;
         }        
+    }
+
+    if (ptr == NULL) {
+        warn("lapic: Unable to locate Floating Pointer Structure.");
+        return;
+    }
+
+    config = data + ptr->config_ptr;
+    info("lapic: MP Configuration Table @ %p", config);
+
+    if (config->magic != 0x504D4350) {
+        warn("lapic: Config table signature mismatch: %#08x", config->magic);
+        return;
+    }
+
+    trace("lapic: Entry Count = %d", config->entry_cnt);
+
+    int cpu_id = 0;
+    /* Why the fuck do we have to + 1?
+     * The entries are said to _follow_ after the config table.
+     * Our structure has exactly 43 bytes which matches the specified size.
+     */
+    void* entry = (void*)config + sizeof(struct mpc_table) + 1;
+
+    /* Traverse configuration table. */
+    for (int i = 0; i < config->entry_cnt; i++) {
+        uint8_t type = *(uint8_t*)entry;
+        switch (type) {
+            case 0: {
+                struct mpc_cpu* cpu = entry;
+                kprintf("cpu[%d]: lapic_id=%#x enabled=%u bsp=%u signature=%#x\n",
+                    cpu_id++,
+                    cpu->lapic_id,
+                    cpu->enabled,
+                    cpu->bsp,
+                    cpu->signature
+                );
+                entry += 20;
+                break;
+            }
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+                entry += 8;
+                break;
+            default:
+                entry += 8;
+                warn("lapic: Unknown config entry type %#x.", type);
+                break;
+        }
     }
 }
 
@@ -59,14 +153,14 @@ void lapic_init() {
     uint64_t base = lapic_get_base();
 
     /* Enable the Local-APIC */
-    info("lapic: base address is 0x%016llX", base);
+    info("lapic: Base address is 0x%016llX", base);
     lapic_set_base(base);
-    info("lapic: enabled Local-APIC.");
+    info("lapic: Enabled Local-APIC.");
 
     /* Map its MMIO registers into memory */
     lapic_mmio = vm_alloc(1);
     vm_map_page(lapic_mmio, base / 4096);
-    info("lapic: mapped Local-APIC MMIO @ %p", lapic_mmio);
+    info("lapic: Mapped Local-APIC MMIO @ %p", lapic_mmio);
 
     volatile uint32_t* spivr = (void*)lapic_mmio + 0xF0;
 
