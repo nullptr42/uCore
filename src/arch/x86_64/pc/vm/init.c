@@ -48,7 +48,7 @@ void vm_init() {
 
     trace("vm: Initializing Virtual Memory Mananger.");
 
-    uint64_t pml4_phys = (ptentry_t)&pml4_new[0] - KERNEL_VBASE;
+    uint64_t pml4_phys = (ptentry_t)&pml4_new[0] - VM_BASE_KERNEL_ELF;
 
     pml4_active = build_address(256, 256, 256, 256);
 
@@ -67,7 +67,7 @@ void vm_init() {
     append("\t-> Mapping kernel executable...");
     vm_map_block(
         (void*)&kernel_start,
-        (void*)&kernel_start - KERNEL_VBASE, 
+        (void*)&kernel_start - VM_BASE_KERNEL_ELF, 
         (uint64_t)&kernel_end - (uint64_t)&kernel_start + 1
     );   
 

@@ -21,7 +21,9 @@
 
 #define __pgalign __attribute__((aligned(0x1000)))
 
-#define KERNEL_VBASE (0xFFFFFFFF80000000)
+#define VM_BASE_PHYSICAL   (0xFFFF808000000000)
+#define VM_BASE_KERNEL_MEM (0xFFFFFFFF00000000)
+#define VM_BASE_KERNEL_ELF (0xFFFFFFFF80000000)
 
 typedef uint64_t ptentry_t;
 

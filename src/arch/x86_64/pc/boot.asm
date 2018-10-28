@@ -74,7 +74,7 @@ section .text
     ; Load preliminary GDT table, containing a long mode code segment.
     [BITS 32]
     gdt_init:
-        lgdt [gdt_pointer - KERNEL_VBASE]
+        lgdt [gdt_pointer - VM_BASE_KERNEL_ELF]
 
         ; Load segments
         mov ax, 0x10
@@ -83,7 +83,7 @@ section .text
         mov fs, ax
         mov gs, ax
         mov ss, ax
-        jmp long 0x08:(.gdt_done - KERNEL_VBASE)
+        jmp long 0x08:(.gdt_done - VM_BASE_KERNEL_ELF)
     .gdt_done:
         ret
 
@@ -120,12 +120,12 @@ section .text
 
     extern kernel_main
 
-    KERNEL_VBASE equ 0xFFFFFFFF80000000
+    VM_BASE_KERNEL_ELF equ 0xFFFFFFFF80000000
 
     ; ENTRYPOINT
     [BITS 32]
     _start:
-        mov esp, stack_top - KERNEL_VBASE
+        mov esp, stack_top - VM_BASE_KERNEL_ELF
 
         ; Setup arguments for kernel_main.
         ; This must be the first step because we are destroying eax and ebx afterwards.
@@ -149,7 +149,7 @@ section .text
         mov cr4, eax  ; write back to CR4
 
         ; Setup level 3 which will map to the first 1GiB of physical memory.
-        mov eax, vm_level3 - KERNEL_VBASE
+        mov eax, vm_level3 - VM_BASE_KERNEL_ELF
         mov ecx, 512
         xor edx, edx
         .map_1gb:
@@ -159,13 +159,13 @@ section .text
             dec ecx
             jnz .map_1gb
 
-        or dword [vm_level2_a.entry - KERNEL_VBASE], vm_level3 - KERNEL_VBASE
-        or dword [vm_level2_b.entry - KERNEL_VBASE], vm_level3 - KERNEL_VBASE
+        or dword [vm_level2_a.entry - VM_BASE_KERNEL_ELF], vm_level3 - VM_BASE_KERNEL_ELF
+        or dword [vm_level2_b.entry - VM_BASE_KERNEL_ELF], vm_level3 - VM_BASE_KERNEL_ELF
 
-        or dword [vm_level1.lo - KERNEL_VBASE], vm_level2_a - KERNEL_VBASE ; 0x0000000000000000
-        or dword [vm_level1.hi - KERNEL_VBASE], vm_level2_b - KERNEL_VBASE ; 0xFFFFFFFF80000000
+        or dword [vm_level1.lo - VM_BASE_KERNEL_ELF], vm_level2_a - VM_BASE_KERNEL_ELF ; 0x0000000000000000
+        or dword [vm_level1.hi - VM_BASE_KERNEL_ELF], vm_level2_b - VM_BASE_KERNEL_ELF ; 0xFFFFFFFF80000000
 
-        mov eax, vm_level1 - KERNEL_VBASE
+        mov eax, vm_level1 - VM_BASE_KERNEL_ELF
         mov cr3, eax
 
         ; Enable long mode (LM)
@@ -179,7 +179,7 @@ section .text
         or eax, 0x80000001  ; set paging and protected mode bits
         mov cr0, eax        ; write back to CR0
 
-        jmp long 0x18:do_call - KERNEL_VBASE
+        jmp long 0x18:do_call - VM_BASE_KERNEL_ELF
     [BITS 64]
     do_call:
         mov rsp, stack_top
@@ -196,7 +196,7 @@ section .rodata
     ; GDT pointer struct as required by the lgdt [...] instruction...
     gdt_pointer:
         dw (8*4)-1   ; 4 entries á 8 bytes
-        dd gdt_table - KERNEL_VBASE ; address of GDT table
+        dd gdt_table - VM_BASE_KERNEL_ELF ; address of GDT table
 
     ; Barebones GDT table required to enter long mode.
     gdt_table:
