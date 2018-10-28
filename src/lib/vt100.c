@@ -11,7 +11,7 @@
 static inline void vt100_print_char(struct vt100_term* this, char c) {
     struct vt100_driver* driver = this->driver;
 
-    if (this->cursor_x == driver->width) {
+    if (this->cursor_x >= driver->width) {
         if (this->linewrap) {
             this->cursor_x = 0;
             this->cursor_y++;
@@ -44,21 +44,7 @@ static inline void vt100_initial(struct vt100_term* this, char c) {
         }
         // Horizontal Tab (TAB)
         case '\t': {
-            //int spaces;
-
-            /* TODO: rework tab logic */
-            /*if (this->cursor_x != 0) {
-                spaces = ((this->cursor_x - 1) & 7) ^ 7;
-            } else {
-                spaces = 9;
-            }
-            while (spaces--) {
-                vt100_print_char(this, ' ');
-            }*/
             this->cursor_x += 4 - (this->cursor_x % 4);
-            if (this->cursor_x >= this->driver->width) {
-                /* TODO */                
-            }
             break;
         }
         // Escape Sequence (ESC)
