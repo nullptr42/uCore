@@ -80,6 +80,24 @@ struct mpc_cpu {
     uint32_t features;
 } __attribute__((packed));
 
+void delay(int ms);
+
+static void wakeup(int apic_id) {
+    volatile uint32_t* icr_hi = (void*)lapic_mmio + 0x310;
+    volatile uint32_t* icr_lo = (void*)lapic_mmio + 0x300;
+    volatile uint32_t* id = (void*)lapic_mmio + 0x20;
+    
+    *icr_hi = apid_id << 24;
+    *icr_lo = 0x11 | (5 << 8) | (1 << 14) | (0 << 18);
+    *id;
+    delay(10);
+    while (icr_lo[0] & (1<<12)) kprintf("doing it");
+    *icr_lo = 0x11 | (6 << 8) | (0 << 14) | (0 << 18);
+    *id;
+    delay(10);
+    while (icr_lo[0] & (1<<12)) kprintf("doing it");
+}
+
 static void find_mpc_table() {
     void* data = (void*)0xFFFF808000000000;
     struct mpc_pointer* ptr = NULL;
@@ -94,7 +112,7 @@ static void find_mpc_table() {
             ptr = data + i;
             info("lapic: Floating Pointer Structure @ %p", ptr);
             break;
-        }        
+        }
     }
 
     if (ptr == NULL) {
@@ -132,6 +150,7 @@ static void find_mpc_table() {
                     cpu->bsp,
                     cpu->signature
                 );
+                wakeup(cpu->lapic_id);
                 entry += 20;
                 break;
             }
@@ -166,8 +185,25 @@ void lapic_init() {
 
     /* Actually enabling the Local-APIC by setting
      * Enable-bit in the SPIVR register.
-     */    
+     */
     *spivr |= 0x80;
-
     find_mpc_table();
+
+    uint8_t payload[] = {
+        0xB8, 0x00, 0xB8, /* mov ax, 0xB800 */
+        0x8E, 0xD8,       /* mov ds, ax */
+        0xC7, 0x06, 0x00, 0x00, 0x41, 0x07, /* mov word [0], 0x0741 */
+        0xEB, 0xFE        /* jmp $ */
+    };
+    uint8_t* dst = (void*)0xFFFF808000000000 + 0x11000;
+
+    info("lapic: copying payload of size %zd to 0x1000.", sizeof(payload));
+    for (int i = 0; i < sizeof(payload); i++) {
+        dst[i] = payload[i];
+    }
+
+    kprint("halting now");
+    while (1) {}
+
+    kprintf("completed jizz\n");
 }

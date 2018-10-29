@@ -123,10 +123,6 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
 
     trace("libslab: test completed :)");
 
-    for (int i = 0; i < 100; i++) {
-        kprint("a\t");
-    }
-
     asm("sti");
     for(;;) asm("hlt");
 }
