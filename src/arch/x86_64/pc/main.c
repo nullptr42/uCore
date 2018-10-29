@@ -118,7 +118,7 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
     }
     for (int i = 0; i < 1; i++) {
         objs[i] = libslab_alloc(&myobj_cache);
-        trace("libslab: allocated object @ 0x%08x (%d)", objs[i], i);
+        trace("libslab: allocated object @ %p (%d)", objs[i], i);
     }
 
     trace("libslab: test completed :)");

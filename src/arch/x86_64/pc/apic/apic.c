@@ -87,7 +87,7 @@ static void wakeup(int apic_id) {
     volatile uint32_t* icr_lo = (void*)lapic_mmio + 0x300;
     volatile uint32_t* id = (void*)lapic_mmio + 0x20;
 
-    *icr_hi = apid_id << 24;
+    *icr_hi = apic_id << 24;
     *icr_lo = 0x11 | (5 << 8) | (1 << 14) | (0 << 18);
     *id;
     delay(10);
@@ -150,7 +150,9 @@ static void find_mpc_table() {
                     cpu->bsp,
                     cpu->signature
                 );
-                wakeup(cpu->lapic_id);
+                if (!cpu->bsp) {
+                    wakeup(cpu->lapic_id);
+                }
                 entry += 20;
                 break;
             }
@@ -202,9 +204,6 @@ void lapic_init() {
     }
 
     find_mpc_table();
-
-    kprint("halting now");
+    
     while (1) {}
-
-    kprintf("completed jizz\n");
 }
