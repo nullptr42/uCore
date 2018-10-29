@@ -86,7 +86,7 @@ static void wakeup(int apic_id) {
     volatile uint32_t* icr_hi = (void*)lapic_mmio + 0x310;
     volatile uint32_t* icr_lo = (void*)lapic_mmio + 0x300;
     volatile uint32_t* id = (void*)lapic_mmio + 0x20;
-    
+
     *icr_hi = apid_id << 24;
     *icr_lo = 0x11 | (5 << 8) | (1 << 14) | (0 << 18);
     *id;
@@ -187,7 +187,6 @@ void lapic_init() {
      * Enable-bit in the SPIVR register.
      */
     *spivr |= 0x80;
-    find_mpc_table();
 
     uint8_t payload[] = {
         0xB8, 0x00, 0xB8, /* mov ax, 0xB800 */
@@ -201,6 +200,8 @@ void lapic_init() {
     for (int i = 0; i < sizeof(payload); i++) {
         dst[i] = payload[i];
     }
+
+    find_mpc_table();
 
     kprint("halting now");
     while (1) {}
