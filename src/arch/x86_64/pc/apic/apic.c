@@ -88,11 +88,11 @@ static void wakeup(int apic_id) {
     volatile uint32_t* id = (void*)lapic_mmio + 0x20;
 
     *icr_hi = apic_id << 24;
-    *icr_lo = 0x11 | (5 << 8) | (1 << 14) | (0 << 18);
+    *icr_lo = 0x08 | (5 << 8) | (1 << 14) | (0 << 18);
     *id;
     delay(10);
     while (icr_lo[0] & (1<<12)) kprintf("doing it");
-    *icr_lo = 0x11 | (6 << 8) | (0 << 14) | (0 << 18);
+    *icr_lo = 0x08 | (6 << 8) | (0 << 14) | (0 << 18);
     *id;
     delay(10);
     while (icr_lo[0] & (1<<12)) kprintf("doing it");
@@ -143,13 +143,13 @@ static void find_mpc_table() {
         switch (type) {
             case 0: {
                 struct mpc_cpu* cpu = entry;
-                kprintf("cpu[%d]: lapic_id=%#x enabled=%u bsp=%u signature=%#x\n",
+                /*kprintf("cpu[%d]: lapic_id=%#x enabled=%u bsp=%u signature=%#x\n",
                     cpu_id++,
                     cpu->lapic_id,
                     cpu->enabled,
                     cpu->bsp,
                     cpu->signature
-                );
+                );*/
                 if (!cpu->bsp) {
                     wakeup(cpu->lapic_id);
                 }
@@ -169,6 +169,9 @@ static void find_mpc_table() {
         }
     }
 }
+
+extern const void _wakeup_start;
+extern const void _wakeup_end;
 
 void lapic_init() {
     uint64_t base = lapic_get_base();
@@ -190,20 +193,25 @@ void lapic_init() {
      */
     *spivr |= 0x80;
 
-    uint8_t payload[] = {
-        0xB8, 0x00, 0xB8, /* mov ax, 0xB800 */
-        0x8E, 0xD8,       /* mov ds, ax */
-        0xC7, 0x06, 0x00, 0x00, 0x41, 0x07, /* mov word [0], 0x0741 */
-        0xEB, 0xFE        /* jmp $ */
-    };
-    uint8_t* dst = (void*)0xFFFF808000000000 + 0x11000;
+    // uint8_t payload[] = {
+    //     0xB8, 0x00, 0xB8, /* mov ax, 0xB800 */
+    //     0x8E, 0xD8,       /* mov ds, ax */
+    //     0xC7, 0x06, 0x00, 0x00, 0x41, 0x07, /* mov word [0], 0x0741 */
+    //     0xEB, 0xFE        /* jmp $ */
+    // };
+    uint64_t* src = &_wakeup_start;
+    uint64_t* dst = (void*)0xFFFF808000000000 + 0x8000;
 
-    info("lapic: copying payload of size %zd to 0x1000.", sizeof(payload));
-    for (int i = 0; i < sizeof(payload); i++) {
-        dst[i] = payload[i];
-    }
+    /* Copy payload to lower 1 MiB. */
+    while (src < &_wakeup_end)
+        *dst++ = *src++;
+
+    //info("lapic: copying payload of size %zd to 0x1000.", sizeof(payload));
+    //for (int i = 0; i < sizeof(payload); i++) {
+    //    dst[i] = payload[i];
+    //}
 
     find_mpc_table();
-    
+
     while (1) {}
 }
