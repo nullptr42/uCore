@@ -11,21 +11,19 @@
 static inline void vt100_print_char(struct vt100_term* this, char c) {
     struct vt100_driver* driver = this->driver;
 
-    if (this->cursor_x >= driver->width) {
-        if (this->linewrap) {
-            this->cursor_x = 0;
-            this->cursor_y++;
-        }
-        else {
-            // Horizontal overflow, do nothing.
-            return;
-        }
+    /* Handle horizontal overflow */
+    if (this->cursor_x >= driver->width && this->linewrap) {
+        this->cursor_x = 0;
+        this->cursor_y++;
     }
-    else if (this->cursor_y == driver->height) {
+    
+    /* Handle vertical overflow */
+    if (this->cursor_y == driver->height) {
         driver->scroll();
         this->cursor_x = 0;
         this->cursor_y = driver->height - 1;
     }
+
     driver->set_char(c, this->cursor_x++, this->cursor_y);
 }
 

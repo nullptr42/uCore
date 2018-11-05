@@ -133,7 +133,7 @@ void ap_main() {
 
     kprint("My birth, your misery.\nMy amusement, your haunt...\n");
     kprint("I am the bringer of storm.\nI reign from deadlock hell.\n");
-    kprint("They call me Core #2.\nFear me or core dump.");
+    kprint("They call me Core #2.\nFear me or core dump.\n");
 
     while (1) {}
 }
