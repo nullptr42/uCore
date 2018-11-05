@@ -126,3 +126,14 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
     asm("sti");
     for(;;) asm("hlt");
 }
+
+void ap_main() {
+    /* Initialize FPU and SSE. */
+    fpu_init();
+
+    kprint("My birth, your misery.\nMy amusement, your haunt...\n");
+    kprint("I am the bringer of storm.\nI reign from deadlock hell.\n");
+    kprint("They call me Core #2.\nFear me or core dump.");
+
+    while (1) {}
+}

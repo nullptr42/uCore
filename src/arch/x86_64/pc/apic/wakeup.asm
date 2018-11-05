@@ -10,6 +10,12 @@ section .data
 global _wakeup_start
 global _wakeup_end
 
+extern vm_level1
+extern ap_main
+
+; TODO: this is redundant to boot.asm
+VM_BASE_KERNEL_ELF equ 0xFFFFFFFF80000000
+
 ; GDT access byte defines
 GDT_PRESENT equ (0x80)
 GDT_SEGMENT equ (0x10)
@@ -60,7 +66,44 @@ bits 32
     mov ax, 0x10
     mov ds, ax
     mov word [0xB8000], 0x0742
+
+    ; Disable paging initially
+    mov eax, cr0
+    and eax, 0x7FFFFFFF
+    mov cr0, eax
+
+    ; Enable Physical Address Extension (PAE)
+    mov eax, cr4
+    or eax, 0x20
+    mov cr4, eax
+
+    mov eax, vm_level1 - VM_BASE_KERNEL_ELF
+    mov cr3, eax
+
+    ; Enable long mode (LM)
+    mov ecx, 0xC0000080
+    rdmsr
+    or eax, 0x00000100
+    wrmsr
+
+    ; Enable paging
+    mov eax, cr0
+    or eax, 0x80000001
+    mov cr0, eax
+
+    jmp 0x18:(0x8000 + .lm - _wakeup_start)
+bits 64
+.lm:
+    ; TODO: Setup proper stack.
+    mov rsp, .stack_top
+    mov word [0xB8000], 0x0545
+    mov rax, ap_main
+    jmp rax
     jmp $
+align 4096
+.stack:
+    times 4096 db 0
+.stack_top:
 
 ; Barebones GDT table required to enter long mode.
 .gdt:
@@ -82,6 +125,7 @@ bits 32
     dq 0
     gdt_entry 0x0, 0xFFFFF, GDT_CODE, (GDT_GRAN|GDT_PM) ; 32-bit CS (selector=0x08)
     gdt_entry 0x0, 0xFFFFF, GDT_DATA, (GDT_GRAN|GDT_PM) ; 32-bit DS (selector=0x10)
+    gdt_entry 0x0, 0xFFFFF, GDT_CODE, (GDT_GRAN|GDT_LM) ; 64-bit CS (selector=0x18)
 
 .gdt_pointer:
     dw (.gdt_pointer - .gdt)
