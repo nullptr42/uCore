@@ -32,11 +32,6 @@ GDT_LM   equ (0x20)
 bits 16
 align 4096
 _wakeup_start:
-;    mov ax, cs
-;    cmp ax, 0
-;    je .okay
-;    jmp 0x0:0x8000
-;.okay:
     ; Enable A20-gate (needs better method).
     in al, 0x92
     or al, 2
@@ -63,10 +58,6 @@ _wakeup_start:
 
 bits 32
 .pm:
-    mov ax, 0x10
-    mov ds, ax
-    mov word [0xB8000], 0x0742
-
     ; Disable paging initially
     mov eax, cr0
     and eax, 0x7FFFFFFF
@@ -76,7 +67,11 @@ bits 32
     mov eax, cr4
     or eax, 0x20
     mov cr4, eax
-
+    
+    ; It cannot be guaranteed that the kernel PML4
+    ; lies within the first 4 GiB of memory.
+    ; Thus we load the bootstrap PML4 first and later
+    ; we switch to the kernel PML4.
     mov eax, vm_level1 - VM_BASE_KERNEL_ELF
     mov cr3, eax
 
@@ -94,12 +89,11 @@ bits 32
     jmp 0x18:(0x8000 + .lm - _wakeup_start)
 bits 64
 .lm:
-    ; TODO: Setup proper stack.
+    ; TODO: setup proper stack.
     mov rsp, .stack_top
-    mov word [0xB8000], 0x0545
     mov rax, ap_main
-    jmp rax
-    jmp $
+    call rax
+    
 align 4096
 .stack:
     times 4096 db 0

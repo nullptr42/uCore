@@ -33,7 +33,10 @@ struct vm_context {
 };
 
 void vm_init();
+void vm_init_ap();
 void vm_alloc_init();
+
+void vm_set_ctx(struct vm_context* ctx);
 
 void vm_map_page(void* virtual, uint32_t page);
 void vm_map_pages(void* virtual, uint32_t* pages, int num);
