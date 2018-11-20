@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <arch/print.h>
+#include <arch/x86_64/pc/pm/pm.h>
 #include <arch/x86_64/pc/vm/vm.h>
 
 #define MSR_APIC_BASE  (0x1B)
@@ -172,6 +173,9 @@ static void find_mpc_table() {
 
 extern const void _wakeup_start;
 extern const void _wakeup_end;
+extern const void _wakeup_tab;
+
+extern const struct vm_context vm_kctx;
 
 void lapic_init() {
     uint64_t base = lapic_get_base();
@@ -193,18 +197,24 @@ void lapic_init() {
      */
     *spivr |= 0x80;
 
-    // uint8_t payload[] = {
-    //     0xB8, 0x00, 0xB8, /* mov ax, 0xB800 */
-    //     0x8E, 0xD8,       /* mov ds, ax */
-    //     0xC7, 0x06, 0x00, 0x00, 0x41, 0x07, /* mov word [0], 0x0741 */
-    //     0xEB, 0xFE        /* jmp $ */
-    // };
     uint64_t* src = &_wakeup_start;
     uint64_t* dst = (void*)0xFFFF808000000000 + 0x8000;
+    uint64_t* tab = (void*)dst + (&_wakeup_tab - &_wakeup_start);
 
     /* Copy payload to lower 1 MiB. */
     while (src < &_wakeup_end)
         *dst++ = *src++;
+
+
+    /* TEST: Allocate stack. */
+    void* stack_virt = vm_alloc(8);
+    uint32_t stack_phys[8];
+
+    /* TODO: check status code */
+    pm_stack_alloc(8, stack_phys);
+    vm_map_pages(stack_virt, stack_phys, 8);
+    tab[0] = stack_virt + 32768;
+    tab[1] = (void*)&vm_kctx.pml4[0] - VM_BASE_KERNEL_ELF;
 
     //info("lapic: copying payload of size %zd to 0x1000.", sizeof(payload));
     //for (int i = 0; i < sizeof(payload); i++) {

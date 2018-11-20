@@ -131,8 +131,6 @@ void ap_main() {
     /* Initialize FPU and SSE. */
     fpu_init();
 
-    vm_init_ap();
-
     kprint(COLOR_B_MAGENTA);
     kprint("My birth, your misery.\nMy amusement, your haunt...\n");
     kprint("I am the bringer of storm.\nI reign from deadlock hell.\n");

@@ -9,6 +9,7 @@ section .data
 
 global _wakeup_start
 global _wakeup_end
+global _wakeup_tab
 
 extern vm_level1
 extern ap_main
@@ -32,6 +33,11 @@ GDT_LM   equ (0x20)
 bits 16
 align 4096
 _wakeup_start:
+    jmp start
+_wakeup_tab:
+    .stack: dq 0
+    .pml4: dq 0
+start:
     ; Enable A20-gate (needs better method).
     in al, 0x92
     or al, 2
@@ -89,11 +95,18 @@ bits 32
     jmp 0x18:(0x8000 + .lm - _wakeup_start)
 bits 64
 .lm:
-    ; TODO: setup proper stack.
-    mov rsp, .stack_top
-    mov rax, ap_main
-    call rax
-    
+    mov rax, .fixed_rip
+    jmp rax
+.fixed_rip:
+    mov rsp, [0x8000 + (_wakeup_tab.stack - _wakeup_start)]
+    mov rdx, [0x8000 + (_wakeup_tab.pml4 - _wakeup_start)]
+    mov cr3, rdx
+    call ap_main
+    cli
+.stop:
+    hlt
+    jmp .stop
+
 align 4096
 .stack:
     times 4096 db 0

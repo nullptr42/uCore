@@ -33,7 +33,6 @@ struct vm_context {
 };
 
 void vm_init();
-void vm_init_ap();
 void vm_alloc_init();
 
 void vm_set_ctx(struct vm_context* ctx);

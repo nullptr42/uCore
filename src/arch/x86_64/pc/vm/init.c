@@ -44,10 +44,6 @@ void vm_set_ctx(struct vm_context* ctx) {
     asm("mov %0, %%cr3\n" : : "r" (&ctx->pml4[0]));
 }
 
-void vm_init_ap() {
-    vm_set_ctx((void*)&vm_kctx - VM_BASE_KERNEL_ELF);
-}
-
 void vm_init() {
     uint64_t* pml4_old = (void*)&vm_level1;
     uint64_t* pml4_new = &vm_kctx.pml4[0];
@@ -101,7 +97,7 @@ void vm_init() {
 
     /* Enable the new context */
     append("\t-> Enable new paging context (set cr3)...");
-    asm("mov %0, %%cr3\n" : : "r" (pml4_phys));
+    vm_set_ctx((void*)pml4_phys);
 
     /* Point physical page stack to its virtual address. */
     stack->pages = stack_virt;
