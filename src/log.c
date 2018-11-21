@@ -12,7 +12,7 @@
 #include <lib/vt100-codes.h>
 
 static int last_level = 0;
-static int log_mask = LL_TRACE | LL_INFO | LL_WARN | LL_ERROR;
+static int log_mask = LL_TRACE | LL_DEBUG | LL_INFO | LL_WARN | LL_ERROR;
 
 void set_log_mask(int mask) {
     log_mask = mask;
@@ -22,79 +22,32 @@ int get_log_mask() {
     return log_mask;
 }
 
-void trace(const char* format, ...) {
-    last_level = LL_TRACE;
-
-    if (~log_mask & LL_TRACE)
+void klog(enum log_level level, const char* format, ...) {
+    if (~log_mask & level)
         return;
-
     va_list arg;
+
     va_start(arg, format);
     
-    kprint(COLOR_B_WHITE "[t] ");
+    switch (level) {
+        case LL_WARN:
+            kprint(COLOR_YELLOW "[w] ");
+            break;
+        case LL_ERROR:
+            kprint(COLOR_RED "[e] ");
+            break;
+        case LL_DEBUG:
+            kprint(COLOR_B_BLACK "[d] ");
+            break;
+        case LL_TRACE:
+            kprint(COLOR_B_BLACK "[t] ");
+            break;
+        default:
+            kprint(COLOR_WHITE);
+            break;
+    }
     vkprintf(format, arg);
     kprint("\n" CON_RESET);
-
-    va_end(arg);
-}
-
-void info(const char* format, ...) {
-    last_level = LL_INFO;
-
-    if (~log_mask & LL_INFO)
-        return;
-
-    va_list arg;
-    va_start(arg, format);
-    
-    kprint(COLOR_B_BLUE "[i] ");
-    vkprintf(format, arg);
-    kprint("\n" CON_RESET);
-
-    va_end(arg);
-}
-
-void warn(const char* format, ...) {
-    last_level = LL_WARN;
-
-    if (~log_mask & LL_WARN)
-        return;
-
-    va_list arg;
-    va_start(arg, format);
-    
-    kprint(COLOR_B_YELLOW "[w] ");
-    vkprintf(format, arg);
-    kprint("\n" CON_RESET);
-
-    va_end(arg);
-}
-
-void error(const char* format, ...) {
-    last_level = LL_ERROR;
-    
-    if (~log_mask & LL_ERROR)
-        return;
-
-    va_list arg;
-    va_start(arg, format);
-    
-    kprint(COLOR_B_RED "[e] ");
-    vkprintf(format, arg);
-    kprint("\n" CON_RESET);
-
-    va_end(arg);
-}
-
-void append(const char* format, ...) {
-    if (~log_mask & last_level)
-        return;
-
-    va_list arg;
-    va_start(arg, format);
-    
-    vkprintf(format, arg);
-    kprint("\n");
 
     va_end(arg);
 }

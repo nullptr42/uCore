@@ -50,8 +50,6 @@ void vm_init() {
 
     struct pm_stack* stack = pm_get_stack();
 
-    trace("vm: Initializing Virtual Memory Mananger.");
-
     uint64_t pml4_phys = (ptentry_t)&pml4_new[0] - VM_BASE_KERNEL_ELF;
 
     pml4_active = build_address(256, 256, 256, 256);
@@ -59,16 +57,13 @@ void vm_init() {
     /* Setup recursive mapping to new PML4 in old and new PML4. 
      * This way we can use standard mapping functions to map the kernel 
      * to the new PML4 nicely and then switch to the new context. */
-    append("\t-> Setup recursive mapping...");
     pml4_old[256] = pml4_new[256] 
                   = PT_MAPPED | PT_WRITEABLE | pml4_phys;
 
     /* Map VGA buffer */
-    append("\t-> Mapping VGA buffer...");
     vm_map_page((void*)0xFFFFFFFF800B8000, 0xB8000 / 4096);
 
     /* Map kernel */
-    append("\t-> Mapping kernel executable...");
     vm_map_block(
         (void*)&kernel_start,
         (void*)&kernel_start - VM_BASE_KERNEL_ELF, 
@@ -88,21 +83,16 @@ void vm_init() {
     void* stack_virt = vm_alloc(stack_cnt);
 
     /* Mapping physical page stack */
-    append("\t-> Mapping physical page stack @ %p...", stack_virt);
+    klog(LL_DEBUG, "vm: Mapping page stack @ virtual %p.", stack_virt);
     vm_map_block(stack_virt, stack_phys, stack_size);
 
     /* Map first 1MiB of physical memory */
-    append("\t-> Mapping first 1 MiB of memory...");
     vm_map_block((void*)0xFFFF808000000000, NULL, 1024*1024);
 
     /* Enable the new context */
-    append("\t-> Enable new paging context (set cr3)...");
+    klog(LL_TRACE, "vm: Set new PML4 address (cr3)...");
     vm_set_ctx((void*)pml4_phys);
 
     /* Point physical page stack to its virtual address. */
     stack->pages = stack_virt;
-
-    /* Throw a party if everything worked out! */
-    trace("vm: Survived!");
-    kprint("\n");
 }

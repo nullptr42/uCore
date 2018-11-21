@@ -28,7 +28,7 @@ static ptentry_t* get_or_create_table(ptentry_t* parent, int index) {
         
         /* Allocate a physical page to store the new table. */
         if (pm_stack_alloc(1, &new_page) != PMM_OK) {
-            error("vm: unable to allocate a physical page.");
+            klog(LL_ERROR, "vm: get_or_create_table: Unable to allocate table.");
             panic();
         }
 

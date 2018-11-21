@@ -12,6 +12,7 @@
 #include <arch/print.h>
 #include <arch/x86_64/pc/pm/pm.h>
 #include <arch/x86_64/pc/vm/vm.h>
+#include <log.h>
 
 #define MSR_APIC_BASE  (0x1B)
 #define MSR_APIC_BASE_ENABLE (0x800)
@@ -92,11 +93,11 @@ static void wakeup(int apic_id) {
     *icr_lo = 0x08 | (5 << 8) | (1 << 14) | (0 << 18);
     *id;
     delay(10);
-    while (icr_lo[0] & (1<<12)) kprintf("doing it");
+    while (icr_lo[0] & (1<<12)) ;
     *icr_lo = 0x08 | (6 << 8) | (0 << 14) | (0 << 18);
     *id;
     delay(10);
-    while (icr_lo[0] & (1<<12)) kprintf("doing it");
+    while (icr_lo[0] & (1<<12)) ;
 }
 
 static void find_mpc_table() {
@@ -111,27 +112,26 @@ static void find_mpc_table() {
     for (int i = 0; i <= 0xFFFFC; i++) {
         if (*(uint32_t*)(data + i) == 0x5F504D5F) { /* _MP_ */
             ptr = data + i;
-            info("lapic: Floating Pointer Structure @ %p", ptr);
+            klog(LL_DEBUG, "apic: MPC-pointer discovered (%p).", ptr);
             break;
         }
     }
 
     if (ptr == NULL) {
-        warn("lapic: Unable to locate Floating Pointer Structure.");
+        klog(LL_WARN, "apic: Missing MPC-pointer. Not a multicore system?");
         return;
     }
 
     config = data + ptr->config_ptr;
-    info("lapic: MP Configuration Table @ %p", config);
+    klog(LL_DEBUG, "apic: MPC-table found (%p).", config);
 
     if (config->magic != 0x504D4350) {
-        warn("lapic: Config table signature mismatch: %#08x", config->magic);
+        klog(LL_WARN, "apic: MPC-table signature mismatch: %#08x", config->magic);
         return;
     }
 
-    trace("lapic: Entry Count = %d", config->entry_cnt);
-
     int cpu_id = 0;
+
     /* Why the fuck do we have to + 1?
      * The entries are said to _follow_ after the config table.
      * Our structure has exactly 43 bytes which matches the specified size.
@@ -144,13 +144,13 @@ static void find_mpc_table() {
         switch (type) {
             case 0: {
                 struct mpc_cpu* cpu = entry;
-                /*kprintf("cpu[%d]: lapic_id=%#x enabled=%u bsp=%u signature=%#x\n",
+                klog(LL_INFO, "apic: cpu[%d]: lapic_id=%#x enabled=%u bsp=%u signature=%#x",
                     cpu_id++,
                     cpu->lapic_id,
                     cpu->enabled,
                     cpu->bsp,
                     cpu->signature
-                );*/
+                );
                 if (!cpu->bsp) {
                     wakeup(cpu->lapic_id);
                 }
@@ -165,7 +165,7 @@ static void find_mpc_table() {
                 break;
             default:
                 entry += 8;
-                warn("lapic: Unknown config entry type %#x.", type);
+                klog(LL_WARN, "apic: Unknown MPC-table entry type %#x.", type);
                 break;
         }
     }
@@ -181,14 +181,12 @@ void lapic_init() {
     uint64_t base = lapic_get_base();
 
     /* Enable the Local-APIC */
-    info("lapic: Base address is 0x%016llX", base);
     lapic_set_base(base);
-    info("lapic: Enabled Local-APIC.");
 
     /* Map its MMIO registers into memory */
     lapic_mmio = vm_alloc(1);
     vm_map_page(lapic_mmio, base / 4096);
-    info("lapic: Mapped Local-APIC MMIO @ %p", lapic_mmio);
+    klog(LL_DEBUG, "apic: Mapped Local-APIC MMIO @ %p", lapic_mmio);
 
     volatile uint32_t* spivr = (void*)lapic_mmio + 0xF0;
 
@@ -205,7 +203,6 @@ void lapic_init() {
     while (src < &_wakeup_end)
         *dst++ = *src++;
 
-
     /* TEST: Allocate stack. */
     void* stack_virt = vm_alloc(8);
     uint32_t stack_phys[8];
@@ -215,11 +212,6 @@ void lapic_init() {
     vm_map_pages(stack_virt, stack_phys, 8);
     tab[0] = stack_virt + 32768;
     tab[1] = (void*)&vm_kctx.pml4[0] - VM_BASE_KERNEL_ELF;
-
-    //info("lapic: copying payload of size %zd to 0x1000.", sizeof(payload));
-    //for (int i = 0; i < sizeof(payload); i++) {
-    //    dst[i] = payload[i];
-    //}
 
     find_mpc_table();
 }

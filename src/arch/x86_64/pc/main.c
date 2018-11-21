@@ -21,8 +21,6 @@
 #include <version.h>
 #include <arch/x86_64/cpuid.h>
 
-#include <libslab/slab.h>
-
 void fpu_init();
 void idt_init();
 
@@ -31,14 +29,6 @@ static struct amd64_cpu cpu;
 
 /* information passed by the bootloader */
 static struct bootinfo bootinfo;
-
-struct myobj {
-    uint64_t r[16];
-    uint64_t pc;
-};
-
-void* objs[10000];
-struct slab_cache myobj_cache;
 
 static void fb_map() {
     void*    phys = bootinfo.fb.address;
@@ -65,24 +55,24 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
 
     print_init();
     kprintf(
-        "Copyright (C) %d %s.\n"
-        COLOR_CYAN "%s " COLOR_B_WHITE "Kernel %d.%d\n\n" CON_RESET,
-        _k_copyright_year,
-        _k_copyright_holder,
+        COLOR_CYAN "%s " COLOR_B_WHITE "Kernel %d.%d\n" CON_RESET
+        "Copyright (C) %d %s.\n\n",
         _k_name,
         _k_version_major,
-        _k_version_minor
+        _k_version_minor,
+        _k_copyright_year,
+        _k_copyright_holder
     );
 
     /* Ensure we have been booted via Multiboot2. */
     if (magic != MB2_BOOTLOADER_MAGIC) {
-        error("bootinfo: bootloader isn't Multiboot2 compliant (magic number mismatch).");
+        klog(LL_ERROR, "Bootloader isn't Multiboot2-compliant.");
         return;
     }
 
     /* Convert Multiboot2 information into our internal format. */
     if (!bootinfo_from_mb2(&bootinfo, mb)) {
-        error("bootinfo: unable to create \"bootinfo\" structure from Multiboot2 data.");
+        klog(LL_ERROR, "Unable to create \"bootinfo\" structure from Multiboot2 data.");
         return;
     }
 
@@ -106,23 +96,6 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
         pic_set_mask(0);
     }
 
-    libslab_init(&myobj_cache, sizeof(struct myobj));
-
-    for (int i = 0; i < 10000; i++) {
-        objs[i] = libslab_alloc(&myobj_cache);
-        //trace("libslab: allocated object @ %p (%d)", objs[i], i);
-    }
-    for (int i = 0; i < 2; i++) {
-        libslab_free(&myobj_cache, objs[i]);
-        //trace("libslab: freed object @ %p (%d)", objs[i], i);
-    }
-    for (int i = 0; i < 4; i++) {
-        objs[i] = libslab_alloc(&myobj_cache);
-        trace("libslab: allocated object @ %p (%d)", objs[i], i);
-    }
-
-    trace("libslab: test completed :)");
-
     asm("sti");
     for(;;) asm("hlt");
 }
@@ -131,10 +104,7 @@ void ap_main() {
     /* Initialize FPU and SSE. */
     fpu_init();
 
-    kprint(COLOR_B_MAGENTA);
-    kprint("My birth, your misery.\nMy amusement, your haunt...\n");
-    kprint("I am the bringer of storm.\nI reign from deadlock hell.\n");
-    kprint("They call me Core #2.\nFear me or core dump.\n");
+    kprint(COLOR_CYAN "Hello World!\n");
 
     asm("sti");
     for (;;) asm("hlt");

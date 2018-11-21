@@ -29,7 +29,7 @@ static void show_size(uint64_t size) {
         size /= 1024;
     }
 
-    info("pm: Detected %d %s of memory.", size, unit);    
+    klog(LL_INFO, "pm: Detected %d %s of memory.", size, unit);    
 }
 
 struct pm_stack* pm_get_stack() {
@@ -82,7 +82,7 @@ bool pm_init_stack(struct bootinfo* binf, void* minimum) {
 
     if (stack.pages == NULL)
         return false;
-    trace("pm: Stack allocated @ %p", stack.pages);
+    klog(LL_DEBUG, "pm: Allocated stack @ physical %p.", stack.pages);
 
     /* Release free pages into the stack */
     for (int i = 0; i < num_mmap; i++) {

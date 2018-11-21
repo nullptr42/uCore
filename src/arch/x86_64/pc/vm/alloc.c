@@ -139,7 +139,7 @@ retry:
             hint = 0;
             goto retry;
         }
-        error("vm_alloc: cannot satisfy allocation of %d page(s).", count);
+        klog(LL_ERROR, "vm: vm_alloc: cannot satisfy allocation of %d page(s).", count);
         panic();
         return NULL;
     }
@@ -151,7 +151,7 @@ void vm_free(void* virtual, int count) {
     /* Ensure virtual address is within legal bounds. */
     if ((uint64_t)virtual < ALLOC_BASE ||
         (uint64_t)virtual > ALLOC_LIMIT) {
-        error("vm_free: address %p wasn't within bounds.", virtual);
+        klog(LL_ERROR, "vm: vm_free: address %p is not within bounds.", virtual);
         panic();
         return;
     }

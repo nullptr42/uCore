@@ -26,7 +26,7 @@ static bool callback(struct mb2_tag* tag, struct state* state) {
             char* dst = &binf->cmdline[0];
             
             if (length > MAX_CMDLINE_LEN+1) {
-                warn("bootinfo: cmdline exceeds maximum length, truncating...\n");
+                klog(LL_WARN, "bootinfo: cmdline exceeds maximum length, truncating...\n");
                 length = MAX_CMDLINE_LEN;
                 dst[MAX_CMDLINE_LEN] = '\0';
             }
@@ -57,7 +57,7 @@ static bool callback(struct mb2_tag* tag, struct state* state) {
                 if (entry->type == MB_MMAP_AVAILABLE) {
                     /* Ensure the buffer will not be overrun */
                     if (binf->num_mmap >= MAX_MMAP) {
-                        warn("bootinfo: number of Multiboot2 MMAP entries exceeds maximum (%d)\n", MAX_MMAP);
+                        klog(LL_WARN, "bootinfo: number of Multiboot2 MMAP entries exceeds maximum (%d)\n", MAX_MMAP);
                         return true;
                     }
 
@@ -79,7 +79,7 @@ static bool callback(struct mb2_tag* tag, struct state* state) {
 
         case MB_TAG_MODULE: {
             if (binf->num_modules == MAX_MODULES) {
-                warn("bootinfo: number of modules exceeds maximum (%d)\n", MAX_MODULES);
+                klog(LL_WARN, "bootinfo: number of modules exceeds maximum (%d)\n", MAX_MODULES);
                 return true;
             }
 
@@ -94,7 +94,7 @@ static bool callback(struct mb2_tag* tag, struct state* state) {
             
             while (string[i]) {
                 if (i == MAX_MODULE_NAME_LEN) {
-                    warn("bootinfo: module string length exceeds %d characters.\n", MAX_MODULE_NAME_LEN);
+                    klog(LL_WARN, "bootinfo: module string length exceeds %d characters.\n", MAX_MODULE_NAME_LEN);
                     break;
                 }
                 module->name[i] = string[i];
@@ -163,11 +163,11 @@ bool bootinfo_from_mb2(struct bootinfo* binf, struct mb2_info* mb2) {
 
     /* Check for missing information */
     if (!state.has_memory) {
-        error("bootinfo: memory boundaries missing from Multiboot2 header.\n");
+        klog(LL_ERROR, "bootinfo: memory boundaries missing from Multiboot2 header.\n");
         return false;
     }
     if (!state.has_mmap) {
-        error("bootinfo: memory map missing from Multiboot2 header.\n");
+        klog(LL_ERROR, "bootinfo: memory map missing from Multiboot2 header.\n");
         return false;
     }
 
