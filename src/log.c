@@ -11,7 +11,6 @@
 #include "log.h"
 #include <lib/vt100-codes.h>
 
-static int last_level = 0;
 static int log_mask = LL_TRACE | LL_DEBUG | LL_INFO | LL_WARN | LL_ERROR;
 
 void set_log_mask(int mask) {
@@ -23,12 +22,12 @@ int get_log_mask() {
 }
 
 void klog(enum log_level level, const char* format, ...) {
-    if (~log_mask & level)
-        return;
     va_list arg;
 
+    if (~log_mask & level)
+        return;
+
     va_start(arg, format);
-    
     switch (level) {
         case LL_WARN:
             kprint(COLOR_YELLOW "[w] ");
@@ -48,6 +47,5 @@ void klog(enum log_level level, const char* format, ...) {
     }
     vkprintf(format, arg);
     kprint("\n" CON_RESET);
-
     va_end(arg);
 }

@@ -36,7 +36,7 @@ void cpuid_read(struct amd64_cpu* cpu) {
 
     /* Get feature information */
     if (cpu->highest_func < CPUID_GETFEATURES)
-        goto done;
+        return;
     _cpuid(CPUID_GETFEATURES, &regs);
     cpu->features = ((uint64_t)regs.edx<<32)|regs.ecx;
     
@@ -53,8 +53,4 @@ void cpuid_read(struct amd64_cpu* cpu) {
     cpu->misc.clflush_size = (regs.ebx >>  8) & 0xFF;
     cpu->misc.logical_cpus = (regs.ebx >> 16) & 0xFF;
     cpu->misc.apic_id      = (regs.ebx >> 24) & 0xFF;
-    
-done:
-    /* TODO */
-    return;
 }

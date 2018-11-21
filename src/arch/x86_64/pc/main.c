@@ -55,13 +55,10 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
 
     print_init();
     kprintf(
-        COLOR_CYAN "%s " COLOR_B_WHITE "Kernel %d.%d\n" CON_RESET
-        "Copyright (C) %d %s.\n\n",
+        COLOR_GREEN "%s " CON_RESET "Kernel %d.%d\n\n" CON_RESET,
         _k_name,
         _k_version_major,
-        _k_version_minor,
-        _k_copyright_year,
-        _k_copyright_holder
+        _k_version_minor
     );
 
     /* Ensure we have been booted via Multiboot2. */
@@ -104,7 +101,10 @@ void ap_main() {
     /* Initialize FPU and SSE. */
     fpu_init();
 
-    kprint(COLOR_CYAN "Hello World!\n");
+    struct amd64_cpu _cpu;
+
+    cpuid_read(&_cpu);
+    kprintf(COLOR_CYAN "Greetings from core(%d)!\n", _cpu.misc.apic_id);
 
     asm("sti");
     for (;;) asm("hlt");
