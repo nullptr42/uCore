@@ -55,7 +55,7 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
 
     print_init();
     kprintf(
-        COLOR_GREEN "%s " CON_RESET "Kernel %d.%d\n\n" CON_RESET,
+        COLOR_CYAN "%s " CON_RESET "Kernel %d.%d\n\n" CON_RESET,
         _k_name,
         _k_version_major,
         _k_version_minor
@@ -104,7 +104,7 @@ void ap_main() {
     struct amd64_cpu _cpu;
 
     cpuid_read(&_cpu);
-    kprintf(COLOR_CYAN "Greetings from core(%d)!\n", _cpu.misc.apic_id);
+    kprintf(COLOR_B_YELLOW "Greetings from core(%d)!\n", _cpu.misc.apic_id);
 
     asm("sti");
     for (;;) asm("hlt");

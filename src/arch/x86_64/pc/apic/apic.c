@@ -19,8 +19,15 @@
 #define MSR_APIC_BASE_ENABLE (0x800)
 #define MSR_APIC_BASE_BSP (0x100)
 
+#define CPU_STACK_PAGES (8) /* 32 KiB */
+
 void _rdmsr(uint32_t reg, uint32_t* eax, uint32_t* edx);
 void _wrmsr(uint32_t reg, uint32_t  eax, uint32_t  edx);
+
+struct wakeup_table {
+    void* stack;
+    void* pml4;
+};
 
 static void* lapic_mmio = NULL;
 
@@ -53,11 +60,11 @@ static void wakeup(int apic_id) {
     *icr_hi = apic_id << 24;
     *icr_lo = 0x08 | (5 << 8) | (1 << 14) | (0 << 18);
     *id;
-    delay(10);
+    //delay(10);
     while (icr_lo[0] & (1<<12)) ;
     *icr_lo = 0x08 | (6 << 8) | (0 << 14) | (0 << 18);
     *id;
-    delay(10);
+    //delay(10);
     while (icr_lo[0] & (1<<12)) ;
 }
 
@@ -66,6 +73,8 @@ extern const void _wakeup_end;
 extern const void _wakeup_tab;
 
 extern const struct vm_context vm_kctx;
+
+void panic();
 
 void lapic_init() {
     uint64_t base = lapic_get_base();
@@ -83,30 +92,34 @@ void lapic_init() {
     /* Enable Local-APIC MMIO. */
     *spivr |= 0x80;
 
-    uint64_t* src = &_wakeup_start;
+    uint64_t* src = (void*)&_wakeup_start;
     uint64_t* dst = (void*)VM_BASE_PHYSICAL + 0x8000;
-    uint64_t* tab = (void*)dst + (&_wakeup_tab - &_wakeup_start);
+    struct wakeup_table* table = (void*)dst + (&_wakeup_tab - &_wakeup_start);
 
     /* Copy payload to lower 1 MiB. */
-    while (src < &_wakeup_end)
+    while (src < (uint64_t*)&_wakeup_end)
         *dst++ = *src++;
 
-    /* TEST: Allocate stack. */
-    void* stack_virt = vm_alloc(8);
-    uint32_t stack_phys[8];
-
-    /* TODO: check status code */
-    pm_stack_alloc(8, stack_phys);
-    vm_map_pages(stack_virt, stack_phys, 8);
-    tab[0] = stack_virt + 32768;
-    tab[1] = (void*)&vm_kctx.pml4[0] - VM_BASE_KERNEL_ELF;
+    /* TODO: this is stupid, get rid of it... */
+    table->pml4 = (void*)&vm_kctx.pml4[0] - VM_BASE_KERNEL_ELF;
 
     /* Setup multiprocessing. */
     mp_init();
     for (int i = 0; i < MP_MAX_CORES; i++) {
         if (mp_cores[i] == NULL)
             break;
-        if (!mp_cores[i]->bsp)
+        if (!mp_cores[i]->bsp) {
+            void* stack_virt = vm_alloc(CPU_STACK_PAGES);
+            uint32_t pages[CPU_STACK_PAGES];
+            
+            if (pm_stack_alloc(CPU_STACK_PAGES, pages) != PMM_OK) {
+                klog(LL_ERROR, "apic: cpu[%d]: Unable to allocate physical memory for CPU stack.", i);
+                panic();
+            }
+            vm_map_pages(stack_virt, pages, CPU_STACK_PAGES);
+            klog(LL_DEBUG, "apic: cpu[%d]: stack @ virtual %p.", i, stack_virt);
+            table->stack = stack_virt + CPU_STACK_PAGES * 4096;
             wakeup(mp_cores[i]->lapic_id);
+        }
     }
 }
