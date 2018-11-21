@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2018-present Frederic Meyer. All rights reserved.
  *
@@ -6,7 +5,9 @@
  * found in the LICENSE file.
  */
 
+#include "mp.h"
 #include "apic.h"
+
 #include <stdint.h>
 #include <stddef.h>
 #include <arch/print.h>
@@ -31,7 +32,7 @@ static uint64_t lapic_get_base() {
     uint32_t lapic_base_edx;
     uint32_t lapic_base_eax;
 
-    /* get current LAPIC base from MSR */
+    /* Get current LAPIC base from MSR */
     _rdmsr(MSR_APIC_BASE, &lapic_base_eax, &lapic_base_edx);
 
     return ((uint64_t)lapic_base_edx<<32)|(lapic_base_eax&0xFFFFF000);
@@ -41,46 +42,6 @@ static void lapic_set_base(uint64_t base) {
     base = (base&0xFFFFF000)|MSR_APIC_BASE_ENABLE|MSR_APIC_BASE_BSP;
     _wrmsr(MSR_APIC_BASE, (base&0xFFFFFFFF), (base>>32));
 }
-
-/* TODO: place MPC code somewhere else? */
-
-/* Multiprocessor Configuration Table */
-struct mpc_table {
-    uint32_t magic;
-    uint16_t length;
-    uint8_t  revision;
-    uint8_t  checksum;
-    char     oem_id[8];
-    char     product_id[12];
-    uint32_t oem_tab;
-    uint16_t oem_tab_sz;
-    uint16_t entry_cnt;
-    uint32_t lapic_base;
-    uint16_t ext_tab_sz;
-    uint8_t  ext_tab_chk;
-} __attribute__((packed));
-
-/* Multiprocessor Floating Pointer Structure */
-struct mpc_pointer {
-    uint32_t magic;
-    uint32_t config_ptr;
-    uint8_t  length;
-    uint8_t  version;
-    uint8_t  checksum;
-    uint8_t  features[5];
-} __attribute__((packed));
-
-/* Multiprocessor Processor Entry */
-struct mpc_cpu {
-    uint8_t type;
-    uint8_t lapic_id;
-    uint8_t lapic_ver;
-    unsigned int enabled : 1;
-    unsigned int bsp : 1;
-    unsigned int reserved : 6;
-    uint32_t signature;
-    uint32_t features;
-} __attribute__((packed));
 
 void delay(int ms);
 
@@ -100,77 +61,6 @@ static void wakeup(int apic_id) {
     while (icr_lo[0] & (1<<12)) ;
 }
 
-static void find_mpc_table() {
-    void* data = (void*)0xFFFF808000000000;
-    struct mpc_pointer* ptr = NULL;
-    struct mpc_table* config = NULL;
-
-    /* TODO: atm we are scanning the entire first 1MiB.
-     * However the specification allows us to narrow it down
-     * to three specific memory areas.
-     */
-    for (int i = 0; i <= 0xFFFFC; i++) {
-        if (*(uint32_t*)(data + i) == 0x5F504D5F) { /* _MP_ */
-            ptr = data + i;
-            klog(LL_DEBUG, "apic: MPC-pointer discovered (%p).", ptr);
-            break;
-        }
-    }
-
-    if (ptr == NULL) {
-        klog(LL_WARN, "apic: Missing MPC-pointer. Not a multicore system?");
-        return;
-    }
-
-    config = data + ptr->config_ptr;
-    klog(LL_DEBUG, "apic: MPC-table found (%p).", config);
-
-    if (config->magic != 0x504D4350) {
-        klog(LL_WARN, "apic: MPC-table signature mismatch: %#08x", config->magic);
-        return;
-    }
-
-    int cpu_id = 0;
-
-    /* Why the fuck do we have to + 1?
-     * The entries are said to _follow_ after the config table.
-     * Our structure has exactly 43 bytes which matches the specified size.
-     */
-    void* entry = (void*)config + sizeof(struct mpc_table) + 1;
-
-    /* Traverse configuration table. */
-    for (int i = 0; i < config->entry_cnt; i++) {
-        uint8_t type = *(uint8_t*)entry;
-        switch (type) {
-            case 0: {
-                struct mpc_cpu* cpu = entry;
-                klog(LL_INFO, "apic: cpu[%d]: lapic_id=%#x enabled=%u bsp=%u signature=%#x",
-                    cpu_id++,
-                    cpu->lapic_id,
-                    cpu->enabled,
-                    cpu->bsp,
-                    cpu->signature
-                );
-                if (!cpu->bsp) {
-                    wakeup(cpu->lapic_id);
-                }
-                entry += 20;
-                break;
-            }
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-                entry += 8;
-                break;
-            default:
-                entry += 8;
-                klog(LL_WARN, "apic: Unknown MPC-table entry type %#x.", type);
-                break;
-        }
-    }
-}
-
 extern const void _wakeup_start;
 extern const void _wakeup_end;
 extern const void _wakeup_tab;
@@ -183,16 +73,14 @@ void lapic_init() {
     /* Enable the Local-APIC */
     lapic_set_base(base);
 
-    /* Map its MMIO registers into memory */
+    /* Map its MMIO registers into memory. */
     lapic_mmio = vm_alloc(1);
     vm_map_page(lapic_mmio, base / 4096);
     klog(LL_DEBUG, "apic: Mapped Local-APIC MMIO @ %p", lapic_mmio);
 
     volatile uint32_t* spivr = (void*)lapic_mmio + 0xF0;
 
-    /* Actually enabling the Local-APIC by setting
-     * Enable-bit in the SPIVR register.
-     */
+    /* Enable Local-APIC MMIO. */
     *spivr |= 0x80;
 
     uint64_t* src = &_wakeup_start;
@@ -213,5 +101,12 @@ void lapic_init() {
     tab[0] = stack_virt + 32768;
     tab[1] = (void*)&vm_kctx.pml4[0] - VM_BASE_KERNEL_ELF;
 
-    find_mpc_table();
+    /* Setup multiprocessing. */
+    mp_init();
+    for (int i = 0; i < MP_MAX_CORES; i++) {
+        if (mp_cores[i] == NULL)
+            break;
+        if (!mp_cores[i]->bsp)
+            wakeup(mp_cores[i]->lapic_id);
+    }
 }
