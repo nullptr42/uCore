@@ -222,6 +222,4 @@ void lapic_init() {
     //}
 
     find_mpc_table();
-
-    while (1) {}
 }
