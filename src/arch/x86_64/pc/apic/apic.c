@@ -84,7 +84,7 @@ void lapic_init() {
     *spivr |= 0x80;
 
     uint64_t* src = &_wakeup_start;
-    uint64_t* dst = (void*)0xFFFF808000000000 + 0x8000;
+    uint64_t* dst = (void*)VM_BASE_PHYSICAL + 0x8000;
     uint64_t* tab = (void*)dst + (&_wakeup_tab - &_wakeup_start);
 
     /* Copy payload to lower 1 MiB. */

@@ -24,6 +24,7 @@ struct mpc_cpu {
     uint32_t features;
 } __attribute__((packed));
 
+extern int mp_core_count;
 extern struct mpc_cpu* mp_cores[MP_MAX_CORES];
 
 void mp_init();

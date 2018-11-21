@@ -7,6 +7,7 @@
 
 #include <log.h>
 #include <stddef.h>
+#include <arch/x86_64/pc/vm/vm.h>
 
 #include "mp.h"
 
@@ -36,11 +37,11 @@ struct mpc_pointer {
     uint8_t  features[5];
 } __attribute__((packed));
 
-/* List of CPUs */
+int mp_core_count = -1;
 struct mpc_cpu* mp_cores[MP_MAX_CORES];
 
 void mp_init() {
-    void* data = (void*)0xFFFF808000000000;
+    void* data = (void*)VM_BASE_PHYSICAL;
     struct mpc_pointer* ptr = NULL;
     struct mpc_table* config = NULL;
 
@@ -71,18 +72,15 @@ void mp_init() {
     int cpu_id = 0;
     void* entry = (void*)config + sizeof(struct mpc_table) + 1;
 
-    for (int i = 0; i < MP_MAX_CORES; i++)
-        mp_cores[i] = NULL;
-
     /* Traverse configuration table. */
     for (int i = 0; i < config->entry_cnt; i++) {
         uint8_t type = *(uint8_t*)entry;
         switch (type) {
             case 0: {
                 struct mpc_cpu* cpu = entry;
-                //if (cpu_id < MP_MAX_CORES) {
-                mp_cores[cpu_id] = cpu;
-                //}
+                if (cpu_id < MP_MAX_CORES) {
+                    mp_cores[cpu_id] = cpu;
+                }
                 klog(LL_INFO, "cpu[%d]: lapic_id=%#x enabled=%u bsp=%u signature=%#x",
                     cpu_id++,
                     cpu->lapic_id,
@@ -105,6 +103,8 @@ void mp_init() {
                 break;
         }
     }
+
+    mp_core_count = cpu_id;
 
     if (cpu_id > MP_MAX_CORES) {
         klog(LL_WARN, "mp: Got %d cpus but can support at maximum %d.", cpu_id, MP_MAX_CORES);
