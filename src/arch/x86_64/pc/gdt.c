@@ -24,9 +24,7 @@ void gdt_init() {
     // Kernel 64-bit Code Segment (selector=0x08)
     // Kernel Data Segment (selector=0x10)
     // User 64-bit Code Segment (selector=0x1B)
-    // User Data Segment (selector=0x23)
-    
-    /* Setup GDT according to listing above */ 
+    // User Data Segment (selector=0x23) 
     gdt_set_entry(&gdt[0], 0, 0, 0, 0);
     gdt_set_entry(&gdt[1], 0, 0xFFFFF, GDT_GRANULARITY | GDT_LM, GDT_ACCESS_RING0 | GDT_EXEC);
     gdt_set_entry(&gdt[2], 0, 0xFFFFF, GDT_GRANULARITY | GDT_PM_32, GDT_ACCESS_RING0);

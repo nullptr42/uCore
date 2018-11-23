@@ -50,8 +50,6 @@ static void lapic_set_base(uint64_t base) {
     _wrmsr(MSR_APIC_BASE, (base&0xFFFFFFFF), (base>>32));
 }
 
-void delay(int ms);
-
 static void wakeup(int apic_id) {
     volatile uint32_t* icr_hi = (void*)lapic_mmio + 0x310;
     volatile uint32_t* icr_lo = (void*)lapic_mmio + 0x300;
@@ -111,11 +109,12 @@ void lapic_init() {
         if (!mp_cores[i]->bsp) {
             void* stack_virt = vm_alloc(CPU_STACK_PAGES);
             uint32_t pages[CPU_STACK_PAGES];
-            
+
             if (pm_stack_alloc(CPU_STACK_PAGES, pages) != PMM_OK) {
                 klog(LL_ERROR, "apic: cpu[%d]: Unable to allocate physical memory for CPU stack.", i);
                 panic();
             }
+            
             vm_map_pages(stack_virt, pages, CPU_STACK_PAGES);
             klog(LL_DEBUG, "apic: cpu[%d]: stack @ virtual %p.", i, stack_virt);
             table->stack = stack_virt + CPU_STACK_PAGES * 4096;

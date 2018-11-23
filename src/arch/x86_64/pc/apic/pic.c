@@ -46,7 +46,7 @@ void pic_init() {
     io_wait();
     outb(PIC_IO_S_DATA, IRQ_BASE_S);
     io_wait();
-    outb(PIC_IO_S_DATA, 2); /* whatever this is */
+    outb(PIC_IO_S_DATA, 2); 
     io_wait();
     outb(PIC_IO_S_DATA, PIC_ICW4_8086);
     io_wait();
