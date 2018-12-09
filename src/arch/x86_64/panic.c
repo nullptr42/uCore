@@ -9,7 +9,6 @@
 #include <lib/vt100-codes.h>
 
 void panic() {
-    /* TODO: print registers and stack trace */
     kprint(COLOR_RED "KERNEL PANIC!");
     asm("cli;hlt");
 }

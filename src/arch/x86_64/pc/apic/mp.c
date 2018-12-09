@@ -45,7 +45,7 @@ void mp_init() {
     struct mpc_pointer* ptr = NULL;
     struct mpc_table* config = NULL;
 
-    /* TODO: atm we are scanning the entire first 1MiB.
+    /* TODO: we are scanning the entire first 1MiB.
      * However the specification allows us to narrow it down
      * to three specific memory areas.
      */

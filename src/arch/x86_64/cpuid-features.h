@@ -2,9 +2,7 @@
 #ifndef _CPUID_FEATURES_H_
 #define _CPUID_FEATURES_H_
 
-/* Derived from: https://wiki.osdev.org/CPUID 
- * CHECKME: Is this a complete list? 
- */
+/* Source: https://wiki.osdev.org/CPUID */
 #define CPUID_FEAT_SSE3         (1<<0) 
 #define CPUID_FEAT_PCLMUL       (1<<1)
 #define CPUID_FEAT_DTES64       (1<<2)
