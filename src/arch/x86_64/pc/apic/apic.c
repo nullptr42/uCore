@@ -77,8 +77,6 @@ extern const void _wakeup_start;
 extern const void _wakeup_end;
 extern const void _wakeup_tab;
 
-extern const struct vm_context vm_kctx;
-
 void panic();
 
 void lapic_init() {

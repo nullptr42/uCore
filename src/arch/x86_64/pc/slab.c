@@ -29,5 +29,6 @@ void* libslab_get(size_t size) {
     }
 
     vm_map_pages(base, pages, num);
+    
     return base;
  }

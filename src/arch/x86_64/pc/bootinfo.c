@@ -162,11 +162,11 @@ bool bootinfo_from_mb2(struct bootinfo* binf, struct mb2_info* mb2) {
     /* Retrieve any framebuffer information */
     multiboot2_find_tags(mb2, MB_TAG_FRAMEBUFFER, (tag_handler)callback_fb, &state);
 
-    /* Check for missing information */
     if (!state.has_memory) {
         klog(LL_ERROR, "bootinfo: memory boundaries missing from Multiboot2 header.\n");
         return false;
     }
+
     if (!state.has_mmap) {
         klog(LL_ERROR, "bootinfo: memory map missing from Multiboot2 header.\n");
         return false;

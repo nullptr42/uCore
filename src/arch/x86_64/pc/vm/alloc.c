@@ -150,7 +150,6 @@ void vm_free(void* virtual, int count) {
         (uint64_t)virtual > ALLOC_LIMIT) {
         klog(LL_ERROR, "vm: vm_free: address %p is not within bounds.", virtual);
         panic();
-        return;
     }
 
     virtual -= ALLOC_BASE;
