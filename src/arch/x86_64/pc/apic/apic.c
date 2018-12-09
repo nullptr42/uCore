@@ -22,6 +22,7 @@
 #define CPU_STACK_PAGES (8) /* 32 KiB */
 #define CPU_STACK_SIZE  (CPU_STACK_PAGES * 4096)
 
+/* Indicates whether the core we try to start already woke up. */
 bool core_wakedup;
 
 static void* lapic_mmio = NULL;
@@ -51,19 +52,17 @@ static void lapic_set_base(uint64_t base) {
 static void wakeup(int apic_id) {
     volatile uint32_t* icr_hi = (void*)lapic_mmio + 0x310;
     volatile uint32_t* icr_lo = (void*)lapic_mmio + 0x300;
-    volatile uint32_t* id = (void*)lapic_mmio + 0x20;
 
     core_wakedup = false;
 
+    /* INIT */
     *icr_hi = apic_id << 24;
     *icr_lo = 0x08 | (5 << 8) | (1 << 14) | (0 << 18);
-    *id;
-    //delay(10);
-    while (icr_lo[0] & (1<<12)) ;
+    while (icr_lo[0] & (1<<12)) asm("nop;");
+
+    /* SIPI */
     *icr_lo = 0x08 | (6 << 8) | (0 << 14) | (0 << 18);
-    *id;
-    //delay(10);
-    while (icr_lo[0] & (1<<12)) ;
+    while (icr_lo[0] & (1<<12)) asm("nop;");
 
     /**
      * Wait for the CPU core to complete its initialization routine.
