@@ -104,8 +104,9 @@ void ap_main() {
     struct amd64_cpu _cpu;
 
     cpuid_read(&_cpu);
-    kprintf(COLOR_B_YELLOW "Greetings from core(%d)!\n", _cpu.misc.apic_id);
-
+    kprintf(COLOR_B_YELLOW "cpu[%d]: waked up!\n" CON_RESET, _cpu.misc.apic_id);
+    core_wakedup = true;
+    
     asm("sti");
     for (;;) asm("hlt");
 }

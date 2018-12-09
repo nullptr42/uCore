@@ -11,10 +11,10 @@ global _wakeup_start
 global _wakeup_end
 global _wakeup_tab
 
+extern vm_kctx
 extern vm_level1
 extern ap_main
 
-; TODO: this is redundant to boot.asm
 VM_BASE_KERNEL_ELF equ 0xFFFFFFFF80000000
 
 ; GDT access byte defines
@@ -36,7 +36,6 @@ _wakeup_start:
     jmp start
 _wakeup_tab:
     .stack: dq 0
-    .pml4: dq 0
 start:
     ; Enable A20-gate (needs better method).
     in al, 0x92
@@ -99,7 +98,7 @@ bits 64
     jmp rax
 .fixed_rip:
     mov rsp, [0x8000 + (_wakeup_tab.stack - _wakeup_start)]
-    mov rdx, [0x8000 + (_wakeup_tab.pml4 - _wakeup_start)]
+    mov rdx, vm_kctx - VM_BASE_KERNEL_ELF
     mov cr3, rdx
     call ap_main
     cli
