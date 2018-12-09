@@ -124,9 +124,16 @@ void lapic_init() {
         }
         
         stack = vm_alloc(CPU_STACK_PAGES);
+
+        if (stack == NULL) {
+            klog(LL_ERROR, "apic: cpu[%d]: Unable to allocted virtul memory for CPU stack.", i);
+            panic();
+        }
+
+        klog(LL_DEBUG, "apic: cpu[%d]: stack @ virtual %p.", i, stack);
+
         vm_map_pages(stack, pages, CPU_STACK_PAGES);
         tab[0] = (uint64_t)stack + CPU_STACK_SIZE;
-        klog(LL_DEBUG, "apic: cpu[%d]: stack @ virtual %p.", i, stack);
         
         wakeup(mp_cores[i]->lapic_id);
     }
