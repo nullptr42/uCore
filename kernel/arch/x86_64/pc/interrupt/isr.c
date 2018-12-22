@@ -6,7 +6,7 @@
  */
 
 #include <arch/print.h>
-#include <arch/x86_64/pc/state.h>
+#include <arch/x86_64/state.h>
 
 struct cpu_state* handle_interrupt(struct cpu_state* cpu) {
     if (cpu->intr >= 0x20 && cpu->intr <= 0x2F) {
