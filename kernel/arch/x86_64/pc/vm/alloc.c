@@ -68,39 +68,55 @@ static int vm_alloc_small(int count) {
 
 static int vm_alloc_large(int count) {
     for (int entry = hint; entry < NUM_ENTRIES; entry++) {
+        /* For performance reasons we ignore entries that aren't completely free. */
         if (bitmap[entry] != qword_free)
             continue;
         
         int entry2 = entry + 1;
-        int status = 0;
         int remain = count - PAGES_PER_ENTRY;
 
         /* Scan following entries for free pages until
          * the desired amount is reached.
          */
         while (remain > 0) {
-            if (entry2 >= NUM_ENTRIES || bitmap[entry2] != qword_free) {
-                status = -1;
-                break;
+            if (entry2 >= NUM_ENTRIES)
+                return -1;
+            if (bitmap[entry2] != qword_free) {
+                /* Check first if there still are enough pages to complete the allocation. */
+                if (remain < PAGES_PER_ENTRY) {
+                    uint64_t mask = qword_free << (remain * -1);
+                    if ((bitmap[entry2] & mask) == mask)
+                        break;
+                }
+                /* 'entry2' does contain non-free pages.
+                 * And we know that any entry following 'entry' up to 'entry2'
+                 * would contain 'entry2' too. Thus we should skip those entries.
+                 */
+                entry = entry2;
+                goto next_for;
             }
+            
             remain -= PAGES_PER_ENTRY;
             entry2++;
         }
 
-        if (status != -1) {
-            /* Mark pages as allocated. */
-            if (remain < 0) {
-                for (int i = entry; i < entry2 - 1; i++)
-                    bitmap[i] = 0;
-                bitmap[entry2-1] &= (qword_free << (remain * -1));
-            } else {
-                for (int i = entry; i < entry2; i++)
-                    bitmap[i] = 0;
-            }
-                
-            hint = entry2;        
-            return (entry * PAGES_PER_ENTRY);
+        /* Mark pages as allocated. */
+        if (remain < 0) {
+            for (int i = entry; i < entry2 - 1; i++)
+                bitmap[i] = 0;
+            bitmap[entry2-1] &= (qword_free << (remain * -1));
+        } else {
+            for (int i = entry; i < entry2; i++)
+                bitmap[i] = 0;
         }
+
+        /* Free memory is relatively likely to be followed by more free memory. */
+        hint = entry2;
+        
+        return (entry * PAGES_PER_ENTRY);
+next_for:
+        /* Dummy statement because a label requires at least a single statement. */
+        continue;
     }
 
     return -1;
