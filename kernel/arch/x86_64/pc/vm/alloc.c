@@ -85,8 +85,10 @@ static int vm_alloc_large(int count) {
                 /* Check first if there still are enough pages to complete the allocation. */
                 if (remain < PAGES_PER_ENTRY) {
                     uint64_t mask = qword_free << (remain * -1);
-                    if ((bitmap[entry2] & mask) == mask)
+                    if ((bitmap[entry2] & mask) == mask) {
+                        entry2++;
                         goto done;
+                    }
                 }
                 /* 'entry2' does contain non-free pages.
                  * And we know that any entry following 'entry' up to 'entry2'
@@ -174,7 +176,7 @@ void vm_free(void* virtual, int count) {
         count -= PAGES_PER_ENTRY;
     }
     /* Release the remaining pages. */
-    bitmap[entry++] |= qword_free << (count * -1);
+    bitmap[entry] |= qword_free << (count * -1);
     
     hint = page / PAGES_PER_ENTRY;
-} 
+}
