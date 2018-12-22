@@ -86,7 +86,7 @@ static int vm_alloc_large(int count) {
                 if (remain < PAGES_PER_ENTRY) {
                     uint64_t mask = qword_free << (remain * -1);
                     if ((bitmap[entry2] & mask) == mask)
-                        break;
+                        goto done;
                 }
                 /* 'entry2' does contain non-free pages.
                  * And we know that any entry following 'entry' up to 'entry2'
@@ -99,7 +99,7 @@ static int vm_alloc_large(int count) {
             remain -= PAGES_PER_ENTRY;
             entry2++;
         }
-
+done:
         /* Mark pages as allocated. */
         if (remain < 0) {
             for (int i = entry; i < entry2 - 1; i++)
