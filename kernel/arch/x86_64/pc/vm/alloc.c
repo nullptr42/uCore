@@ -165,14 +165,16 @@ void vm_free(void* virtual, int count) {
 
     virtual -= ALLOC_BASE;
 
-    int page = (int)((uint64_t)virtual / 4096);
-
-    for (int i = page; i < (page + count); i++) {
-        int entry = i / PAGES_PER_ENTRY;
-        int index = i % PAGES_PER_ENTRY;
-
-        bitmap[entry] |= ~(1 << index);
+    int page  = (int)((uint64_t)virtual / 4096);
+    int entry = page / PAGES_PER_ENTRY;
+    
+    /* Release whole entries as long as possible. */
+    while (count >= PAGES_PER_ENTRY) {
+        bitmap[entry++] = qword_free;
+        count -= PAGES_PER_ENTRY;
     }
-
+    /* Release the remaining pages. */
+    bitmap[entry++] |= qword_free << (count * -1);
+    
     hint = page / PAGES_PER_ENTRY;
 } 
