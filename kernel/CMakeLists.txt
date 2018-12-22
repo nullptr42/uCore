@@ -13,7 +13,7 @@ SET(MSPHERE_PLATFORM "pc"     CACHE STRING "Platform")
 SET(MSPHERE_OPT_LEVEL "2" CACHE STRING "Optimization Level (0,1,2,3,fast,s ...)")
 
 INCLUDE("arch/${MSPHERE_ISA}/flags.cmake")
-INCLUDE("arch/${MSPHERE_ISA}/${MSPHERE_PLATFORM}/flags.cmake")
+INCLUDE("platform/${MSPHERE_PLATFORM}/flags.cmake")
 INCLUDE("kernel.cmake")
 
 PROJECT(microsphere C CXX)

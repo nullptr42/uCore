@@ -7,7 +7,7 @@
 
 #include <log.h>
 #include <stddef.h>
-#include <arch/x86_64/pc/vm/vm.h>
+#include <platform/pc/vm/vm.h>
 
 #include "mp.h"
 
