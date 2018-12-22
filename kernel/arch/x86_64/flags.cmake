@@ -17,4 +17,6 @@ SET(COMPILE_FLAGS "-mno-red-zone -mcmodel=kernel -mno-sse")
 FILE(GLOB ISA_SRC
     "${CMAKE_CURRENT_LIST_DIR}/*.c"
     "${CMAKE_CURRENT_LIST_DIR}/*.asm"
+    "${CMAKE_CURRENT_LIST_DIR}/apic/*.c"
+    "${CMAKE_CURRENT_LIST_DIR}/apic/*.asm"
 )
