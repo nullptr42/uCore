@@ -1,5 +1,6 @@
 SET(MSPHERE_LD_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/layout.ld)
 SET(MSPHERE_LD_FLAGS "-z max-page-size=4096")
+SET(MSPHERE_ARCH "x86_64")
 
 OPTION(BOOT_GX "Graphical boot" OFF)
 
