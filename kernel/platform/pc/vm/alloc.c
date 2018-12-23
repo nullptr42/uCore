@@ -84,7 +84,7 @@ static int vm_alloc_large(int count) {
             if (bitmap[entry2] != qword_free) {
                 /* Check first if there still are enough pages to complete the allocation. */
                 if (remain < PAGES_PER_ENTRY) {
-                    uint64_t mask = qword_free << (remain * -1);
+                    uint64_t mask = ~(qword_free << remain);
                     if ((bitmap[entry2] & mask) == mask) {
                         entry2++;
                         goto done;
@@ -106,7 +106,7 @@ done:
         if (remain < 0) {
             for (int i = entry; i < entry2 - 1; i++)
                 bitmap[i] = 0;
-            bitmap[entry2-1] &= (qword_free << (remain * -1));
+            bitmap[entry2-1] &= (qword_free << (PAGES_PER_ENTRY + remain));
         } else {
             for (int i = entry; i < entry2; i++)
                 bitmap[i] = 0;
@@ -176,7 +176,7 @@ void vm_free(void* virtual, int count) {
         count -= PAGES_PER_ENTRY;
     }
     /* Release the remaining pages. */
-    bitmap[entry] |= qword_free << (count * -1);
+    bitmap[entry] |= qword_free >> (count * -1);
     
     hint = page / PAGES_PER_ENTRY;
 }
