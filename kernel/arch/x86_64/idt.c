@@ -8,7 +8,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <platform/pc/gdt.h>
+#include <arch/x86_64/gdt.h>
 
 #define IDT_NUM_ENT (256)
 #define IDT_LIMIT (IDT_NUM_ENT * sizeof(struct idt_entry) - 1)
