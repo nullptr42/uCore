@@ -7,6 +7,7 @@ SECTIONS {
     kernel_start = .;
 
     .text ALIGN(4K) : AT(ADDR(.text) - 0xFFFFFFFF80000000) {
+        *(.multiboot)
         *(.text)
     }
 
