@@ -53,7 +53,7 @@ idt_reload:
 ;   rsi(arg1): output structure
 _cpuid:
     push rbx
-    
+
     mov eax, edi
     cpuid
     mov [rsi + 0x0], eax
@@ -67,10 +67,10 @@ _cpuid:
 ; Read contents of a Model Specific Register (MSR).
 ;   rdi(arg0): register id
 ;   rsi(arg1): eax output address
-;   rdx(arg2): edx output address 
+;   rdx(arg2): edx output address
 _rdmsr:
     mov r8, rdx
-    
+
     ; Read register
     mov ecx, edi
     rdmsr
@@ -96,7 +96,7 @@ fpu_init:
     ; Enable coprocessor monitoring.
     ; "Controls interaction of WAIT/FWAIT instructions with TS flag in CR0"
     mov rax, cr0
-    ; and ax, 0xFFFB
+    and ax, 0xFFFB
     or ax, CR0_MONITOR_COPROC
     mov cr0, rax
 
@@ -104,5 +104,5 @@ fpu_init:
     mov rax, cr4
     or ax, (CR4_OSFXSR|CR4_OSXMMEXCPT)
     mov cr4, rax
-    
+
     ret

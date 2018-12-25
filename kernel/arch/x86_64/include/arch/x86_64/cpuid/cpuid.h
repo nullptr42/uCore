@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "cpuid-features.h"
+#include "features.h"
 
 struct cpuid_result {
     uint32_t eax;
