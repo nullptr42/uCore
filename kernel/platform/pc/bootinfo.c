@@ -5,7 +5,9 @@
  * found in the LICENSE file.
  */
 
-#include "bootinfo.h"
+#include "multiboot/multiboot2.h"
+
+#include <bootinfo.h>
 #include <arch/print.h>
 #include <stddef.h>
 #include <log.h>
@@ -22,13 +24,13 @@ static bool callback_args(struct mb2_tag* tag, struct state* state) {
     size_t length = tag->size - sizeof(struct mb2_tag);
     char* cmdline = (void*)tag + sizeof(struct mb2_tag);
     char* dst = &binf->cmdline[0];
-            
+
     if (length > MAX_CMDLINE_LEN+1) {
         klog(LL_WARN, "bootinfo: cmdline exceeds maximum length, truncating...\n");
         length = MAX_CMDLINE_LEN;
         dst[MAX_CMDLINE_LEN] = '\0';
     }
-            
+
     while (length--) *dst++ = *cmdline++;
 
     return true;
@@ -41,7 +43,7 @@ static bool callback_memory(struct mb2_tag* tag, struct state* state) {
     binf->memory_hi = ((struct mb2_memory_tag*)tag)->mem_upper * 4096;
     state->has_memory = true;
     return true;
-} 
+}
 
 static bool callback_mmap(struct mb2_tag* tag, struct state* state) {
     struct bootinfo* binf = state->binf;
@@ -69,12 +71,12 @@ static bool callback_mmap(struct mb2_tag* tag, struct state* state) {
             memory++;
             binf->num_mmap++;
         }
-                
+
         /* Update size and entry address */
         size += mmap->entry_size;
         entry = (void*)entry + mmap->entry_size;
     }
-            
+
     return true;
 }
 
@@ -88,13 +90,13 @@ static bool callback_module(struct mb2_tag* tag, struct state* state) {
 
     struct module* module = &binf->modules[binf->num_modules++];
     struct mb2_module_tag* entry = (void*)tag;
-            
+
     module->base = (void*)(uint64_t)entry->mod_start;
     module->last = (void*)(uint64_t)entry->mod_end;
 
     int i = 0;
     char* string = &entry->string;
-            
+
     while (string[i]) {
         if (i == MAX_MODULE_NAME_LEN) {
             klog(LL_WARN, "bootinfo: module string length exceeds %d characters.\n", MAX_MODULE_NAME_LEN);
@@ -132,7 +134,7 @@ static bool callback_fb(struct mb2_tag* tag, struct state* state) {
     binf->fb.format.r_mask_len = fb->r_mask_len;
     binf->fb.format.g_mask_len = fb->g_mask_len;
     binf->fb.format.b_mask_len = fb->b_mask_len;
-    
+
     return true;
 }
 
@@ -142,7 +144,7 @@ bool bootinfo_from_mb2(struct bootinfo* binf, struct mb2_info* mb2) {
         .has_mmap = false,
         .has_memory = false
     };
-    
+
     /* Initialize basic data */
     binf->num_modules = 0;
     binf->num_mmap = 0;

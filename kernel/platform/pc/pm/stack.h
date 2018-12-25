@@ -9,7 +9,7 @@
 #define _X86_64_PC_PM_STACK_H_
 
 #include "status.h"
-#include <platform/pc/bootinfo.h>
+#include <bootinfo.h>
 
 struct pm_stack {
     uint32_t* pages;

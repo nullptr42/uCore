@@ -7,7 +7,6 @@
 
 #include <log.h>
 #include <arch/print.h>
-#include <platform/pc/bootinfo.h>
 #include <platform/pc/vm/vm.h>
 
 #include "stack.h"

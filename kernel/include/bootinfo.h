@@ -5,12 +5,11 @@
  * found in the LICENSE file.
  */
 
-#ifndef _X86_64_PC_BOOTINFO_H_
-#define _X86_64_PC_BOOTINFO_H_
+#ifndef _BOOTINFO_H_
+#define _BOOTINFO_H_
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "multiboot/multiboot2.h"
 
 #define MAX_MODULES (256)
 #define MAX_MMAP (256)
@@ -37,7 +36,7 @@ struct bootinfo {
 
     int num_modules;
     int num_mmap;
-    
+
     struct module modules[MAX_MODULES];
 
     uint64_t memory_lo;
@@ -47,7 +46,7 @@ struct bootinfo {
     /* Generic framebuffer information */
     struct framebuffer {
         bool present;
-        
+
         void* address;
         uint32_t pitch;
         uint32_t width;
@@ -67,6 +66,4 @@ struct bootinfo {
     } fb;
 };
 
-bool bootinfo_from_mb2(struct bootinfo* binf, struct mb2_info* mb2);
-
-#endif //_X86_64_PC_BOOTINFO_H_
+#endif //_BOOTINFO_H_

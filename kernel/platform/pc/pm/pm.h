@@ -9,6 +9,7 @@
 #define _X86_64_PC_PM_H_
 
 #include "stack.h"
+#include <bootinfo.h>
 
 void pm_init(struct bootinfo* binf);
 

@@ -8,10 +8,11 @@
 #include <stdint.h>
 
 #include "console.h"
-#include "bootinfo.h"
 #include "pm/pm.h"
 #include "vm/vm.h"
+#include "multiboot/multiboot2.h"
 
+#include <bootinfo.h>
 #include <log.h>
 #include <lib/lib.h>
 #include <lib/vt100-codes.h>
@@ -21,8 +22,10 @@
 #include <arch/x86_64/apic/pic.h>
 #include <arch/x86_64/apic/apic.h>
 
+/* TODO: Place these in headers. */
 void fpu_init();
 void idt_init();
+bool bootinfo_from_mb2(struct bootinfo* binf, struct mb2_info* mb2);
 
 /* processor information retrieved via cpuid */
 static struct amd64_cpu cpu;
