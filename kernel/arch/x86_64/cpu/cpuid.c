@@ -5,11 +5,11 @@
  * found in the LICENSE file.
  */
 
-#include "cpuid.h"
+#include <arch/x86_64/cpu/cpuid.h>
 
 static enum amd64_cpu_vendor get_vendor_by_name(struct cpuid_result* regs) {
     /* Check for "GenuineIntel" */
-    if (regs->ebx == 0x756e6547 && 
+    if (regs->ebx == 0x756e6547 &&
         regs->edx == 0x49656e69 &&
         regs->ecx == 0x6c65746e) return VENDOR_INTEL;
 
@@ -17,7 +17,7 @@ static enum amd64_cpu_vendor get_vendor_by_name(struct cpuid_result* regs) {
     if (regs->ebx == 0x68747541 &&
         regs->edx == 0x69746e65 &&
         regs->ecx == 0x444d4163) return VENDOR_AMD;
-    
+
     return VENDOR_UNSUPPORTED;
 }
 
@@ -39,7 +39,7 @@ void cpuid_read(struct amd64_cpu* cpu) {
         return;
     _cpuid(CPUID_GETFEATURES, &regs);
     cpu->features = ((uint64_t)regs.edx<<32)|regs.ecx;
-    
+
     /* Decode processor information from eax. */
     cpu->processor.stepping   = (regs.eax >>  0) & 0xF;
     cpu->processor.model      = (regs.eax >>  4) & 0xF;

@@ -5,8 +5,8 @@
  * found in the LICENSE file.
  */
 
-#include "mp.h"
-#include "apic.h"
+#include <arch/x86_64/apic/mp.h>
+#include <arch/x86_64/apic/apic.h>
 
 #include <stdint.h>
 #include <stddef.h>

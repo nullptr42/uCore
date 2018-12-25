@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include "pic.h"
+#include <arch/x86_64/apic/pic.h>
 #include <arch/x86_64/io-port.h>
 
 /* IO-ports used by the legacy PIC chip */
@@ -46,7 +46,7 @@ void pic_init() {
     io_wait();
     outb(PIC_IO_S_DATA, IRQ_BASE_S);
     io_wait();
-    outb(PIC_IO_S_DATA, 2); 
+    outb(PIC_IO_S_DATA, 2);
     io_wait();
     outb(PIC_IO_S_DATA, PIC_ICW4_8086);
     io_wait();

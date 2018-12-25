@@ -7,9 +7,8 @@
 
 #include <log.h>
 #include <stddef.h>
+#include <arch/x86_64/apic/mp.h>
 #include <platform/pc/vm/vm.h>
-
-#include "mp.h"
 
 /* Multiprocessor Configuration Table */
 struct mpc_table {
@@ -61,7 +60,7 @@ void mp_init() {
         klog(LL_WARN, "mp: Missing MPC-pointer. Not a multicore system?");
         return;
     }
-    
+
     config = data + ptr->config_ptr;
     klog(LL_DEBUG, "mp: MPC-table found (%p).", config);
     if (config->magic != 0x504D4350) {

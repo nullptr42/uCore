@@ -24,3 +24,5 @@ FILE(GLOB ISA_SRC
     "${CMAKE_CURRENT_LIST_DIR}/interrupt/*.c"
     "${CMAKE_CURRENT_LIST_DIR}/interrupt/*.asm"
 )
+
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_LIST_DIR}/include/)
