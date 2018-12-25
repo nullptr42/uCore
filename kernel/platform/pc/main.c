@@ -10,8 +10,6 @@
 #include "gdt.h"
 #include "console.h"
 #include "bootinfo.h"
-#include "apic/pic.h"
-#include "apic/apic.h"
 #include "pm/pm.h"
 #include "vm/vm.h"
 
@@ -19,7 +17,9 @@
 #include <lib/lib.h>
 #include <lib/vt100-codes.h>
 #include <version.h>
-#include <arch/x86_64/cpuid.h>
+#include <arch/x86_64/cpu/cpuid.h>
+#include <arch/x86_64/apic/pic.h>
+#include <arch/x86_64/apic/apic.h>
 
 void fpu_init();
 void idt_init();

@@ -1,5 +1,6 @@
 SET(MSPHERE_LD_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/layout.ld)
 SET(MSPHERE_LD_FLAGS "-z max-page-size=4096")
+SET(MSPHERE_ARCH "x86_64")
 
 OPTION(BOOT_GX "Graphical boot" OFF)
 
@@ -15,8 +16,6 @@ FILE(GLOB PLATFORM_SRC
     "${CMAKE_CURRENT_LIST_DIR}/interrupt/*.asm"
     "${CMAKE_CURRENT_LIST_DIR}/multiboot/*.c"
     "${CMAKE_CURRENT_LIST_DIR}/multiboot/*.asm"
-    "${CMAKE_CURRENT_LIST_DIR}/apic/*.c"
-    "${CMAKE_CURRENT_LIST_DIR}/apic/*.asm"
     "${CMAKE_CURRENT_LIST_DIR}/pm/*.c"
     "${CMAKE_CURRENT_LIST_DIR}/pm/*.asm"
     "${CMAKE_CURRENT_LIST_DIR}/vm/*.c"

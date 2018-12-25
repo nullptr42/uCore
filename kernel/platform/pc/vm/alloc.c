@@ -68,44 +68,57 @@ static int vm_alloc_small(int count) {
 
 static int vm_alloc_large(int count) {
     for (int entry = hint; entry < NUM_ENTRIES; entry++) {
-        /* Bail out quickly if no pages are free in this entry */
-        if (bitmap[entry] == 0)
+        /* For performance reasons we ignore entries that aren't completely free. */
+        if (bitmap[entry] != qword_free)
             continue;
+        
+        int entry2 = entry + 1;
+        int remain = count - PAGES_PER_ENTRY;
 
-        /* For performance reasons we only take entries that are completely free */
-        if (bitmap[entry] == qword_free) {
-            int entry2 = entry + 1;
-            int status = 0;
-            int remain = count - PAGES_PER_ENTRY;
-
-            /* Scan following entries for free pages until
-             * the desired amount is reached.
-             */
-            while (remain > 0) {
-                if (entry2 >= NUM_ENTRIES || bitmap[entry2] != qword_free) {
-                    status = -1;
-                    break;
+        /* Scan following entries for free pages until
+         * the desired amount is reached.
+         */
+        while (remain > 0) {
+            if (entry2 >= NUM_ENTRIES)
+                return -1;
+            if (bitmap[entry2] != qword_free) {
+                /* Check first if there still are enough pages to complete the allocation. */
+                if (remain < PAGES_PER_ENTRY) {
+                    uint64_t mask = ~(qword_free << remain);
+                    if ((bitmap[entry2] & mask) == mask) {
+                        entry2++;
+                        goto done;
+                    }
                 }
-                remain -= PAGES_PER_ENTRY;
-                entry2++;;
+                /* 'entry2' does contain non-free pages.
+                 * And we know that any entry following 'entry' up to 'entry2'
+                 * would contain 'entry2' too. Thus we should skip those entries.
+                 */
+                entry = entry2;
+                goto next_for;
             }
-
-            if (status != -1) {
-                /* Mark pages as allocated. */
-                if (remain < 0) {
-                    for (int i = entry; i < entry2 - 1; i++)
-                        bitmap[i] = 0;
-                    bitmap[entry2-1] &= (qword_free << (remain * -1));
-                } else {
-                    for (int i = entry; i < entry2; i++)
-                        bitmap[i] = 0;
-                }
-                
-                hint = entry2;
-                
-                return (entry * PAGES_PER_ENTRY);
-            }
+            
+            remain -= PAGES_PER_ENTRY;
+            entry2++;
         }
+done:
+        /* Mark pages as allocated. */
+        if (remain < 0) {
+            for (int i = entry; i < entry2 - 1; i++)
+                bitmap[i] = 0;
+            bitmap[entry2-1] &= (qword_free << (PAGES_PER_ENTRY + remain));
+        } else {
+            for (int i = entry; i < entry2; i++)
+                bitmap[i] = 0;
+        }
+
+        /* Free memory is relatively likely to be followed by more free memory. */
+        hint = entry2;
+        
+        return (entry * PAGES_PER_ENTRY);
+next_for:
+        /* Dummy statement because a label requires at least a single statement. */
+        continue;
     }
 
     return -1;
@@ -154,14 +167,16 @@ void vm_free(void* virtual, int count) {
 
     virtual -= ALLOC_BASE;
 
-    int page = (int)((uint64_t)virtual / 4096);
-
-    for (int i = page; i < (page + count); i++) {
-        int entry = i / PAGES_PER_ENTRY;
-        int index = i % PAGES_PER_ENTRY;
-
-        bitmap[entry] |= ~(1 << index);
+    int page  = (int)((uint64_t)virtual / 4096);
+    int entry = page / PAGES_PER_ENTRY;
+    
+    /* Release whole entries as long as possible. */
+    while (count >= PAGES_PER_ENTRY) {
+        bitmap[entry++] = qword_free;
+        count -= PAGES_PER_ENTRY;
     }
-
+    /* Release the remaining pages. */
+    bitmap[entry] |= qword_free >> (count * -1);
+    
     hint = page / PAGES_PER_ENTRY;
-} 
+}
