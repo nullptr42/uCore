@@ -9,7 +9,7 @@
 #define _X86_64_PC_APIC_H_
 
 #include <stdbool.h>
-#include <arch/x86_64/cpu/cpuid.h>
+#include <arch/x86_64/cpuid/cpuid.h>
 
 extern volatile bool core_wokeup;
 

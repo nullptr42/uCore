@@ -17,7 +17,7 @@
 #include <lib/vt100-codes.h>
 #include <version.h>
 #include <arch/x86_64/gdt.h>
-#include <arch/x86_64/cpu/cpuid.h>
+#include <arch/x86_64/cpuid/cpuid.h>
 #include <arch/x86_64/apic/pic.h>
 #include <arch/x86_64/apic/apic.h>
 

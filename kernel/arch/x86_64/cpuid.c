@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include <arch/x86_64/cpu/cpuid.h>
+#include <arch/x86_64/cpuid/cpuid.h>
 
 static enum amd64_cpu_vendor get_vendor_by_name(struct cpuid_result* regs) {
     /* Check for "GenuineIntel" */
