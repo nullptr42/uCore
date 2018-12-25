@@ -7,9 +7,53 @@
  */
 
 #include <stddef.h>
-#include <arch/x86_64/idt.h>
+#include <stdint.h>
+#include <platform/pc/gdt.h>
 
-#include "gdt.h"
+#define IDT_NUM_ENT (256)
+#define IDT_LIMIT (IDT_NUM_ENT * sizeof(struct idt_entry) - 1)
+
+/**
+ * @brief Interrupt descriptor flags
+ */
+enum idt_flags {
+    // Gate Type
+    IDT_GATE_TASK = 5,
+    IDT_GATE_INTR = 6,
+    IDT_GATE_TRAP = 7,
+
+    // 64-bit or 32-bit entry. Always 1 in long mode.
+    IDT_LM = 1<<3,
+
+    // Minimum Descriptor Privilege Level (DPL)
+    IDT_RING_0 = 0<<5,
+    IDT_RING_1 = 1<<5,
+    IDT_RING_2 = 2<<5,
+    IDT_RING_3 = 3<<5,
+
+    IDT_ACTIVE = 1<<7
+};
+
+/**
+ * @brief Structure required by LIDT, stores IDT address and size.
+ */
+struct idt_pointer {
+    uint16_t limit;
+    void* pointer;
+} __attribute__((packed));
+
+/**
+ * @brief 64-bit packed IDT entry.
+ */
+struct idt_entry {
+    uint16_t offset_lo;
+    uint16_t segment;
+    uint8_t  ist; /* interrupt stack table */
+    uint8_t  flags;
+    uint16_t offset_mi;
+    uint32_t offset_hi;
+    uint32_t padding;
+} __attribute__((packed));
 
 static struct idt_entry idt[IDT_NUM_ENT];
 
@@ -73,10 +117,40 @@ void isr_routine_0x2F();
 // Syscall stub
 void isr_routine_0x30();
 
+/**
+ * Load Interrupt Descriptor Table.
+ *
+ * @param[in]  pointer  Contains IDT address and size.
+ */
+void idt_reload(struct idt_pointer* pointer);
+
+/**
+ * Pack interrupt information into IDT entry.
+ *
+ * @param[in]  entry        Table entry
+ * @param      handler      Handler function pointer
+ * @param      codesegment  Code Segment
+ * @param      flags        Flags (e.g. minimum required DPL or gate type).
+ */
+static void idt_set_entry(struct idt_entry* entry,
+                                 void* handler,
+                                 int codesegment,
+                                 int flags) {
+    uint64_t offset = (uint64_t)handler;
+
+    entry->offset_lo =  offset  & 0xFFFF;
+    entry->offset_mi = (offset >> 16) & 0xFFFF;
+    entry->offset_hi =  offset >> 32;
+    entry->ist       = 0;
+    entry->flags     = flags;
+    entry->segment   = codesegment;
+    entry->padding   = 0;
+}
+
 void idt_init() {
     for (int i = 0; i < IDT_NUM_ENT; i++)
         idt_set_entry(&idt[i], NULL, 0, 0);
-    
+
     idt_set_entry(&idt[0x00], isr_routine_0x00, SEG_KCODE_LM, IDT_ACTIVE|IDT_RING_0|IDT_GATE_INTR|IDT_LM);
     idt_set_entry(&idt[0x01], isr_routine_0x01, SEG_KCODE_LM, IDT_ACTIVE|IDT_RING_0|IDT_GATE_INTR|IDT_LM);
     idt_set_entry(&idt[0x02], isr_routine_0x02, SEG_KCODE_LM, IDT_ACTIVE|IDT_RING_0|IDT_GATE_INTR|IDT_LM);
@@ -125,6 +199,6 @@ void idt_init() {
     idt_set_entry(&idt[0x2D], isr_routine_0x2D, SEG_KCODE_LM, IDT_ACTIVE|IDT_RING_0|IDT_GATE_INTR|IDT_LM);
     idt_set_entry(&idt[0x2E], isr_routine_0x2E, SEG_KCODE_LM, IDT_ACTIVE|IDT_RING_0|IDT_GATE_INTR|IDT_LM);
     idt_set_entry(&idt[0x2F], isr_routine_0x2F, SEG_KCODE_LM, IDT_ACTIVE|IDT_RING_0|IDT_GATE_INTR|IDT_LM);
-    
+
     idt_reload(&idt_ptr);
 }

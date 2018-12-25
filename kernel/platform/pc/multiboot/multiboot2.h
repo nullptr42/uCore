@@ -44,7 +44,7 @@ struct mb2_memory_tag {
 
     /* in kilobytes */
     uint32_t mem_lower;
-    uint32_t mem_upper;    
+    uint32_t mem_upper;
 } __attribute__((packed));
 
 struct mb2_mmap_tag {
@@ -81,7 +81,7 @@ struct mb2_fb_tag {
     uint16_t reserved; /* according to documentation this should
                         * be uint8_t but it only works like this ¯\_(ツ)_/¯ */
 
-    /* TFW assuming we are only using indexed mode. ;) */
+    /* TFW assuming we are only using non-indexed mode. ;) */
     uint8_t r_shift;
     uint8_t r_mask_len;
     uint8_t g_shift;
