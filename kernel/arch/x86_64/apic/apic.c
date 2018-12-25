@@ -23,7 +23,7 @@
 #define CPU_STACK_SIZE  (CPU_STACK_PAGES * 4096)
 
 /* Indicates whether the core we try to start already woke up. */
-bool core_wakedup;
+volatile bool core_wokeup;
 
 static void* lapic_mmio = NULL;
 
@@ -53,7 +53,7 @@ static void wakeup(int apic_id) {
     volatile uint32_t* icr_hi = (void*)lapic_mmio + 0x310;
     volatile uint32_t* icr_lo = (void*)lapic_mmio + 0x300;
 
-    core_wakedup = false;
+    core_wokeup = false;
 
     /* INIT */
     *icr_hi = apic_id << 24;
@@ -66,10 +66,10 @@ static void wakeup(int apic_id) {
 
     /**
      * Wait for the CPU core to complete its initialization routine.
-     * When the CPU core woke up it will set core_wakedup to true.
-     * We might want to implement a giveup timeout. 
+     * When the CPU core woke up it will set core_wokeup to true.
+     * We might want to implement a giveup timeout.
      */
-    while (!core_wakedup) asm("nop;");
+    while (!core_wokeup) asm("nop;");
 }
 
 extern const void _wakeup_start;
@@ -114,12 +114,12 @@ void lapic_init() {
             continue;
 
         uint32_t pages[CPU_STACK_PAGES];
-        
+
         if (pm_stack_alloc(CPU_STACK_PAGES, pages) != PMM_OK) {
             klog(LL_ERROR, "apic: cpu[%d]: Unable to allocate physical memory for CPU stack.", i);
             panic();
         }
-        
+
         stack = vm_alloc(CPU_STACK_PAGES);
 
         if (stack == NULL) {
@@ -131,7 +131,7 @@ void lapic_init() {
 
         vm_map_pages(stack, pages, CPU_STACK_PAGES);
         tab[0] = (uint64_t)stack + CPU_STACK_SIZE;
-        
+
         wakeup(mp_cores[i]->lapic_id);
     }
 }

@@ -11,7 +11,7 @@
 #include <stdbool.h>
 #include <arch/x86_64/cpu/cpuid.h>
 
-extern bool core_wakedup;
+extern volatile bool core_wokeup;
 
 bool lapic_is_present(struct amd64_cpu* cpu);
 void lapic_init();

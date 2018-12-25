@@ -105,8 +105,8 @@ void ap_main() {
 
     cpuid_read(&_cpu);
     kprintf(COLOR_B_YELLOW "cpu[%d]: woke up!\n" CON_RESET, _cpu.misc.apic_id);
-    core_wakedup = true;
-    
+    core_wokeup = true;
+
     asm("sti");
     for (;;) asm("hlt");
 }
