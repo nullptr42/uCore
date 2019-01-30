@@ -49,7 +49,7 @@ struct print_state {
     char* buffer;
 };
 
-static inline bool parse_flags(struct print_state* state) {
+static inline void parse_flags(struct print_state* state) {
     const char* format = state->format;
     
     while (1) {
@@ -70,12 +70,10 @@ static inline bool parse_flags(struct print_state* state) {
                 state->pad_chr = '0';
                 break;
             default:
-                goto done;
+                return;
         }
         state->i++;
     }
-done:
-    return true;
 }
 
 static inline bool parse_width(struct print_state* state, va_list arg) {
@@ -86,12 +84,11 @@ static inline bool parse_width(struct print_state* state, va_list arg) {
 
     if (IS_NUMERIC(format[state->i])) {
         PARSE_NUMBER(state->pad_len);
-        return true;
     }
+
     if (format[state->i] == '*') {
         state->pad_len = va_arg(arg, int);
         state->i++;
-        return true;
     }
 
     return true;    
@@ -108,11 +105,9 @@ static inline bool parse_precision(struct print_state* state, va_list arg) {
         if (format[state->i] == '*') {
             state->precision = va_arg(arg, int);
             state->i++;
-            return true;
         }
         if (IS_NUMERIC(format[state->i])) {
             PARSE_NUMBER(state->precision);
-            return true;
         }
     }
     
@@ -161,6 +156,7 @@ static inline bool parse_length(struct print_state* state) {
             state->i++;
             break;
     }
+    
     return true;
 }
 
@@ -486,8 +482,7 @@ int vsnprintf(char* buffer, size_t size, const char* format, va_list arg) {
             init_params(&state);
 
             /* Parse options for format specifier */
-            if (!parse_flags(&state))
-                return state.total * -1;
+            parse_flags(&state);
             if (!parse_width(&state, arg))
                 return state.total * -1;
             if (!parse_precision(&state, arg))
