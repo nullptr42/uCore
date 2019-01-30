@@ -84,9 +84,7 @@ static inline bool parse_width(struct print_state* state, va_list arg) {
 
     if (IS_NUMERIC(format[state->i])) {
         PARSE_NUMBER(state->pad_len);
-    }
-
-    if (format[state->i] == '*') {
+    } else if (format[state->i] == '*') {
         state->pad_len = va_arg(arg, int);
         state->i++;
     }
@@ -105,8 +103,7 @@ static inline bool parse_precision(struct print_state* state, va_list arg) {
         if (format[state->i] == '*') {
             state->precision = va_arg(arg, int);
             state->i++;
-        }
-        if (IS_NUMERIC(format[state->i])) {
+        } else if (IS_NUMERIC(format[state->i])) {
             PARSE_NUMBER(state->precision);
         }
     }
