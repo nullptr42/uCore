@@ -169,7 +169,14 @@ void vm_free(void* virtual, int count) {
 
     int page  = (int)((uint64_t)virtual / 4096);
     int entry = page / PAGES_PER_ENTRY;
-    
+    int index = page % PAGES_PER_ENTRY;
+
+    /* Handle start addresses to are not aligned on entry boundaries. */
+    if (index != 0) {
+        bitmap[entry] |= qword_free << index;
+        count -= PAGES_PER_ENTRY - index;
+    }
+
     /* Release whole entries as long as possible. */
     while (count >= PAGES_PER_ENTRY) {
         bitmap[entry++] = qword_free;
