@@ -6,7 +6,7 @@
  */
 
 #include "pm/stack.h"
-#include "vm/vm.h"
+#include <platform/pc/vm/vm.h>
 #include <log.h>
 #include <stddef.h>
 

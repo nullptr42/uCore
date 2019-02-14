@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <arch/print.h>
-#include <platform/pc/pm/pm.h>
+#include <arch/x86_64/pm/pm.h>
 #include <platform/pc/vm/vm.h>
 #include <log.h>
 

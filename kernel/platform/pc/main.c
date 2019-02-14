@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "console.h"
-#include "pm/pm.h"
 #include "vm/vm.h"
 #include "multiboot/multiboot2.h"
 
@@ -21,6 +20,7 @@
 #include <arch/x86_64/cpuid/cpuid.h>
 #include <arch/x86_64/apic/pic.h>
 #include <arch/x86_64/apic/apic.h>
+#include <arch/x86_64/pm/pm.h>
 
 /* TODO: Place these in headers. */
 void fpu_init();
