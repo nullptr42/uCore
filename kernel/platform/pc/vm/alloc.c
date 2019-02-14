@@ -173,7 +173,7 @@ void vm_free(void* virtual, int count) {
 
     /* Handle start addresses to are not aligned on entry boundaries. */
     if (index != 0) {
-        bitmap[entry] |= qword_free << index;
+        bitmap[entry++] |= qword_free << index;
         count -= PAGES_PER_ENTRY - index;
     }
 
