@@ -5,9 +5,9 @@
  * found in the LICENSE file.
  */
 
-#include "vm.h"
 #include <log.h>
 #include <stddef.h>
+#include <arch/x86_64/vm/vm.h>
 
 /* Kernel can allocate up to 2GiB of virtual address space
  * which will be located in the region:
