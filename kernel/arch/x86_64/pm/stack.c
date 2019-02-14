@@ -9,8 +9,8 @@
 #include <log.h>
 #include <stddef.h>
 
-#include "pm.h"
-#include "stack.h"
+#include <arch/x86_64/pm/pm.h>
+#include <arch/x86_64/pm/stack.h>
 
 /* Stack that stores free pages */
 static struct pm_stack stack;

@@ -8,8 +8,8 @@
 #include <log.h>
 #include <arch/print.h>
 #include <stddef.h>
-#include "vm.h"
-#include "../pm/stack.h"
+#include <arch/x86_64/vm/vm.h>
+#include <arch/x86_64/pm/stack.h>
 
 /*
  * Memory Map:

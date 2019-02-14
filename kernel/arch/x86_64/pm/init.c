@@ -8,8 +8,7 @@
 #include <log.h>
 #include <arch/print.h>
 #include <arch/x86_64/vm/vm.h>
-
-#include "stack.h"
+#include <arch/x86_64/pm/stack.h>
 
 extern const void kernel_start;
 extern const void kernel_end;

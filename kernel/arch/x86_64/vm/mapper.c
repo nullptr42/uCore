@@ -7,8 +7,8 @@
 
 #include <log.h>
 #include <stddef.h>
-#include "../pm/stack.h"
-#include "vm.h"
+#include <arch/x86_64/pm/stack.h>
+#include <arch/x86_64/vm/vm.h>
 
 void panic();
 
