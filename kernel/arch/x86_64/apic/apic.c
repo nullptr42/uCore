@@ -12,7 +12,7 @@
 #include <stddef.h>
 #include <arch/print.h>
 #include <arch/x86_64/pm/pm.h>
-#include <platform/pc/vm/vm.h>
+#include <arch/x86_64/vm/vm.h>
 #include <log.h>
 
 #define MSR_APIC_BASE  (0x1B)

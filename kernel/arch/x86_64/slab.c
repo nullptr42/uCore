@@ -5,10 +5,10 @@
  * found in the LICENSE file.
  */
 
-#include "pm/stack.h"
-#include <platform/pc/vm/vm.h>
 #include <log.h>
 #include <stddef.h>
+#include "pm/stack.h"
+#include "vm/vm.h"
 
 void panic();
 

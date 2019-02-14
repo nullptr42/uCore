@@ -8,7 +8,7 @@
 #include <log.h>
 #include <stddef.h>
 #include <arch/x86_64/apic/mp.h>
-#include <platform/pc/vm/vm.h>
+#include <arch/x86_64/vm/vm.h>
 
 /* Multiprocessor Configuration Table */
 struct mpc_table {
