@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <stdbool.h>
-#include <lib/lib.h>
+#include <lib/libc/stdio.h>
 #include <lib/vt100/vt100.h>
 #include <arch/x86_64/io-port.h>
 

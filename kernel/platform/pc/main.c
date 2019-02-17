@@ -12,7 +12,7 @@
 
 #include <bootinfo.h>
 #include <log.h>
-#include <lib/lib.h>
+#include <lib/libc/stdio.h>
 #include <lib/vt100/vt100-codes.h>
 #include <version.h>
 #include <arch/x86_64/gdt.h>
