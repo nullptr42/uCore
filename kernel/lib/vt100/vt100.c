@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include "vt100.h"
+#include <lib/vt100/vt100.h>
 #include <stdint.h>
 
 static inline void vt100_print_char(struct vt100_term* this, char c) {
