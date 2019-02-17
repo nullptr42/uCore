@@ -6,9 +6,9 @@
  */
 
 #include <arch/print.h>
-#include <lib/vt100-codes.h>
+#include <lib/vt100/vt100-codes.h>
 
 void panic() {
-    kprint(COLOR_RED "KERNEL PANIC!");
+    kprint(VT100_COLOR_FG_RED "KERNEL PANIC!");
     asm("cli;hlt");
 }

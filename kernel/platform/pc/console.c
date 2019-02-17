@@ -9,7 +9,7 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <lib/lib.h>
-#include <lib/vt100.h>
+#include <lib/vt100/vt100.h>
 #include <arch/x86_64/io-port.h>
 
 /* VGA hardware ports */
@@ -51,7 +51,7 @@ static const int terminal_height = 25;
 static const int qwords_per_line = 20;
 static const int qwords_per_page = 500;
 
-static const uint64_t qword_color_mul = 0x0100010001000100;
+static const uint64_t qword_VT100_COLOR_FG_mul = 0x0100010001000100;
 static const uint64_t qword_spaces = 0x0020002000200020;
 
 static inline bool is_invalid_coordinate(int x, int y) {
@@ -70,7 +70,7 @@ static inline uint16_t get_address(int x, int y) {
 static uint8_t vga_color = 0x07;
 
 /* Map VT100 color to i386 VGA textmode color. */
-static const uint8_t color_map[16] = {
+static const uint8_t VT100_COLOR_FG_map[16] = {
     CONSOLE_BLACK, CONSOLE_RED     , CONSOLE_GREEN , CONSOLE_BROWN,
     CONSOLE_BLUE , CONSOLE_MAGENTA , CONSOLE_CYAN  , CONSOLE_LGRAY,
     CONSOLE_DGRAY, CONSOLE_LRED    , CONSOLE_LGREEN, CONSOLE_YELLOW,
@@ -106,11 +106,11 @@ static void set_char(char c, int x, int y) {
 }
 
 static void set_fg_color(enum vt100_color color) {
-    vga_color = (vga_color&0xF0)|color_map[color];
+    vga_color = (vga_color&0xF0)|VT100_COLOR_FG_map[color];
 }
 
 static void set_bg_color(enum vt100_color color) {
-    vga_color = (vga_color&0x0F)|(color_map[color]<<4);
+    vga_color = (vga_color&0x0F)|(VT100_COLOR_FG_map[color]<<4);
 }
 
 static void scroll() {
@@ -126,7 +126,7 @@ static void scroll() {
     /* Clear last line */
     dst += count;
     for (int i = 0; i < qwords_per_line; i++)
-        dst[i] = (vga_color*qword_color_mul)|qword_spaces;
+        dst[i] = (vga_color*qword_VT100_COLOR_FG_mul)|qword_spaces;
 }
 
 /* VT100 glue */
@@ -144,7 +144,7 @@ void print_init() {
 
     /* Clear screen */
     for (int i = 0; i < qwords_per_page; i++)
-        _buffer[i] = (vga_color*qword_color_mul)|qword_spaces;
+        _buffer[i] = (vga_color*qword_VT100_COLOR_FG_mul)|qword_spaces;
 
     /* Setup serial debug driver */
     serial_init();

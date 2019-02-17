@@ -13,7 +13,7 @@
 #include <bootinfo.h>
 #include <log.h>
 #include <lib/lib.h>
-#include <lib/vt100-codes.h>
+#include <lib/vt100/vt100-codes.h>
 #include <version.h>
 #include <arch/x86_64/gdt.h>
 #include <arch/x86_64/cpuid/cpuid.h>
@@ -58,7 +58,7 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
 
     print_init();
     kprintf(
-        COLOR_CYAN "%s " CON_RESET "Kernel %d.%d\n\n" CON_RESET,
+        VT100_COLOR_FG_CYAN "%s " VT100_RESET "Kernel %d.%d\n\n" VT100_RESET,
         _k_name,
         _k_version_major,
         _k_version_minor
@@ -107,7 +107,7 @@ void ap_main() {
     struct amd64_cpu _cpu;
 
     cpuid_read(&_cpu);
-    kprintf(COLOR_B_YELLOW "cpu[%d]: woke up!\n" CON_RESET, _cpu.misc.apic_id);
+    kprintf(VT100_COLOR_FG_B_YELLOW "cpu[%d]: woke up!\n" VT100_RESET, _cpu.misc.apic_id);
     core_wokeup = true;
 
     asm("sti");

@@ -9,7 +9,7 @@
 #include <stdarg.h>
 #include <arch/print.h>
 #include "log.h"
-#include <lib/vt100-codes.h>
+#include <lib/vt100/vt100-codes.h>
 
 static int log_mask = LL_TRACE | LL_DEBUG | LL_INFO | LL_WARN | LL_ERROR;
 
@@ -30,22 +30,22 @@ void klog(enum log_level level, const char* format, ...) {
     va_start(arg, format);
     switch (level) {
         case LL_WARN:
-            kprint(COLOR_YELLOW "[w] ");
+            kprint(VT100_COLOR_FG_YELLOW "[w] ");
             break;
         case LL_ERROR:
-            kprint(COLOR_RED "[e] ");
+            kprint(VT100_COLOR_FG_RED "[e] ");
             break;
         case LL_DEBUG:
-            kprint(COLOR_B_BLACK "[d] ");
+            kprint(VT100_COLOR_FG_B_BLACK "[d] ");
             break;
         case LL_TRACE:
-            kprint(COLOR_B_BLACK "[t] ");
+            kprint(VT100_COLOR_FG_B_BLACK "[t] ");
             break;
         default:
-            kprint(COLOR_WHITE);
+            kprint(VT100_COLOR_FG_WHITE);
             break;
     }
     vkprintf(format, arg);
-    kprint("\n" CON_RESET);
+    kprint("\n" VT100_RESET);
     va_end(arg);
 }

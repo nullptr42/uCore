@@ -119,8 +119,8 @@ static inline void vt100_control(struct vt100_term* this, char c) {
                     // Reset state
                     case 0: {
                         // TODO: implement more
-                        driver->set_fg_color(VT100_COLOR_WHITE);
-                        driver->set_bg_color(VT100_COLOR_BLACK);
+                        driver->set_fg_color(VT100_VT100_COLOR_FG_WHITE);
+                        driver->set_bg_color(VT100_VT100_COLOR_FG_BLACK);
                         break;
                     }
 

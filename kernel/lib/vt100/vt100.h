@@ -5,8 +5,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef _K_PRINT_VT100_H_
-#define _K_PRINT_VT100_H_
+#ifndef _K_LIB_VT100_H_
+#define _K_LIB_VT100_H_
 
 #include <stdbool.h>
 
@@ -16,14 +16,14 @@
  * @brief VT1100 foreground/background colors.
  */
 enum vt100_color {
-    VT100_COLOR_BLACK   = 0,
-    VT100_COLOR_RED     = 1,
-    VT100_COLOR_GREEN   = 2,
-    VT100_COLOR_YELLOW  = 3,
-    VT100_COLOR_BLUE    = 4,
-    VT100_COLOR_MAGENTA = 5,
-    VT100_COLOR_CYAN    = 6,
-    VT100_COLOR_WHITE   = 7,
+    VT100_VT100_COLOR_FG_BLACK   = 0,
+    VT100_VT100_COLOR_FG_RED     = 1,
+    VT100_VT100_COLOR_FG_GREEN   = 2,
+    VT100_VT100_COLOR_FG_YELLOW  = 3,
+    VT100_VT100_COLOR_FG_BLUE    = 4,
+    VT100_VT100_COLOR_FG_MAGENTA = 5,
+    VT100_VT100_COLOR_FG_CYAN    = 6,
+    VT100_VT100_COLOR_FG_WHITE   = 7,
 };
 
 /**
@@ -121,4 +121,4 @@ void vt100_write(struct vt100_term* this, char c);
  */
 void vt100_update_cursor(struct vt100_term* this);
 
-#endif // _K_PRINT_VT100_H_
+#endif // _K_LIB_VT100_H_
