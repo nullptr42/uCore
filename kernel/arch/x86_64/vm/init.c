@@ -6,10 +6,10 @@
  */
 
 #include <log.h>
-#include <arch/print.h>
 #include <stddef.h>
 #include <arch/x86_64/vm/vm.h>
 #include <arch/x86_64/pm/stack.h>
+#include <lib/libc/stdio.h>
 
 /*
  * Memory Map:

@@ -7,13 +7,10 @@
 
 #include <stdint.h>
 
-#include "console.h"
 #include "multiboot/multiboot2.h"
 
 #include <bootinfo.h>
 #include <log.h>
-#include <lib/libc/stdio.h>
-#include <lib/vt100/vt100-codes.h>
 #include <version.h>
 #include <arch/x86_64/gdt.h>
 #include <arch/x86_64/cpuid/cpuid.h>
@@ -21,11 +18,13 @@
 #include <arch/x86_64/apic/apic.h>
 #include <arch/x86_64/pm/pm.h>
 #include <arch/x86_64/vm/vm.h>
+#include <lib/libc/stdio.h>
+#include <lib/vt100/vt100-codes.h>
 
-/* TODO: Place these in headers. */
 void fpu_init();
 void idt_init();
 bool bootinfo_from_mb2(struct bootinfo* binf, struct mb2_info* mb2);
+void console_init();
 
 /* processor information retrieved via cpuid */
 static struct amd64_cpu cpu;
@@ -56,8 +55,8 @@ void kernel_main(uint32_t magic, struct mb2_info* mb) {
     idt_init();
     pic_init();
 
-    print_init();
-    kprintf(
+    console_init();
+    printf(
         VT100_COLOR_FG_CYAN "%s " VT100_RESET "Kernel %d.%d\n\n" VT100_RESET,
         _k_name,
         _k_version_major,
@@ -107,7 +106,7 @@ void ap_main() {
     struct amd64_cpu _cpu;
 
     cpuid_read(&_cpu);
-    kprintf(VT100_COLOR_FG_B_YELLOW "cpu[%d]: woke up!\n" VT100_RESET, _cpu.misc.apic_id);
+    printf(VT100_COLOR_FG_B_YELLOW "cpu[%d]: woke up!\n" VT100_RESET, _cpu.misc.apic_id);
     core_wokeup = true;
 
     asm("sti");

@@ -8,9 +8,9 @@
 #include "multiboot/multiboot2.h"
 
 #include <bootinfo.h>
-#include <arch/print.h>
 #include <stddef.h>
 #include <log.h>
+#include <lib/libc/stdio.h>
 
 struct state {
     struct bootinfo* binf;

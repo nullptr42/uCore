@@ -6,9 +6,9 @@
  */
 
 #include <log.h>
-#include <arch/print.h>
 #include <arch/x86_64/vm/vm.h>
 #include <arch/x86_64/pm/stack.h>
+#include <lib/libc/stdio.h>
 
 extern const void kernel_start;
 extern const void kernel_end;

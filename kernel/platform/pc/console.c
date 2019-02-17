@@ -80,10 +80,6 @@ static const uint8_t VT100_COLOR_FG_map[16] = {
 /* VGA buffer */
 static uint16_t* buffer = (uint16_t*)0xFFFFFFFF800B8000;
 
-/* Debug */
-void serial_init();
-void serial_debug(const char* string);
-
 static void set_cursor(int x, int y) {
     if (is_invalid_coordinate(x, y))
         return;
@@ -139,15 +135,12 @@ struct vt100_driver driver = {
     .scroll       = scroll
 };
 
-void print_init() {
+void console_init() {
     uint64_t* _buffer = (void*)buffer;
 
     /* Clear screen */
     for (int i = 0; i < qwords_per_page; i++)
         _buffer[i] = (vga_color*qword_VT100_COLOR_FG_mul)|qword_spaces;
-
-    /* Setup serial debug driver */
-    serial_init();
 
     /* Setup VT100 driver */
     driver.width  = terminal_width;
@@ -157,56 +150,9 @@ void print_init() {
     vt100_init(&term, &driver);
 }
 
-
-/* TODO: place these functions somewhere else */
-
-void kputc(char c) {
-    vt100_write(&term, c);
-    vt100_update_cursor(&term);
-}
-
-void kprint(const char* str) {
+void platform_print(const char* string) {
     char c;
-    serial_debug(str);
-    while ((c = *str++)) {
+    while ((c = *string++))
         vt100_write(&term, c);
-    }
     vt100_update_cursor(&term);
-}
-
-int kprintf(const char* format, ...) {
-    va_list arg1, arg2;
-    
-    va_start(arg1, format);
-    va_copy(arg2, arg1);
-    
-    int total = vsnprintf(NULL, 0, format, arg2);
-
-    if (total > -1) {
-        char buffer[total+1];
-
-        vsnprintf(buffer, total+1, format, arg1);
-        kprint(buffer);
-    }    
-
-    va_end(arg2);    
-    va_end(arg1);
-    return total;
-}
-
-int vkprintf(const char* format, va_list arg) {
-    va_list arg2;
-    va_copy(arg2, arg);
-    
-    int total = vsnprintf(NULL, 0, format, arg);
-
-    if (total > -1) {
-        char buffer[total+1];
-
-        vsnprintf(buffer, total+1, format, arg2);
-        kprint(buffer);
-    }
-
-    va_end(arg2);
-    return total;
 }

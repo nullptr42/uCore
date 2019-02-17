@@ -5,14 +5,13 @@
  * found in the LICENSE file.
  */
 
-#include <arch/x86_64/apic/mp.h>
-#include <arch/x86_64/apic/apic.h>
-
 #include <stdint.h>
 #include <stddef.h>
-#include <arch/print.h>
+#include <arch/x86_64/apic/mp.h>
+#include <arch/x86_64/apic/apic.h>
 #include <arch/x86_64/pm/pm.h>
 #include <arch/x86_64/vm/vm.h>
+#include <lib/libc/stdio.h>
 #include <log.h>
 
 #define MSR_APIC_BASE  (0x1B)
