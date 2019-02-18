@@ -7,7 +7,7 @@
  */
 
 #include <stdarg.h>
-#include "log.h"
+#include <lib/log/log.h>
 #include <lib/libc/stdio.h>
 #include <lib/vt100/codes.h>
 

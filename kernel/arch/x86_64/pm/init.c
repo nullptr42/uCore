@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include <log.h>
+#include <lib/log/log.h>
 #include <arch/x86_64/vm/vm.h>
 #include <arch/x86_64/pm/stack.h>
 #include <lib/libc/stdio.h>

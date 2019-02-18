@@ -9,7 +9,7 @@
 
 #include <bootinfo.h>
 #include <stddef.h>
-#include <log.h>
+#include <lib/log/log.h>
 #include <lib/libc/stdio.h>
 
 struct state {

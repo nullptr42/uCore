@@ -10,8 +10,7 @@
 #include "multiboot/multiboot2.h"
 
 #include <bootinfo.h>
-#include <log.h>
-#include <version.h>
+#include <lib/log/log.h>
 #include <arch/x86_64/gdt.h>
 #include <arch/x86_64/cpuid/cpuid.h>
 #include <arch/x86_64/apic/pic.h>
@@ -20,6 +19,7 @@
 #include <arch/x86_64/vm/vm.h>
 #include <lib/libc/stdio.h>
 #include <lib/vt100/codes.h>
+#include <lib/version/version.h>
 
 void fpu_init();
 void idt_init();
