@@ -9,7 +9,7 @@
 #include <stdarg.h>
 #include "log.h"
 #include <lib/libc/stdio.h>
-#include <lib/vt100/vt100-codes.h>
+#include <lib/vt100/codes.h>
 
 static int log_mask = LL_TRACE | LL_DEBUG | LL_INFO | LL_WARN | LL_ERROR;
 

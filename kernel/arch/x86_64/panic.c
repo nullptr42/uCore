@@ -6,7 +6,7 @@
  */
 
 #include <lib/libc/stdio.h>
-#include <lib/vt100/vt100-codes.h>
+#include <lib/vt100/codes.h>
 
 void panic() {
     puts(VT100_COLOR_FG_RED "KERNEL PANIC!");

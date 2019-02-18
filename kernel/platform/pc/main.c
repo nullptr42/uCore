@@ -19,7 +19,7 @@
 #include <arch/x86_64/pm/pm.h>
 #include <arch/x86_64/vm/vm.h>
 #include <lib/libc/stdio.h>
-#include <lib/vt100/vt100-codes.h>
+#include <lib/vt100/codes.h>
 
 void fpu_init();
 void idt_init();
