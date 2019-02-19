@@ -217,8 +217,7 @@ vm_level1:
 
 section .bss
 
- align 16
- stack_bottom:
+align 16
+stack_bottom:
     resb 32768 ; 32 KiB
- stack_top:
- 
+stack_top:
