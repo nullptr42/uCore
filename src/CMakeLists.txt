@@ -20,9 +20,9 @@ endif()
 set(CMAKE_USE_RELATIVE_PATHS ON)
 
 # Set compiler flags
-set(COMPILE_FLAGS    "${COMPILE_FLAGS} -std=gnu99 -ffreestanding -O${MSPHERE_OPT_LEVEL} -Wall -Wextra")
-set(CMAKE_C_FLAGS    "${CMAKE_C_FLAGS}   ${COMPILE_FLAGS}")
-set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${COMPILE_FLAGS}")
+set(COMPILE_FLAGS    "${COMPILE_FLAGS} -ffreestanding -O${MSPHERE_OPT_LEVEL} -Wall -Wextra")
+set(CMAKE_C_FLAGS    "${CMAKE_C_FLAGS}   ${COMPILE_FLAGS} -std=gnu99")
+set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${COMPILE_FLAGS} -std=c++17")
 
 # Set linker flags
 set(LINK_FLAGS "-T ${MSPHERE_LD_SCRIPT} -ffreestanding -O${MSPHERE_OPT_LEVEL} -nostdlib -lgcc ${MSPHERE_LD_FLAGS}")

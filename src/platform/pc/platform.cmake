@@ -4,5 +4,5 @@ set(MSPHERE_ARCH "x86_64")
 
 set(PLATFORM_SRC
     platform/pc/boot.asm
-    platform/pc/main.c
+    platform/pc/main.cpp
 )
