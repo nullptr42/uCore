@@ -24,6 +24,12 @@ SECTIONS {
         *(.bss)
     }
 
+    .ctors ALIGN(4K) : AT(ADDR(.ctors) - 0xFFFFFFFF80000000) {
+        __ctors_start = .;
+        *(.ctors)
+        __ctors_end = .;
+    }
+
     /* Page Align */
     .= ALIGN(4096);
     kernel_end = .;

@@ -104,6 +104,8 @@ compat_barrier:
     ret
 
 extern kernel_main
+extern __ctors_start
+extern __ctors_end 
 
 ; ENTRYPOINT
 [BITS 32]
@@ -162,13 +164,28 @@ _start:
     or eax, 0x80000001  ; set paging and protected mode bits
     mov cr0, eax        ; write back to CR0
 
-    jmp long 0x18:do_call - VM_BASE_KERNEL_ELF
+    jmp long 0x18:_start_64 - VM_BASE_KERNEL_ELF
 [BITS 64]
-do_call:
+_start_64:
     mov rsp, stack_top
+
+    mov rax, __ctors_start
+    mov rbx, __ctors_end
+    cmp rax, rbx
+    jz .call_main
+.loop_ctors:
+    mov rcx, [rax]
+    test rcx, rcx
+    jz .call_main
+    call rcx
+    add rax, 8
+    cmp rax, rbx
+    jnz .loop_ctors
+.call_main:
     mov rax, kernel_main
     call rax
 stop:
+    ; TODO: call destructors?
     cli
 .loop:
     hlt
