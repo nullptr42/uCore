@@ -15,4 +15,8 @@ set(CMAKE_ASM_NASM_FLAGS "${CMAKE_ASM_NASM_FLAGS} -I ${CMAKE_SOURCE_DIR}/")
 set(COMPILE_FLAGS "-mno-red-zone -mcmodel=kernel -mno-sse")
 
 set(ARCH_SRC
+    arch/x86_64/asm/cpuid.asm
+    arch/x86_64/asm/fpu.asm
+    arch/x86_64/asm/gdt_idt.asm
+    arch/x86_64/asm/msr.asm
 )
