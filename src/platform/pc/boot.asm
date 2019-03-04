@@ -169,17 +169,17 @@ _start:
 _start_64:
     mov rsp, stack_top
 
-    mov rax, __ctors_start
+    mov r10, __ctors_start
     mov rbx, __ctors_end
-    cmp rax, rbx
+    cmp r10, rbx
     jz .call_main
 .loop_ctors:
-    mov rcx, [rax]
+    mov rcx, [r10]
     test rcx, rcx
     jz .call_main
     call rcx
-    add rax, 8
-    cmp rax, rbx
+    add r10, 8
+    cmp r10, rbx
     jnz .loop_ctors
 .call_main:
     mov rax, kernel_main
