@@ -1,9 +1,11 @@
 
 #pragma once
 
+#include <stdint.h>
+
 namespace lib::terminal {
 
-enum class Color : int {
+enum class Color : uint8_t {
     Black,
     Red,
     Green,
