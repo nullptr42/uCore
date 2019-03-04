@@ -11,6 +11,10 @@ struct TestClass {
     TestClass(int x, int y) : x(x), y(y) { }
 };
 
+extern "C" void __cxa_pure_virtual() {
+    while (1) { }
+}
+
 extern "C" void kernel_main(void) {
     fpu_init();
 
