@@ -20,7 +20,7 @@ endif()
 set(CMAKE_USE_RELATIVE_PATHS ON)
 
 # Set compiler flags
-set(COMPILE_FLAGS    "${COMPILE_FLAGS} -ffreestanding -O${MSPHERE_OPT_LEVEL} -Wall -Wextra")
+set(COMPILE_FLAGS    "${COMPILE_FLAGS} -ffreestanding -O${MSPHERE_OPT_LEVEL} -Wall -Wextra -Wno-pointer-arith")
 set(CMAKE_C_FLAGS    "${CMAKE_C_FLAGS}   ${COMPILE_FLAGS} -std=gnu99")
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${COMPILE_FLAGS} -std=c++17 -fno-rtti -fno-exceptions")
 
