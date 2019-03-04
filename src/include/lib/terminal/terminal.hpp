@@ -17,9 +17,9 @@ enum class Color : uint8_t {
 };
 
 struct Char {
-    Color fg;
-    Color bg;
-    char character;
+    Color fg = Color::White;
+    Color bg = Color::Red;
+    char character = ' ';
 };
 
 struct Display {
@@ -33,6 +33,24 @@ struct Display {
 
     virtual void Fill(int x1, int y1, int x2, int y2, Char symbol) = 0;
     virtual void Present(int x1, int y1, int x2, int y2, const Char* symbols) = 0;
+};
+
+struct Emulator {
+    Display* display;
+
+    int x = 0;
+    int y = 0;
+    int width;
+    int height;
+    Char* symbols;
+
+    Emulator(Display* display) {
+        width   = display->width;
+        height  = display->height;
+        symbols = new Char[width * height];
+
+        display->Present(0, 0, 79, 24, symbols);
+    }
 };
 
 }
