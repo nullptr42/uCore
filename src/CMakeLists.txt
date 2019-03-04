@@ -22,11 +22,15 @@ set(CMAKE_USE_RELATIVE_PATHS ON)
 # Set compiler flags
 set(COMPILE_FLAGS    "${COMPILE_FLAGS} -ffreestanding -O${MSPHERE_OPT_LEVEL} -Wall -Wextra")
 set(CMAKE_C_FLAGS    "${CMAKE_C_FLAGS}   ${COMPILE_FLAGS} -std=gnu99")
-set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${COMPILE_FLAGS} -std=c++17")
+set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${COMPILE_FLAGS} -std=c++17 -fno-rtti -fno-exceptions")
 
 # Set linker flags
 set(LINK_FLAGS "-T ${MSPHERE_LD_SCRIPT} -ffreestanding -O${MSPHERE_OPT_LEVEL} -nostdlib -lgcc ${MSPHERE_LD_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LINK_FLAGS}")
 
+set(KERNEL_SRC
+    kernel/allocator.cpp
+)
+
 include_directories(include)
-add_executable(kernel.bin ${ARCH_SRC} ${PLATFORM_SRC})
+add_executable(kernel.bin ${KERNEL_SRC} ${ARCH_SRC} ${PLATFORM_SRC})
