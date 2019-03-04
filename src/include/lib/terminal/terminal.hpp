@@ -49,7 +49,7 @@ struct Emulator {
         height  = display->height;
         symbols = new Char[width * height];
 
-        display->Present(0, 0, 79, 24, symbols);
+        display->Present(0, 0, 78, 23, symbols);
     }
 };
 
