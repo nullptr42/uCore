@@ -23,9 +23,10 @@ struct Char {
 };
 
 struct Point {
-    int x;
-    int y;
+    int x = 0;
+    int y = 0;
 
+    Point() { }
     Point(int x, int y) : x(x), y(y) { }
 };
 
@@ -38,7 +39,6 @@ struct Display {
         , height(height)
     { }
 
-    virtual void Fill(Point const& p1, Point const& p2, Char symbol) = 0;
     virtual void Present(Point const& p1, Point const& p2, const Char* symbols) = 0;
 };
 
@@ -56,8 +56,7 @@ public:
 private:
     Display* display;
 
-    int x = 0;
-    int y = 0;
+    Point cursor;
     int width;
     int height;
 
