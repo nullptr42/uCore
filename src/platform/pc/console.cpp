@@ -1,6 +1,7 @@
 
 #include <stdint.h>
 #include <lib/terminal/terminal.hpp>
+#include <platform/print.hpp>
 
 struct Console : public lib::terminal::Display {
     Console() : Display(80, 25) { }
@@ -28,4 +29,9 @@ struct Console : public lib::terminal::Display {
     }
 };
 
-lib::terminal::Emulator emulator(new Console());
+static Console console;
+static lib::terminal::Emulator emulator(&console);
+
+void platform::print(const char* string) {
+    
+}
