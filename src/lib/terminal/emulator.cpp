@@ -51,7 +51,7 @@ auto Emulator::StateInitial(const char* string) -> const char* {
                 break;
             }
             case '\t': {
-                // TODO: Tab width should be configurable.
+                /* TODO: tab width must be configurable. */
                 cursor_next = {
                     cursor.x + 4 - (cursor.x % 4),
                     cursor.y
@@ -61,6 +61,7 @@ auto Emulator::StateInitial(const char* string) -> const char* {
             }
             default: {
                 if (cursor.y == height) {
+                    /* TODO: This is very slow and needs optimization. */
                     auto src = &frame[width];
                     auto dst = &frame[0];
                     for (int y = 1; y < height; y++) {
@@ -78,7 +79,7 @@ auto Emulator::StateInitial(const char* string) -> const char* {
                     line -= width;
                 }
 
-                // TODO: Must implement linewrap support here.
+                /* TODO: Must implement linewrap support here. */
                 if (cursor.x < width) {
                     auto& chr = frame[line + cursor.x++];
 
@@ -96,7 +97,7 @@ auto Emulator::StateInitial(const char* string) -> const char* {
             cursor = cursor_next;
         }
 
-        // TODO: Evaluate if it would suffice to update the cursor outside of the loop.
+        /* TODO: Would it suffice to update the cursor outside the loop? */
         display.SetCursor(cursor);
     }
 
