@@ -170,7 +170,7 @@ _start_64:
     mov rsp, stack_top
 
     mov rbx, __ctors_start
-    cmp r10, __ctors_end
+    cmp rbx, __ctors_end
     jz .call_main
 .loop_ctors:
     mov rcx, [rbx]
