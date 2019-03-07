@@ -18,8 +18,15 @@ enum class Color : uint8_t {
 
 struct Char {
     Color fg = Color::White;
-    Color bg = Color::Red;
+    Color bg = Color::Black;
     char character = ' ';
+};
+
+struct Point {
+    int x;
+    int y;
+
+    Point(int x, int y) : x(x), y(y) { }
 };
 
 struct Display {
@@ -31,26 +38,30 @@ struct Display {
         , height(height)
     { }
 
-    virtual void Fill(int x1, int y1, int x2, int y2, Char symbol) = 0;
-    virtual void Present(int x1, int y1, int x2, int y2, const Char* symbols) = 0;
+    virtual void Fill(Point const& p1, Point const& p2, Char symbol) = 0;
+    virtual void Present(Point const& p1, Point const& p2, const Char* symbols) = 0;
 };
 
-struct Emulator {
+class Emulator {
+
+public:
+    Emulator(Display* display)
+        : width(display->width)
+        , height(display->height)
+    {
+        symbols = new Char[width * height];
+        display->Present(Point{0, 0}, Point{width - 1, height - 1}, symbols);
+    }
+
+private:
     Display* display;
 
     int x = 0;
     int y = 0;
     int width;
     int height;
+
     Char* symbols;
-
-    Emulator(Display* display) {
-        width   = display->width;
-        height  = display->height;
-        symbols = new Char[width * height];
-
-        display->Present(0, 0, 78, 23, symbols);
-    }
 };
 
 }

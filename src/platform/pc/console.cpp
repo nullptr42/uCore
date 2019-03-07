@@ -13,16 +13,15 @@ struct Console : public lib::terminal::Display {
                (static_cast<int>(symbol.bg) << 12);
     }
 
-    void Fill(int x1, int y1, int x2, int y2, lib::terminal::Char symbol) {
+    void Fill(lib::terminal::Point const& p1, lib::terminal::Point const& p2, lib::terminal::Char symbol) {
 
     }
 
-    void Present(int x1, int y1, int x2, int y2, const lib::terminal::Char* symbols) {
-        for (int y = y1; y <= y2; y++) {
-            auto dst = (uint16_t*)0xFFFFFFFF800B8000 + y * width;
-            auto src = symbols + y * width;
-
-            for (int x = x1; x <= x2; x++) {
+    void Present(lib::terminal::Point const& p1, lib::terminal::Point const& p2, const lib::terminal::Char* symbols) {
+        for (int y = p1.y; y <= p2.y; y++) {
+            auto dst = &((uint16_t*)0xFFFFFFFF800B8000)[y * width];
+            auto src = &symbols[y * width];
+            for (int x = p1.x; x <= p2.x; x++) {
                 dst[x] = ToCode(src[x]);
             }
         }
@@ -33,5 +32,5 @@ static Console console;
 static lib::terminal::Emulator emulator(&console);
 
 void platform::print(const char* string) {
-    
+
 }
