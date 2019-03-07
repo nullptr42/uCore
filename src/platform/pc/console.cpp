@@ -25,7 +25,7 @@ struct Console : public lib::terminal::Display {
 };
 
 static Console console;
-static lib::terminal::Emulator emulator(&console);
+static lib::terminal::Emulator emulator(console);
 
 void platform::print(const char* string) {
 

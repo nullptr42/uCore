@@ -45,16 +45,17 @@ struct Display {
 class Emulator {
 
 public:
-    Emulator(Display* display)
-        : width(display->width)
-        , height(display->height)
+    Emulator(Display& display)
+        : display(display)
+        , width(display.width)
+        , height(display.height)
     {
         symbols = new Char[width * height];
-        display->Present(Point{0, 0}, Point{width - 1, height - 1}, symbols);
+        display.Present(Point{0, 0}, Point{width - 1, height - 1}, symbols);
     }
 
 private:
-    Display* display;
+    Display& display;
 
     Point cursor;
     int width;
