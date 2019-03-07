@@ -17,7 +17,7 @@ private:
     int width;
     int height;
 
-    Char* symbols;
+    Char* frame;
 };
 
 }

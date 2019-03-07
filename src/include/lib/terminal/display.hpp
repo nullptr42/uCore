@@ -39,7 +39,7 @@ struct Display {
         , height(height)
     { }
 
-    virtual void Present(Point const& p1, Point const& p2, const Char* symbols) = 0;
+    virtual void Present(Point const& p1, Point const& p2, const Char* frame) = 0;
 };
 
 }

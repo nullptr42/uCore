@@ -8,8 +8,8 @@ Emulator::Emulator(Display& display)
     , width(display.width)
     , height(display.height)
 {
-    symbols = new Char[width * height];
-    display.Present(Point{0, 0}, Point{width - 1, height - 1}, symbols);
+    frame = new Char[width * height];
+    display.Present(Point{0, 0}, Point{width - 1, height - 1}, frame);
 }
 
 

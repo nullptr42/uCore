@@ -13,10 +13,10 @@ struct Console : public lib::terminal::Display {
                (static_cast<int>(symbol.bg) << 12);
     }
 
-    void Present(lib::terminal::Point const& p1, lib::terminal::Point const& p2, const lib::terminal::Char* symbols) {
+    void Present(lib::terminal::Point const& p1, lib::terminal::Point const& p2, const lib::terminal::Char* frame) {
         for (int y = p1.y; y <= p2.y; y++) {
             auto dst = &((uint16_t*)0xFFFFFFFF800B8000)[y * width];
-            auto src = &symbols[y * width];
+            auto src = &frame[y * width];
             for (int x = p1.x; x <= p2.x; x++) {
                 dst[x] = ToCode(src[x]);
             }
