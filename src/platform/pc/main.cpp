@@ -14,5 +14,11 @@ extern "C" void kernel_main(void) {
     platform::print("XXXX is another test! :)\rThis\n");
     platform::print("a\tb\t\t\x1B[2;31mc\td\n");
 
+    for (int i = 0; i < 2200; i++) {
+        platform::print("xoobar\rf\n");
+    }
+
+    platform::print("Done printing!\n");
+
     while (1) { }
 }

@@ -60,6 +60,24 @@ auto Emulator::StateInitial(const char* string) -> const char* {
                 break;
             }
             default: {
+                if (cursor.y == height) {
+                    auto src = &frame[width];
+                    auto dst = &frame[0];
+                    for (int y = 1; y < height; y++) {
+                        for (int x = 0; x < width; x++) {
+                            dst[x] = src[x];
+                        }
+                        src += width;
+                        dst += width;
+                    }
+                    for (int x = 0; x < width; x++) {
+                        dst[x].character = ' ';
+                    }
+                    display.Present({0, 0}, {width-1, height-1}, frame);
+                    cursor.y = height - 1;
+                    line -= width;
+                }
+
                 // TODO: Must implement linewrap support here.
                 if (cursor.x < width) {
                     auto& chr = frame[line + cursor.x++];
