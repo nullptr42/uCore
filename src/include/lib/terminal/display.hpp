@@ -39,7 +39,7 @@ struct Display {
         , height(height)
     { }
 
-    void SetCursor(Point const& p) { /* todo */ }
+    virtual void SetCursor(Point const& p) = 0;
     virtual void Present(Point const& p1, Point const& p2, const Char* frame) = 0;
 };
 

@@ -20,3 +20,5 @@ set(ARCH_SRC
     arch/x86_64/asm/gdt_idt.asm
     arch/x86_64/asm/msr.asm
 )
+
+include_directories(arch/x86_64/include)
