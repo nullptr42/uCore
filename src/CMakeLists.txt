@@ -32,5 +32,7 @@ set(KERNEL_SRC
     kernel/allocator.cpp
 )
 
+include("lib/library.cmake")
+
 include_directories(include)
-add_executable(kernel.bin ${KERNEL_SRC} ${ARCH_SRC} ${PLATFORM_SRC})
+add_executable(kernel.bin ${KERNEL_SRC} ${LIBRARY_SRC} ${ARCH_SRC} ${PLATFORM_SRC})

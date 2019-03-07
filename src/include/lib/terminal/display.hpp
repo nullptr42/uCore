@@ -42,26 +42,4 @@ struct Display {
     virtual void Present(Point const& p1, Point const& p2, const Char* symbols) = 0;
 };
 
-class Emulator {
-
-public:
-    Emulator(Display& display)
-        : display(display)
-        , width(display.width)
-        , height(display.height)
-    {
-        symbols = new Char[width * height];
-        display.Present(Point{0, 0}, Point{width - 1, height - 1}, symbols);
-    }
-
-private:
-    Display& display;
-
-    Point cursor;
-    int width;
-    int height;
-
-    Char* symbols;
-};
-
 }

@@ -1,6 +1,6 @@
 
 #include <stdint.h>
-#include <lib/terminal/terminal.hpp>
+#include <lib/terminal/emulator.hpp>
 #include <platform/print.hpp>
 
 struct Console : public lib::terminal::Display {
