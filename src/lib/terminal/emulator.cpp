@@ -79,8 +79,13 @@ auto Emulator::StateInitial(const char* string) -> const char* {
                     line -= width;
                 }
 
-                /* TODO: Must implement linewrap support here. */
-                if (cursor.x < width) {
+                if (cursor.x >= width) {
+                    if (linewrap) {
+                        string--;
+                        cursor_next = { 0, cursor.y + 1 };
+                        stop = true;
+                    }
+                } else {
                     auto& chr = frame[line + cursor.x++];
 
                     chr.character = character;

@@ -22,6 +22,7 @@ struct Console : public lib::terminal::Display {
 
     void SetCursor(lib::terminal::Point const& p) final override {
         if (p.x < 0 || p.x >= width || p.y < 0 || p.y >= height) {
+            // TODO: Hide/show cursor.
             return;
         }
 

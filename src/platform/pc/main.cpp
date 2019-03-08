@@ -18,7 +18,11 @@ extern "C" void kernel_main(void) {
         platform::print("xoobar\rf\n");
     }
 
-    platform::print("Done printing!");
+    for (int i = 0; i < 81; i++) {
+        platform::print("y");
+    }
+
+    platform::print("\nDone printing!");
 
     while (1) { }
 }
