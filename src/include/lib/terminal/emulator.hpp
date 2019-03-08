@@ -23,6 +23,7 @@ private:
 
     bool linewrap = true;
 
+    int   brightness = 0;
     Color foreground = Color::White;
     Color background = Color::Black;
 
@@ -41,6 +42,10 @@ private:
     State state = State::Initial;
 
     auto StateInitial(const char* string) -> const char*;
+    auto StateEscape(const char* string) -> const char*;
+    auto StateControlSequence(const char* string) -> const char*;
+
+    void SetDisplayAttribute(int code);
 };
 
 }
