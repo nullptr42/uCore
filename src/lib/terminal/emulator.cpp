@@ -155,12 +155,16 @@ auto Emulator::StateControlSequence(const char* string) -> const char* {
         char character = *string++;
 
         switch (character) {
-        
-        case '0': case '1':
-        case '2': case '3':
-        case '4': case '5':
-        case '6': case '7':
-        case '8': case '9': {
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9': {
             if (csi.count < kMaxParams) {
                 csi.params[csi.count] *= 10;
                 csi.params[csi.count] += character - '0';
@@ -169,7 +173,76 @@ auto Emulator::StateControlSequence(const char* string) -> const char* {
         }
 
         case ';': {
+            /* Read next CSI parameter or code. */
             csi.count++;
+            break;
+        }
+
+        case 'H':
+        case 'f': {
+            /* Set cursor position. */
+            cursor.x = csi.params[1];
+            cursor.y = csi.params[0];
+            display.SetCursor(cursor);
+            state = State::Initial;
+            break;
+        }
+
+        case 'A': {
+            /* Move cursor up. */
+            cursor.y -= csi.params[0];
+            if (cursor.y < 0) {
+                cursor.y = 0;
+            }
+            display.SetCursor(cursor);
+            state = State::Initial;
+            break;
+        }
+
+        case 'B': {
+            /* Move cursor down. */
+            cursor.y += csi.params[0];
+            if (cursor.y >= height) {
+                cursor.y = height - 1;
+            }
+            display.SetCursor(cursor);
+            state = State::Initial;
+            break;
+        }
+
+        case 'C': {
+            /* Move cursor right. */
+            cursor.x += csi.params[0];
+            if (cursor.x >= width) {
+                cursor.x = width - 1;
+            }
+            display.SetCursor(cursor);
+            state = State::Initial;
+            break;
+        }
+
+        case 'D': {
+            /* Move cursor left. */
+            cursor.x -= csi.params[0];
+            if (cursor.x < 0 ) {
+                cursor.x = 0;
+            }
+            display.SetCursor(cursor);
+            state = State::Initial;
+            break;
+        }
+
+        case 's': {
+            /* Save cursor position. */
+            cursor_saved = cursor; 
+            state = State::Initial;
+            break;
+        }
+        case 'u': {
+            /* Restore cursor position. */
+            cursor = cursor_saved;
+            display.SetCursor(cursor);
+            state = State::Initial;
             break;
         }
 
@@ -183,7 +256,7 @@ auto Emulator::StateControlSequence(const char* string) -> const char* {
 
         default: {
             state = State::Initial;
-            return string;
+            return string - 1;
         }
         }
     }

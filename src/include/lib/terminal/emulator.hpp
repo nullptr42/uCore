@@ -16,6 +16,7 @@ private:
     Display& display;
 
     Point cursor;
+    Point cursor_saved;
     int width;
     int height;
 
