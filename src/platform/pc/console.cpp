@@ -11,13 +11,16 @@ struct Console : public lib::terminal::Display {
 
     static const int kVgaCursorReg = 14;
 
+    static const uint8_t kColorMap[16];
+
     Console() : Display(80, 25) { }
 
     auto ToCode(lib::terminal::Char const& symbol) -> uint16_t {
-        // TODO(fleroviux): convert colors to VGA colors.
+        int offset = symbol.brightness * 8;
+
         return symbol.character |
-               (static_cast<int>(symbol.fg) <<  8) |
-               (static_cast<int>(symbol.bg) << 12);
+               (kColorMap[int(symbol.fg) + offset] <<  8) |
+               (kColorMap[int(symbol.bg)] << 12);
     }
 
     void SetCursor(lib::terminal::Point const& p) final override {
@@ -50,6 +53,12 @@ struct Console : public lib::terminal::Display {
         }
     }
 };
+
+const uint8_t Console::kColorMap[] = {
+    0,  4,  2,  6, 1,  5,  3,  7,
+    8, 12, 10, 14, 9, 13, 11, 15
+};
+
 
 static Console console;
 static lib::terminal::Emulator emulator(console);
