@@ -6,17 +6,17 @@
 
 /* Reference: http://www.cplusplus.com/reference/cstdio/printf/ */
 
-enum length {
-    NONE,
-    CHAR,
-    SHORT_INT,
-    LONG_INT,
-    LONG_LONG_INT,
-    INTMAX,
-    SIZE,
-    PTRDIFF,
-    LONG_DOUBLE,
-    POINTER  
+enum class DataType {
+    None,
+    Char,
+    ShortInteger,
+    LongInteger,
+    LongLongInteger,
+    IntMax,
+    Size,
+    PointerDifference,
+    LongDouble,
+    Pointer  
 };
 
 struct FormatState {
@@ -26,7 +26,7 @@ struct FormatState {
     bool show_plus;
     bool pound;
     int precision;
-    enum length length;
+    DataType data_type;
 
     int i;
     size_t total;
@@ -120,36 +120,36 @@ static inline bool parse_length(FormatState& state) {
     switch (format[state.i]) {
         case 'h':
             if (format[state.i + 1] == 'h') {
-                state.length = CHAR;
+                state.data_type = DataType::Char;
                 state.i += 2;
             } else {
-                state.length = SHORT_INT;   
+                state.data_type = DataType::ShortInteger;   
                 state.i++;
             }
             break;
         case 'l':
             if (format[state.i + 1] == 'l') {
-                state.length = LONG_LONG_INT;
+                state.data_type = DataType::LongLongInteger;
                 state.i += 2;
             } else {
-                state.length = LONG_INT;
+                state.data_type = DataType::LongInteger;
                 state.i++;
             }
             break;
         case 'j':
-            state.length = INTMAX;
+            state.data_type = DataType::IntMax;
             state.i++;
             break;
         case 'z':
-            state.length = SIZE;
+            state.data_type = DataType::Size;
             state.i++;
             break;
         case 't':
-            state.length = PTRDIFF;
+            state.data_type = DataType::PointerDifference;
             state.i++;
             break;
         case 'L':
-            state.length = LONG_DOUBLE;
+            state.data_type = DataType::LongDouble;
             state.i++;
             break;
     }
@@ -190,25 +190,25 @@ static inline bool fmt_signed_int(FormatState& state, va_list arg) {
     intmax_t value;
 
     /* Get number to print */
-    switch (state.length) {
-        case NONE:
-        case CHAR:
-        case SHORT_INT:
+    switch (state.data_type) {
+        case DataType::None:
+        case DataType::Char:
+        case DataType::ShortInteger:
             value = va_arg(arg, int);
             break;
-        case LONG_LONG_INT:
+        case DataType::LongLongInteger:
             value = va_arg(arg, long long);
             break;
-        case LONG_INT:
+        case DataType::LongInteger:
             value = va_arg(arg, long);
             break;
-        case INTMAX:
+        case DataType::IntMax:
             value = va_arg(arg, intmax_t);
             break;
-        case SIZE: /* checkme */
+        case DataType::Size: /* checkme */
             value = va_arg(arg, size_t);
             break;
-        case PTRDIFF: /* checkme */
+        case DataType::PointerDifference: /* checkme */
             value = va_arg(arg, ptrdiff_t);
             break;
         default:
@@ -279,28 +279,28 @@ static inline bool fmt_unsigned_int(FormatState& state,
     uintmax_t value;
 
     /* Get number to print */
-    switch (state.length) {
-        case NONE:
-        case CHAR:
-        case SHORT_INT:
+    switch (state.data_type) {
+        case DataType::None:
+        case DataType::Char:
+        case DataType::ShortInteger:
             value = va_arg(arg, unsigned int);
             break;
-        case LONG_INT:
+        case DataType::LongInteger:
             value = va_arg(arg, unsigned long int);
             break;
-        case LONG_LONG_INT:
+        case DataType::LongLongInteger:
             value = va_arg(arg, unsigned long long int);
             break;
-        case INTMAX:
+        case DataType::IntMax:
             value = va_arg(arg, uintmax_t);
             break;
-        case SIZE:
+        case DataType::Size:
             value = va_arg(arg, size_t);
             break;
-        case PTRDIFF:
+        case DataType::PointerDifference:
             value = va_arg(arg, ptrdiff_t);
             break;
-        case POINTER:
+        case DataType::Pointer:
             value = (uintmax_t)va_arg(arg, void*);
             break;
         default:
@@ -433,7 +433,7 @@ static inline bool do_format(FormatState& state, va_list arg) {
             return true;
         case 'p':
             state.pound = true;
-            state.length = POINTER;
+            state.data_type = DataType::Pointer;
             return fmt_unsigned_int(state, 16, "0123456789abcdef", "0x", arg);
     }
     
@@ -447,7 +447,7 @@ static inline void init_params(FormatState& state) {
     state.show_plus = false;
     state.pound = false;
     state.precision = -1;
-    state.length = NONE;
+    state.data_type = DataType::None;
 }
 
 int vsnprintf(char* buffer, size_t size, const char* format, va_list arg) {
