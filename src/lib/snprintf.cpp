@@ -19,7 +19,7 @@ enum length {
     POINTER  
 };
 
-struct print_state {
+struct FormatState {
     char pad_chr;
     int  pad_len;
     bool justify_left;
@@ -39,7 +39,7 @@ inline bool is_numeric_char(char character) {
     return character >= '0' && character <= '9';
 }
 
-inline int parse_number(print_state& state) {
+inline int parse_number(FormatState& state) {
     auto format = state.format;
     auto result = format[state.i++] - '0';
     while (format[state.i] && is_numeric_char(format[state.i])) {
@@ -49,132 +49,132 @@ inline int parse_number(print_state& state) {
     return result;
 }
 
-static inline void parse_flags(struct print_state* state) {
-    const char* format = state->format;
+static inline void parse_flags(FormatState& state) {
+    const char* format = state.format;
     
     while (1) {
-        switch (format[state->i]) {
+        switch (format[state.i]) {
             case '-':
-                state->justify_left = true;
+                state.justify_left = true;
                 break;
             case '+':
-                state->show_plus = true;
+                state.show_plus = true;
                 break;
             case ' ':
                 /* TODO */
                 break;
             case '#':
-                state->pound = true;
+                state.pound = true;
                 break;
             case '0':
-                state->pad_chr = '0';
+                state.pad_chr = '0';
                 break;
             default:
                 return;
         }
-        state->i++;
+        state.i++;
     }
 }
 
-static inline bool parse_width(struct print_state* state, va_list arg) {
-    const char* format = state->format;
+static inline bool parse_width(FormatState& state, va_list arg) {
+    const char* format = state.format;
 
-    if (format[state->i] == 0)
+    if (format[state.i] == 0)
         return false;
 
-    if (is_numeric_char(format[state->i])) {
-        state->pad_len = parse_number(*state);
-    } else if (format[state->i] == '*') {
-        state->pad_len = va_arg(arg, int);
-        state->i++;
+    if (is_numeric_char(format[state.i])) {
+        state.pad_len = parse_number(state);
+    } else if (format[state.i] == '*') {
+        state.pad_len = va_arg(arg, int);
+        state.i++;
     }
 
     return true;    
 }
 
-static inline bool parse_precision(struct print_state* state, va_list arg) {
-    const char* format = state->format;
+static inline bool parse_precision(FormatState& state, va_list arg) {
+    const char* format = state.format;
 
-    if (format[state->i] == 0)
+    if (format[state.i] == 0)
         return false;
 
-    if (format[state->i] == '.') {
-        state->i++;
-        if (format[state->i] == '*') {
-            state->precision = va_arg(arg, int);
-            state->i++;
-        } else if (is_numeric_char(format[state->i])) {
-            state->precision = parse_number(*state);
+    if (format[state.i] == '.') {
+        state.i++;
+        if (format[state.i] == '*') {
+            state.precision = va_arg(arg, int);
+            state.i++;
+        } else if (is_numeric_char(format[state.i])) {
+            state.precision = parse_number(state);
         }
     }
     
     return true;
 }
 
-static inline bool parse_length(struct print_state* state) {
-    const char* format = state->format;
+static inline bool parse_length(FormatState& state) {
+    const char* format = state.format;
 
-    if (format[state->i] == 0)
+    if (format[state.i] == 0)
         return false;
     
-    switch (format[state->i]) {
+    switch (format[state.i]) {
         case 'h':
-            if (format[state->i + 1] == 'h') {
-                state->length = CHAR;
-                state->i += 2;
+            if (format[state.i + 1] == 'h') {
+                state.length = CHAR;
+                state.i += 2;
             } else {
-                state->length = SHORT_INT;   
-                state->i++;
+                state.length = SHORT_INT;   
+                state.i++;
             }
             break;
         case 'l':
-            if (format[state->i + 1] == 'l') {
-                state->length = LONG_LONG_INT;
-                state->i += 2;
+            if (format[state.i + 1] == 'l') {
+                state.length = LONG_LONG_INT;
+                state.i += 2;
             } else {
-                state->length = LONG_INT;
-                state->i++;
+                state.length = LONG_INT;
+                state.i++;
             }
             break;
         case 'j':
-            state->length = INTMAX;
-            state->i++;
+            state.length = INTMAX;
+            state.i++;
             break;
         case 'z':
-            state->length = SIZE;
-            state->i++;
+            state.length = SIZE;
+            state.i++;
             break;
         case 't':
-            state->length = PTRDIFF;
-            state->i++;
+            state.length = PTRDIFF;
+            state.i++;
             break;
         case 'L':
-            state->length = LONG_DOUBLE;
-            state->i++;
+            state.length = LONG_DOUBLE;
+            state.i++;
             break;
     }
     
     return true;
 }
 
-static int get_left_pad(struct print_state* state) {
-    return state->justify_left ? 0 : state->pad_len;
+static int get_left_pad(FormatState& state) {
+    return state.justify_left ? 0 : state.pad_len;
 }
 
-static int get_right_pad(struct print_state* state) {
-    return state->justify_left ? state->pad_len : 0;
+static int get_right_pad(FormatState& state) {
+    return state.justify_left ? state.pad_len : 0;
 }
 
-static inline void append(struct print_state* state, char chr) {
-    state->total++;
-    if (state->left > 0) {
-        state->buffer[0] = chr;
-        state->buffer++;
-        state->left--;
+static inline void append(FormatState& state, char chr) {
+    state.total++;
+    if (state.left > 0) {
+        state.buffer[0] = chr;
+        state.buffer++;
+        state.left--;
     }
 }
 
-static inline void append_string(struct print_state* state, const char* string) {
+static inline void append_string(FormatState& state, const char* string) {
     int i = 0;
     int padding = get_right_pad(state);
 
@@ -184,13 +184,13 @@ static inline void append_string(struct print_state* state, const char* string) 
         append(state, ' ');
 }
 
-static inline bool fmt_signed_int(struct print_state* state, va_list arg) {
+static inline bool fmt_signed_int(FormatState& state, va_list arg) {
     int digits = 0;
     int padding = get_left_pad(state);
     intmax_t value;
 
     /* Get number to print */
-    switch (state->length) {
+    switch (state.length) {
         case NONE:
         case CHAR:
         case SHORT_INT:
@@ -216,7 +216,7 @@ static inline bool fmt_signed_int(struct print_state* state, va_list arg) {
     }
 
     intmax_t temp = value;
-    bool show_sign = value < 0 || state->show_plus;
+    bool show_sign = value < 0 || state.show_plus;
 
     /* Count number of digits */
     while (temp) { digits++; temp /= 10; }
@@ -227,8 +227,8 @@ static inline bool fmt_signed_int(struct print_state* state, va_list arg) {
     /* "For integer specifiers (d, i, o, u, x, X):
      *  precision specifies the minimum number of digits to be written."
      */
-    if (state->precision > digits)
-        digits = state->precision;
+    if (state.precision > digits)
+        digits = state.precision;
 
     int size = digits;
 
@@ -253,13 +253,13 @@ static inline bool fmt_signed_int(struct print_state* state, va_list arg) {
 
     /* Pad string to width */
     for (int i = 0; i < digits_start; i++)
-        buffer[i] = state->pad_chr;
+        buffer[i] = state.pad_chr;
 
     /* Place sign character */
     if (show_sign) {
         char sign = (value < 0) ? '-' : '+';
 
-        if (state->pad_chr == ' ')
+        if (state.pad_chr == ' ')
             buffer[digits_start-1] = sign;
         else
             buffer[0] = sign;
@@ -269,7 +269,7 @@ static inline bool fmt_signed_int(struct print_state* state, va_list arg) {
     return true;
 }
 
-static inline bool fmt_unsigned_int(struct print_state* state,
+static inline bool fmt_unsigned_int(FormatState& state,
                                     int base,
                                     const char* alphabet,
                                     const char* prefix,
@@ -279,7 +279,7 @@ static inline bool fmt_unsigned_int(struct print_state* state,
     uintmax_t value;
 
     /* Get number to print */
-    switch (state->length) {
+    switch (state.length) {
         case NONE:
         case CHAR:
         case SHORT_INT:
@@ -310,7 +310,7 @@ static inline bool fmt_unsigned_int(struct print_state* state,
     int prefix_length = 0;
 
     /* Determine prefix length if needed */
-    if (state->pound) {
+    if (state.pound) {
         /* TODO: implement strlen */
         while (prefix[prefix_length])
             prefix_length++;
@@ -327,8 +327,8 @@ static inline bool fmt_unsigned_int(struct print_state* state,
     /* "For integer specifiers (d, i, o, u, x, X):
      *  precision specifies the minimum number of digits to be written."
      */
-    if (state->precision > digits)
-        digits = state->precision;
+    if (state.precision > digits)
+        digits = state.precision;
 
     int size = digits + prefix_length;
 
@@ -349,11 +349,11 @@ static inline bool fmt_unsigned_int(struct print_state* state,
 
     /* Pad string to width */
     for (int i = 0; i < digits_start; i++)
-        buffer[i] = state->pad_chr;
+        buffer[i] = state.pad_chr;
 
     /* Print number system prefix (e.g. base 16 0x) */
-    if (state->pound) {
-        int start = (state->pad_chr == '0') ? 0 : (digits_start - prefix_length);
+    if (state.pound) {
+        int start = (state.pad_chr == '0') ? 0 : (digits_start - prefix_length);
         for (int i = 0; i < prefix_length; i++)
             buffer[start + i] = prefix[i];
     }
@@ -362,7 +362,7 @@ static inline bool fmt_unsigned_int(struct print_state* state,
     return true;
 }
 
-static inline bool fmt_char(struct print_state* state, va_list arg) {
+static inline bool fmt_char(FormatState& state, va_list arg) {
     char chr = va_arg(arg, int);
 
     int padding = get_left_pad(state);
@@ -381,7 +381,7 @@ static inline bool fmt_char(struct print_state* state, va_list arg) {
     return true;
 }
 
-static inline bool fmt_string(struct print_state* state, va_list arg) {
+static inline bool fmt_string(FormatState& state, va_list arg) {
     const char* string = va_arg(arg, char*);
 
     int len = 0;
@@ -404,8 +404,8 @@ static inline bool fmt_string(struct print_state* state, va_list arg) {
     return true;
 }
 
-static inline bool do_format(struct print_state* state, va_list arg) {
-    switch (state->format[state->i]) {
+static inline bool do_format(FormatState& state, va_list arg) {
+    switch (state.format[state.i]) {
         /* Signed decimal */
         case 'd':
         case 'i':
@@ -429,30 +429,30 @@ static inline bool do_format(struct print_state* state, va_list arg) {
 
         /* Misc. */
         case 'n':
-            *(va_arg(arg, int*)) = (int)state->total;
+            *(va_arg(arg, int*)) = (int)state.total;
             return true;
         case 'p':
-            state->pound = true;
-            state->length = POINTER;
+            state.pound = true;
+            state.length = POINTER;
             return fmt_unsigned_int(state, 16, "0123456789abcdef", "0x", arg);
     }
     
     return false;
 }
 
-static inline void init_params(struct print_state* state) {
-    state->pad_chr = ' ';
-    state->pad_len = 0;
-    state->justify_left = false;
-    state->show_plus = false;
-    state->pound = false;
-    state->precision = -1;
-    state->length = NONE;
+static inline void init_params(FormatState& state) {
+    state.pad_chr = ' ';
+    state.pad_len = 0;
+    state.justify_left = false;
+    state.show_plus = false;
+    state.pound = false;
+    state.precision = -1;
+    state.length = NONE;
 }
 
 int vsnprintf(char* buffer, size_t size, const char* format, va_list arg) {
     /* Maintain information such as formatting flags and buffer information */
-    struct print_state state;
+    FormatState state;
 
     state.buffer = buffer;
     state.i = 0;
@@ -470,21 +470,21 @@ int vsnprintf(char* buffer, size_t size, const char* format, va_list arg) {
 
             /* Special case: %% will print just % */
             if (format[state.i] == '%') {
-                append(&state, '%');
+                append(state, '%');
                 state.i++;
                 continue;
             }
 
             /* Reset parameters for format specifier */
-            init_params(&state);
+            init_params(state);
 
             /* Parse options for format specifier */
-            parse_flags(&state);
-            if (!parse_width(&state, arg))
+            parse_flags(state);
+            if (!parse_width(state, arg))
                 return state.total * -1;
-            if (!parse_precision(&state, arg))
+            if (!parse_precision(state, arg))
                 return state.total * -1;
-            if (!parse_length(&state))
+            if (!parse_length(state))
                 return state.total * -1;
 
             /* Apparently glibc ignores '0'-padding when precision is defined.
@@ -493,10 +493,10 @@ int vsnprintf(char* buffer, size_t size, const char* format, va_list arg) {
                 state.pad_chr = ' ';
 
             /* Finally perform the formatting operation */
-            if (!do_format(&state, arg))
+            if (!do_format(state, arg))
                 return state.total * -1;            
         } else {
-            append(&state, format[state.i]);
+            append(state, format[state.i]);
         }
         state.i++;
     }
