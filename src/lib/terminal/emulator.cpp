@@ -102,7 +102,7 @@ auto Emulator::StateInitial(const char* string) -> const char* {
                     cursor_next = { 0, cursor.y + 1 };
                     stop = true;
                 }
-                
+
                 break;
             }
             }
@@ -180,8 +180,10 @@ auto Emulator::StateControlSequence(const char* string) -> const char* {
         case 'H':
         case 'f': {
             /* Set cursor position. */
-            cursor.x = csi.params[1];
-            cursor.y = csi.params[0];
+            cursor.x = csi.params[1] - 1;
+            cursor.y = csi.params[0] - 1;
+            if (cursor.x == -1) cursor.x = 0;
+            if (cursor.y == -1) cursor.y = 0;
             display.SetCursor(cursor);
             state = State::Initial;
             break;
@@ -231,12 +233,31 @@ auto Emulator::StateControlSequence(const char* string) -> const char* {
             break;
         }
 
+        case 'E': {
+            /* Move curser to the beginning of the line, n lines down. */
+            cursor.x = 0;
+            cursor.y += csi.params[0];
+            display.SetCursor(cursor);
+            state = State::Initial;
+            break;
+        }
+
+        case 'F': {
+            /* Move cursor to the beginning of the line, n lines up. */
+            cursor.x = 0;
+            cursor.y -= csi.params[0];
+            display.SetCursor(cursor);
+            state = State::Initial;
+            break;
+        }
+
         case 's': {
             /* Save cursor position. */
             cursor_saved = cursor; 
             state = State::Initial;
             break;
         }
+
         case 'u': {
             /* Restore cursor position. */
             cursor = cursor_saved;
