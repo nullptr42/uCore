@@ -6,15 +6,6 @@
 
 /* Reference: http://www.cplusplus.com/reference/cstdio/printf/ */
 
-#define IS_NUMERIC(c) (c >= '0' && c <= '9')
-
-#define PARSE_NUMBER(result)\
-    result = format[state->i++] - '0';\
-    while (format[state->i] && IS_NUMERIC(format[state->i])) {\
-        result *= 10;\
-        result += format[state->i++] - '0';\
-    }
-
 enum length {
     NONE,
     CHAR,
@@ -43,6 +34,20 @@ struct print_state {
     const char* format;
     char* buffer;
 };
+
+inline bool is_numeric_char(char character) {
+    return character >= '0' && character <= '9';
+}
+
+inline int parse_number(print_state& state) {
+    auto format = state.format;
+    auto result = format[state.i++] - '0';
+    while (format[state.i] && is_numeric_char(format[state.i])) {
+        result *= 10;
+        result += format[state.i++] - '0';
+    }
+    return result;
+}
 
 static inline void parse_flags(struct print_state* state) {
     const char* format = state->format;
@@ -77,8 +82,8 @@ static inline bool parse_width(struct print_state* state, va_list arg) {
     if (format[state->i] == 0)
         return false;
 
-    if (IS_NUMERIC(format[state->i])) {
-        PARSE_NUMBER(state->pad_len);
+    if (is_numeric_char(format[state->i])) {
+        state->pad_len = parse_number(*state);
     } else if (format[state->i] == '*') {
         state->pad_len = va_arg(arg, int);
         state->i++;
@@ -98,8 +103,8 @@ static inline bool parse_precision(struct print_state* state, va_list arg) {
         if (format[state->i] == '*') {
             state->precision = va_arg(arg, int);
             state->i++;
-        } else if (IS_NUMERIC(format[state->i])) {
-            PARSE_NUMBER(state->precision);
+        } else if (is_numeric_char(format[state->i])) {
+            state->precision = parse_number(*state);
         }
     }
     

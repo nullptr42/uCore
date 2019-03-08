@@ -14,7 +14,7 @@ extern "C" void kernel_main(void) {
     printf("Hello World from the real driver!\n");
     printf("\e[2;32mXXXX is another test! :)\e[0m\rThis\n");
     printf("a\tb\t\tc\td\n");
-    printf("Oh dear computer, what is the answer? %d\n", 42);
+    printf("Oh dear computer, just what is the answer? 0x%08x\n", 42);
 
     while (1) { }
 }
