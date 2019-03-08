@@ -2,7 +2,6 @@
 #include <stddef.h>
 #include <stdarg.h>
 #include <stdint.h>
-#include <stdbool.h>
 
 /* Reference: http://www.cplusplus.com/reference/cstdio/printf/ */
 
@@ -20,21 +19,28 @@ enum class DataType {
 };
 
 struct FormatState {
+    int i = 0;
+    size_t total = 0;
+    
+    char* buffer;       /* output buffer */
+    size_t left;        /* remaining space */
+    const char* format; /* format string */
+
     struct Parameters {
         char pad_chr = ' ';
         int  pad_len = 0;
         bool justify_left = false;
         bool show_plus = false;
         bool pound = false;
-        int precision = -1;
+        int  precision = -1;
         DataType data_type = DataType::None;
     } parameters;
 
-    int i;
-    size_t total;
-    size_t left;
-    const char* format;
-    char* buffer;
+    FormatState(char* buffer, size_t size, const char* format)
+        : buffer(buffer)
+        , left(size)
+        , format(format)
+    { }
 };
 
 inline bool is_numeric_char(char character) {
@@ -452,15 +458,9 @@ static inline bool do_format(FormatState& state, va_list arg) {
 
 int vsnprintf(char* buffer, size_t size, const char* format, va_list arg) {
     /* Maintain information such as formatting flags and buffer information */
-    FormatState state;
+    FormatState state { buffer, size, format };
 
     auto& params = state.parameters;
-
-    state.buffer = buffer;
-    state.i = 0;
-    state.total = 0;
-    state.left = size;
-    state.format = format;
 
     /* Account for null-byte terminator */
     if (size > 0) state.left--;
@@ -509,11 +509,11 @@ int vsnprintf(char* buffer, size_t size, const char* format, va_list arg) {
 }
 
 int snprintf(char* buffer, size_t size, const char* format, ...) {
+    int total;
     va_list arg;
+
     va_start(arg, format);
-
-    int total = vsnprintf(buffer, size, format, arg);
-
+    total = vsnprintf(buffer, size, format, arg);
     va_end(arg);
     return total;
 }
