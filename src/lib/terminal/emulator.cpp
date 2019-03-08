@@ -253,7 +253,8 @@ auto Emulator::StateControlSequence(const char* string) -> const char* {
 
         case 'G': {
             /* Set cursor horizontal position. */
-            cursor.x = 0;
+            cursor.x = csi.params[0] - 1;
+            if (cursor.x == -1) cursor.x = 0;
             display.SetCursor(cursor);
             state = State::Initial;
             break;
