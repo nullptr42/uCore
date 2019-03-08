@@ -150,7 +150,7 @@ auto Emulator::StateEscape(const char* string) -> const char* {
 }
 
 auto Emulator::StateControlSequence(const char* string) -> const char* {
-    while (*string) {
+    while (*string && state == State::ControlSequence) {
         char character = *string++;
 
         switch (character) {
