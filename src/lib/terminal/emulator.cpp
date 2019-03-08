@@ -251,6 +251,14 @@ auto Emulator::StateControlSequence(const char* string) -> const char* {
             break;
         }
 
+        case 'G': {
+            /* Set cursor horizontal position. */
+            cursor.x = 0;
+            display.SetCursor(cursor);
+            state = State::Initial;
+            break;
+        }
+
         case 's': {
             /* Save cursor position. */
             cursor_saved = cursor; 
