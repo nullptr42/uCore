@@ -155,39 +155,36 @@ auto Emulator::StateControlSequence(const char* string) -> const char* {
         char character = *string++;
 
         switch (character) {
-            /* Digit, "append" to current parameter. */
-            case '0': case '1':
-            case '2': case '3':
-            case '4': case '5':
-            case '6': case '7':
-            case '8': case '9': {
-                if (csi.count < kMaxParams) {
-                    csi.params[csi.count] *= 10;
-                    csi.params[csi.count] += character - '0';
-                }
-                break;
+        
+        case '0': case '1':
+        case '2': case '3':
+        case '4': case '5':
+        case '6': case '7':
+        case '8': case '9': {
+            if (csi.count < kMaxParams) {
+                csi.params[csi.count] *= 10;
+                csi.params[csi.count] += character - '0';
             }
-            
-            /* Parameter delimiter */
-            case ';': {
-                csi.count++;
-                break;
-            }
-            
-            /* Set display attributes */
-            case 'm': {
-                for (int i = 0; i <= csi.count; i++) {
-                    SetDisplayAttribute(csi.params[i]);
-                }
-                state = State::Initial;
-                return string;
-            }
+            break;
+        }
 
-            /* Unknown character. Stop. */
-            default: {
-                state = State::Initial;
-                return string;
+        case ';': {
+            csi.count++;
+            break;
+        }
+
+        case 'm': {
+            for (int i = 0; i <= csi.count; i++) {
+                SetDisplayAttribute(csi.params[i]);
             }
+            state = State::Initial;
+            return string;
+        }
+
+        default: {
+            state = State::Initial;
+            return string;
+        }
         }
     }
 
@@ -196,30 +193,33 @@ auto Emulator::StateControlSequence(const char* string) -> const char* {
 
 void Emulator::SetDisplayAttribute(int code) {
     switch (code) {
-        case 0: {
-            // TODO
-            break;
-        }
+    case 0: {
+        /* All attributes off */
+        brightness = 0;
+        background = Color::Black;
+        foreground = Color::White;
+        break;
+    }
 
-        case 1: brightness = 0; break;
-        case 2: brightness = 1; break;
+    case 1: brightness = 0; break;
+    case 2: brightness = 1; break;
 
+    case 30: case 31:
+    case 32: case 33:
+    case 34: case 35:
+    case 36: case 37: {
         /* Foreground color */
-        case 30: case 31:
-        case 32: case 33:
-        case 34: case 35:
-        case 36: case 37: {
-            foreground = static_cast<Color>(code - 30);
-            break;
-        }
+        foreground = static_cast<Color>(code - 30);
+        break;
+    }
 
+    case 40: case 41:
+    case 42: case 43:
+    case 44: case 45:
+    case 46: case 47: {
         /* Background color */
-        case 40: case 41:
-        case 42: case 43:
-        case 44: case 45:
-        case 46: case 47: {
-            background = static_cast<Color>(code - 30);
-            break;
-        }
+        background = static_cast<Color>(code - 30);
+        break;
+    }
     }
 }
