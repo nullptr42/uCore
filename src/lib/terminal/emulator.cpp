@@ -100,6 +100,7 @@ auto Emulator::StateInitial(const char* string) -> const char* {
                     auto& chr = frame[line + cursor.x++];
 
                     chr.character = character;
+                    chr.brightness = brightness;
                     chr.bg = background;
                     chr.fg = foreground;
                 }

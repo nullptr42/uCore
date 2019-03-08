@@ -19,6 +19,8 @@ enum class Color : uint8_t {
 struct Char {
     Color fg = Color::White;
     Color bg = Color::Black;
+    uint8_t brightness = 0;
+    
     char character = ' ';
 };
 

@@ -24,7 +24,7 @@ struct BumpAllocator : public lib::Allocator {
     }
 };
 
-BumpAllocator<8192> g_bump_alloc;
+BumpAllocator<32768> g_bump_alloc;
 
 lib::Allocator* g_allocator = &g_bump_alloc;
 
