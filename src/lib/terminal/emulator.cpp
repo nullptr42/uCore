@@ -90,20 +90,19 @@ auto Emulator::StateInitial(const char* string) -> const char* {
                     line -= width;
                 }
 
-                if (cursor.x >= width) {
-                    if (linewrap) {
-                        string--;
-                        cursor_next = { 0, cursor.y + 1 };
-                        stop = true;
-                    }
-                } else {
+                if (cursor.x < width) {
                     auto& chr = frame[line + cursor.x++];
 
                     chr.character = character;
                     chr.brightness = brightness;
                     chr.bg = background;
                     chr.fg = foreground;
+                } else if (linewrap) {
+                    string--;
+                    cursor_next = { 0, cursor.y + 1 };
+                    stop = true;
                 }
+                
                 break;
             }
             }
@@ -247,6 +246,7 @@ auto Emulator::StateControlSequence(const char* string) -> const char* {
         }
 
         case 'm': {
+            /* Set display attributes such as color and brightness. */
             for (int i = 0; i <= csi.count; i++) {
                 SetDisplayAttribute(csi.params[i]);
             }
@@ -255,6 +255,7 @@ auto Emulator::StateControlSequence(const char* string) -> const char* {
         }
 
         default: {
+            /* Unexpected character, stop parsing. */
             state = State::Initial;
             return string - 1;
         }
