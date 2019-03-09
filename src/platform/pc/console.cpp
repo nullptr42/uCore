@@ -1,8 +1,8 @@
 
 #include <stdint.h>
 #include <arch/x86_64/io-port.hpp>
-#include <lib/terminal/emulator.hpp>
 #include <platform/print.hpp>
+#include <terminal/emulator.hpp>
 
 struct Console : public lib::terminal::Display {
 

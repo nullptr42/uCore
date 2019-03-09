@@ -1,5 +1,5 @@
 
-#include <lib/terminal/emulator.hpp>
+#include <terminal/emulator.hpp>
 
 using namespace lib::terminal;
 
