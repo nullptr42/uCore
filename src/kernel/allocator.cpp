@@ -1,12 +1,12 @@
 
 #include <stdint.h>
-#include <lib/allocator.hpp>
+#include <allocator.hpp>
 
 /**
  * Initial bump allocator used to bootstrap memory management.
  */
 template <size_t capacity>
-struct BumpAllocator : public lib::Allocator {
+struct BumpAllocator : public cxx::Allocator {
     uint8_t data[capacity];
     uint8_t* position = &data[0];
 
@@ -26,17 +26,17 @@ struct BumpAllocator : public lib::Allocator {
 
 BumpAllocator<32768> g_bump_alloc;
 
-lib::Allocator* g_allocator = &g_bump_alloc;
+cxx::Allocator* g_allocator = &g_bump_alloc;
 
 static void* wrap_alloc(size_t size) {
-    void* data = g_allocator->Alloc(sizeof(lib::Allocator*) + size);
-    ((lib::Allocator**)data)[0] = g_allocator;
-    return data + sizeof(lib::Allocator*);
+    void* data = g_allocator->Alloc(sizeof(cxx::Allocator*) + size);
+    ((cxx::Allocator**)data)[0] = g_allocator;
+    return data + sizeof(cxx::Allocator*);
 }
 
 static void wrap_free(void* data) {
-    data -= sizeof(lib::Allocator*);
-    lib::Allocator* allocator = ((lib::Allocator**)data)[0];
+    data -= sizeof(cxx::Allocator*);
+    cxx::Allocator* allocator = ((cxx::Allocator**)data)[0];
     allocator->Free(data);
 }
 

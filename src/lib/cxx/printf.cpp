@@ -1,15 +1,11 @@
-/*
- * Copyright (C) 2019 Frederic Meyer. All rights reserved.
- *
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
 
 #include <stddef.h>
 #include <stdarg.h>
 #include <platform/print.hpp>
 
-int vsnprintf(char* buffer, size_t size, const char* format, va_list arg);
+#include "include/stdio.hpp"
+
+namespace cxx {
 
 void putc(char c) {
     char str[] =  { c, 0 };
@@ -55,4 +51,6 @@ int vprintf(const char* format, va_list arg) {
 
     va_end(arg2);
     return total;
+}
+
 }

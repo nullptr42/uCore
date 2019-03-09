@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 
-namespace lib {
+namespace cxx {
 
 /**
  * Generic interface for memory allocation.

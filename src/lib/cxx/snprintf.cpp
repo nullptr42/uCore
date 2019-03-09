@@ -5,6 +5,8 @@
 
 /* Reference: http://www.cplusplus.com/reference/cstdio/printf/ */
 
+namespace cxx {
+
 enum class DataType {
     None,
     Char,
@@ -552,4 +554,6 @@ int snprintf(char* buffer, size_t size, const char* format, ...) {
     int total = vsnprintf(buffer, size, format, arg);
     va_end(arg);
     return total;
+}
+
 }

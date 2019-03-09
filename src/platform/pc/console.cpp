@@ -17,7 +17,7 @@ struct Console : public lib::terminal::Display {
 
     auto ToCode(lib::terminal::Char const& symbol) -> uint16_t {
         int offset = symbol.brightness * 8;
-
+    
         return symbol.character |
                (kColorMap[int(symbol.fg) + offset] <<  8) |
                (kColorMap[int(symbol.bg)] << 12);
