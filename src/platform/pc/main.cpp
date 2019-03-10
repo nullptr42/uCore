@@ -2,11 +2,11 @@
 #include <stdio.hpp>
 #include <list.hpp>
 #include <arch/x86_64/gdt.hpp>
+#include <arch/x86_64/idt.hpp>
 #include <kernel/version.hpp>
 
 extern "C" void fpu_init();
 
-void idt_init();
 void pic_init();
 void pic_set_mask(uint16_t irq_mask);
 
@@ -21,7 +21,7 @@ extern "C" void kernel_main(void) {
 
     /* Setup flat segmentation and interrupt vector table. */
     gdt::initialize();
-    idt_init();
+    idt::initialize();
     pic_init();
 
     cxx::printf("\e[2;37m%s\e[0m %d.%d\n\n",
