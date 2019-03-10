@@ -7,6 +7,8 @@
 extern "C" void fpu_init();
 
 void idt_init();
+void pic_init();
+void pic_set_mask(uint16_t irq_mask);
 
 extern "C" void __cxa_pure_virtual() {
     while (1) { }
@@ -18,6 +20,7 @@ extern "C" void kernel_main(void) {
     /* Setup flat segmentation and interrupt vector table. */
     gdt_init();
     idt_init();
+    pic_init();
 
     cxx::printf("\e[2;37m%s\e[0m %d.%d\n\n",
         kernel::g_kernel_info.name,
@@ -25,6 +28,8 @@ extern "C" void kernel_main(void) {
         kernel::g_kernel_info.version.minor
     );
 
-    //asm("sti");
+    pic_set_mask(0);
+
+    asm("sti");
     for (;;) asm("hlt");
 }
