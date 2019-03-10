@@ -1,9 +1,17 @@
 
 #pragma once
 
-#define SEG_KCODE_LM (0x08)
-#define SEG_UCODE_LM (0x1B)
-#define SEG_KDATA    (0x10)
-#define SEG_UDATA    (0x23)
+namespace arch::x86_64::gdt {
 
-void gdt_init();
+constexpr uint16_t descriptor(int ring, uint16_t entry) {
+    return (ring & 3) | (entry * 8);
+}
+
+constexpr uint16_t kKernelCodeSeg = descriptor(0, 1);
+constexpr uint16_t kKernelDataSeg = descriptor(0, 2);
+constexpr uint16_t kUserCodeSeg   = descriptor(3, 3);
+constexpr uint16_t kUserDataSeg   = descriptor(3, 4);
+
+void initialize();
+
+}
