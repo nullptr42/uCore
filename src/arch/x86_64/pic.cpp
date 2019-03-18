@@ -1,6 +1,9 @@
 
 #include <stdint.h>
 #include <arch/x86_64/io_port.hpp>
+#include <arch/x86_64/pic.hpp>
+
+namespace arch::x86_64::pic {
 
 #define IRQ_BASE_M (0x20)
 #define IRQ_BASE_S (0x28)
@@ -20,14 +23,7 @@ enum pic_command {
 
 #define PIC_ICW4_8086 (0x01) /* 8086/88 (MCS-80/85) mode */
 
-void pic_set_mask(uint16_t irq_mask) {
-    outb(PIC_IO_M_DATA, (uint8_t)(irq_mask&0xFF));
-    io_wait();
-    outb(PIC_IO_S_DATA, (uint8_t)(irq_mask>>8));
-    io_wait();
-}
-
-void pic_init() {
+void initialize() {
     /* Setup master PIC */
     outb(PIC_IO_M_CMD, PIC_INIT_ICW4);
     io_wait();
@@ -49,12 +45,25 @@ void pic_init() {
     io_wait();
 }
 
-void pic_send_eoi(int irq) {
-    if (irq >= 16)
-        return;
-    if (irq >= 8)
-        outb(PIC_IO_S_CMD, PIC_CMD_EOI);
-    else
-        outb(PIC_IO_M_CMD, PIC_CMD_EOI);
+void set_mask(uint16_t irq_mask) {
+    outb(PIC_IO_M_DATA, (uint8_t)(irq_mask&0xFF));
     io_wait();
+    outb(PIC_IO_S_DATA, (uint8_t)(irq_mask>>8));
+    io_wait();
+}
+
+void send_eoi(int irq) {
+    if (irq >= 16) {
+        return;
+    }
+    
+    if (irq >= 8) {
+        outb(PIC_IO_S_CMD, PIC_CMD_EOI);
+    } else {
+        outb(PIC_IO_M_CMD, PIC_CMD_EOI);
+    }
+    
+    io_wait();
+}
+
 }

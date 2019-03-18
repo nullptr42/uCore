@@ -3,6 +3,7 @@
 #include <list.hpp>
 #include <arch/x86_64/gdt.hpp>
 #include <arch/x86_64/idt.hpp>
+#include <arch/x86_64/pic.hpp>
 #include <kernel/version.hpp>
 
 extern "C" void fpu_init();
@@ -22,7 +23,7 @@ extern "C" void kernel_main(void) {
     /* Setup flat segmentation and interrupt vector table. */
     gdt::initialize();
     idt::initialize();
-    pic_init();
+    pic::initialize();
 
     cxx::printf("\e[2;37m%s\e[0m %d.%d\n\n",
         kernel::g_kernel_info.name,
@@ -30,7 +31,7 @@ extern "C" void kernel_main(void) {
         kernel::g_kernel_info.version.minor
     );
 
-    pic_set_mask(0);
+    pic::set_mask(0);
 
     asm("sti");
     for (;;) asm("hlt");
