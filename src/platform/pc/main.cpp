@@ -8,9 +8,6 @@
 
 extern "C" void fpu_init();
 
-void pic_init();
-void pic_set_mask(uint16_t irq_mask);
-
 using namespace arch::x86_64;
 
 extern "C" void __cxa_pure_virtual() {
