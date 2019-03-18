@@ -5,62 +5,59 @@
 
 namespace arch::x86_64::pic {
 
-#define IRQ_BASE_M (0x20)
-#define IRQ_BASE_S (0x28)
+const int kIrqBaseMaster = 0x20;
+const int kIrqBaseSlave  = 0x28;
+const int kIcw4Mode8086  = 0x01;
 
-/* IO-ports used by the legacy PIC chip */
-enum pic_port {
-    PIC_IO_M_CMD  = 0x20,
-    PIC_IO_M_DATA = 0x21,
-    PIC_IO_S_CMD  = 0xA0,
-    PIC_IO_S_DATA = 0xA1
+/* IO-ports used by the legacy PIC chip. */
+enum Port {
+    MasterCommand = 0x20,
+    MasterData = 0x21,
+    SlaveCommand = 0xA0,
+    SlaveData = 0xA1
 };
 
-enum pic_command {
-    PIC_INIT_ICW4 = 0x11,
-    PIC_CMD_EOI   = 0x20
+enum Command {
+    Initialize = 0x11,
+    EndOfInterrupt = 0x20
 };
-
-#define PIC_ICW4_8086 (0x01) /* 8086/88 (MCS-80/85) mode */
 
 void initialize() {
     /* Setup master PIC */
-    outb(PIC_IO_M_CMD, PIC_INIT_ICW4);
+    outb(Port::MasterCommand, Command::Initialize);
     io_wait();
-    outb(PIC_IO_M_DATA, IRQ_BASE_M);
+    outb(Port::MasterData, kIrqBaseMaster);
     io_wait();
-    outb(PIC_IO_M_DATA, 4); /* Slave PIC is at IRQ2 */
+    outb(Port::MasterData, 4); /* Slave PIC is at IRQ2 */
     io_wait();
-    outb(PIC_IO_M_DATA, PIC_ICW4_8086);
+    outb(Port::MasterData, kIcw4Mode8086);
     io_wait();
 
     /* Setup slave PIC */
-    outb(PIC_IO_S_CMD, PIC_INIT_ICW4);
+    outb(Port::SlaveCommand, Command::Initialize);
     io_wait();
-    outb(PIC_IO_S_DATA, IRQ_BASE_S);
+    outb(Port::SlaveData, kIrqBaseSlave);
     io_wait();
-    outb(PIC_IO_S_DATA, 2);
+    outb(Port::SlaveData, 2);
     io_wait();
-    outb(PIC_IO_S_DATA, PIC_ICW4_8086);
+    outb(Port::SlaveData, kIcw4Mode8086);
     io_wait();
 }
 
 void set_mask(uint16_t irq_mask) {
-    outb(PIC_IO_M_DATA, (uint8_t)(irq_mask&0xFF));
+    outb(Port::MasterData, (uint8_t)(irq_mask&0xFF));
     io_wait();
-    outb(PIC_IO_S_DATA, (uint8_t)(irq_mask>>8));
+    outb(Port::SlaveData, (uint8_t)(irq_mask>>8));
     io_wait();
 }
 
 void send_eoi(int irq) {
-    if (irq >= 16) {
-        return;
-    }
+    if (irq >= 16) return;
     
     if (irq >= 8) {
-        outb(PIC_IO_S_CMD, PIC_CMD_EOI);
+        outb(Port::SlaveCommand, Command::EndOfInterrupt);
     } else {
-        outb(PIC_IO_M_CMD, PIC_CMD_EOI);
+        outb(Port::MasterCommand, Command::EndOfInterrupt);
     }
     
     io_wait();
