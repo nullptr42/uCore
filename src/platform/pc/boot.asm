@@ -172,6 +172,8 @@ _start_64:
     mov rbx, __ctors_start
     cmp rbx, __ctors_end
     jz .call_main
+    push rdi
+    push rsi
 .loop_ctors:
     mov rcx, [rbx]
     test rcx, rcx
@@ -180,6 +182,8 @@ _start_64:
     add rbx, 8
     cmp rbx, __ctors_end
     jnz .loop_ctors
+    pop rsi
+    pop rdi
 .call_main:
     mov rax, kernel_main
     call rax

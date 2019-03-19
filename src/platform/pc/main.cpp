@@ -5,6 +5,7 @@
 #include <arch/x86_64/idt.hpp>
 #include <arch/x86_64/pic.hpp>
 #include <kernel/version.hpp>
+#include "multiboot.hpp"
 
 extern "C" void fpu_init();
 
@@ -14,7 +15,9 @@ extern "C" void __cxa_pure_virtual() {
     while (1) { }
 }
 
-extern "C" void kernel_main(void) {
+kernel::BootInfo* g_bootinfo = nullptr;
+
+extern "C" void kernel_main(uint32_t magic, void* multiboot) {
     fpu_init();
 
     /* Setup flat segmentation and interrupt vector table. */
@@ -29,6 +32,8 @@ extern "C" void kernel_main(void) {
     );
 
     pic::set_mask(0);
+
+    g_bootinfo = get_bootinfo(magic, multiboot);
 
     asm("sti");
     for (;;) asm("hlt");
