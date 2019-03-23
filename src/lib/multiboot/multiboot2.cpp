@@ -14,15 +14,15 @@ bool multiboot2_verify(uint32_t magic) {
     return magic == MB2_BOOTLOADER_MAGIC;
 }
 
-void multiboot2_find_tags(struct mb2_info* info,
+void multiboot2_find_tags(Header* info,
                           enum mb2_tag_type type,
                           tag_handler handler,
                           void* user_argument
                          ) {
-    uint32_t  size  = ((struct mb2_info*)info)->total_size;
+    uint32_t  size  = ((Header*)info)->total_size;
     uintptr_t limit = (uintptr_t)info + size;
 
-    void* ptr = (void*)info + sizeof(struct mb2_info);
+    void* ptr = (void*)info + sizeof(Header);
 
     // Walk all tags contained in the info structure.
     while ((uintptr_t)ptr < limit) {

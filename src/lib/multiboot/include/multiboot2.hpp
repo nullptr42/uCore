@@ -7,7 +7,7 @@
 
 namespace multiboot {
 
-struct mb2_info {
+struct Header {
     uint32_t total_size;
     uint32_t reserved;
 } __attribute__((packed));
@@ -80,7 +80,7 @@ bool multiboot2_verify(uint32_t magic);
 
 typedef bool (*tag_handler)(struct mb2_tag* tag, void* user_argument);
 
-void multiboot2_find_tags(struct mb2_info* info,
+void multiboot2_find_tags(Header* info,
                           enum mb2_tag_type type,
                           tag_handler handler,
                           void* user_argument
