@@ -1,17 +1,11 @@
-/*
- * Copyright (C) 2018-present Frederic Meyer. All rights reserved.
- *
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-
-#ifndef _MULTIBOOT2_H_
-#define _MULTIBOOT2_H_
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
 
 #define MB2_BOOTLOADER_MAGIC (0x36D76289)
+
+namespace multiboot {
 
 struct mb2_info {
     uint32_t total_size;
@@ -92,4 +86,5 @@ void multiboot2_find_tags(struct mb2_info* info,
                           void* user_argument
                          );
 
-#endif // _MULTIBOOT2_H_
+}
+

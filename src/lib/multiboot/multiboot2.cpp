@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include "include/multiboot2.hpp"
 
+namespace multiboot {
+
 bool multiboot2_verify(uint32_t magic) {
     return magic == MB2_BOOTLOADER_MAGIC;
 }
@@ -40,4 +42,6 @@ void multiboot2_find_tags(struct mb2_info* info,
             ptr += 8 - ((uintptr_t)ptr & 7);
         }
     }
+}
+
 }

@@ -3,6 +3,8 @@
 #include <multiboot2.hpp>
 #include <kernel/bootinfo.hpp>
 
+using namespace multiboot;
+
 static bool callback_mmap(mb2_tag* tag, kernel::BootInfo* bootinfo) {
     auto mmap = (mb2_mmap_tag*)tag;
     auto size = uint32_t(sizeof(mb2_mmap_tag));
