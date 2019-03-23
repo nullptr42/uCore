@@ -1,11 +1,10 @@
 #pragma once
 
 #include <stdint.h>
-#include <stdbool.h>
-
-#define MB2_BOOTLOADER_MAGIC (0x36D76289)
 
 namespace multiboot {
+
+const uint32_t kMagicNumber = 0x36D76289;
 
 struct Header {
     uint32_t total_size;
@@ -42,18 +41,10 @@ struct MemoryMapTag : Tag {
     uint32_t entry_version;
 } __attribute__((packed));
 
-/*enum mb2_mmap_type {
-    MB_MMAP_RESERVED  = 0,
-    MB_MMAP_AVAILABLE = 1,
-    MB_MMAP_ACPI_INFO = 3,
-    MB_MMAP_HIBERNATE = 4,
-    MB_MMAP_DEFECTIVE = 5
-};*/
-
 enum class MemoryMapType : uint32_t {
-    Reserved = 0,
+    Reserved  = 0,
     Available = 1,
-    AcpiInfo = 3,
+    AcpiInfo  = 3,
     Hibernate = 4,
     Defective = 5
 };
@@ -75,7 +66,7 @@ struct FramebufferTag : Tag {
     uint16_t reserved; /* according to documentation this should
                         * be uint8_t but it only works like this ¯\_(ツ)_/¯ */
 
-    /* TFW assuming we are only using non-indexed mode. ;) */
+    /* TODO: support indexed modes (if they are of any use?). */
     uint8_t r_shift;
     uint8_t r_mask_len;
     uint8_t g_shift;
@@ -84,15 +75,13 @@ struct FramebufferTag : Tag {
     uint8_t b_mask_len;
 } __attribute__((packed));
 
-bool multiboot2_verify(uint32_t magic);
-
 typedef bool (*Callback)(Tag* tag, void* user_argument);
 
-void multiboot2_find_tags(Header* info,
-                          TagType type,
-                          Callback handler,
-                          void* user_argument
-                         );
+void find_tags(Header* info,
+               TagType type,
+               Callback handler,
+               void* user_argument
+              );
 
 }
 

@@ -10,15 +10,11 @@
 
 namespace multiboot {
 
-bool multiboot2_verify(uint32_t magic) {
-    return magic == MB2_BOOTLOADER_MAGIC;
-}
-
-void multiboot2_find_tags(Header* info,
-                          TagType type,
-                          Callback handler,
-                          void* user_argument
-                         ) {
+void find_tags(Header* info,
+               TagType type,
+               Callback handler,
+               void* user_argument
+              ) {
     uint32_t  size  = ((Header*)info)->total_size;
     uintptr_t limit = (uintptr_t)info + size;
 

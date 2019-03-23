@@ -28,7 +28,7 @@ static bool callback_mmap(MemoryMapTag* mmap, kernel::BootInfo* bootinfo) {
 
 kernel::BootInfo* get_bootinfo(uint32_t magic, void* multiboot) {
     /* Ensure we have been booted via Multiboot2. */
-    if (!multiboot2_verify(magic)) {
+    if (magic != multiboot::kMagicNumber) {
         cxx::printf("bootinfo: Kernel was not booted via Multiboot2.\n");
         return nullptr;
     }
@@ -38,7 +38,7 @@ kernel::BootInfo* get_bootinfo(uint32_t magic, void* multiboot) {
     cxx::printf("bootinfo: Multiboot2 header located @ %p.\n", multiboot);
     cxx::printf("bootinfo: Bootinfo structure allocated @ %p.\n", bootinfo);
 
-    multiboot2_find_tags((multiboot::Header*)multiboot, multiboot::TagType::MemoryMap, (multiboot::Callback)callback_mmap, bootinfo);
+    multiboot::find_tags((multiboot::Header*)multiboot, multiboot::TagType::MemoryMap, (multiboot::Callback)callback_mmap, bootinfo);
 
     return bootinfo;
 }
