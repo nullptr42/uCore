@@ -31,25 +31,19 @@ struct mb2_tag {
     uint32_t size;
 } __attribute__((packed));
 
-struct mb2_module_tag {
-    struct mb2_tag tag;
-
+struct mb2_module_tag : mb2_tag {
     uint32_t mod_start;
     uint32_t mod_end;
     char string; /* array */
 } __attribute__((packed));
 
-struct mb2_memory_tag {
-    struct mb2_tag tag;
-
+struct mb2_memory_tag : mb2_tag {
     /* in kilobytes */
     uint32_t mem_lower;
     uint32_t mem_upper;
 } __attribute__((packed));
 
-struct mb2_mmap_tag {
-    struct mb2_tag tag;
-
+struct mb2_mmap_tag : mb2_tag {
     uint32_t entry_size;
     uint32_t entry_version;
 } __attribute__((packed));
@@ -69,9 +63,7 @@ struct mb2_mmap_ent {
     uint32_t reserved;
 } __attribute__((packed));
 
-struct mb2_fb_tag {
-    struct mb2_tag tag;
-
+struct mb2_fb_tag : mb2_tag {
     uint64_t address;
     uint32_t pitch;
     uint32_t width;

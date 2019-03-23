@@ -13,6 +13,7 @@ static bool callback_mmap(mb2_tag* tag, kernel::BootInfo* bootinfo) {
         auto base = entry->base;
         auto last = entry->base + entry->length - 1;
 
+        cxx::printf("0x%016llx -> 0x%016llx\n", base, last);
         bootinfo->mmap.InsertBack({ .base = base, .last = last });
 
         /* Update size and entry address. */
