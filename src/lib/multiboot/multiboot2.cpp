@@ -15,8 +15,8 @@ bool multiboot2_verify(uint32_t magic) {
 }
 
 void multiboot2_find_tags(Header* info,
-                          enum mb2_tag_type type,
-                          tag_handler handler,
+                          TagType type,
+                          Callback handler,
                           void* user_argument
                          ) {
     uint32_t  size  = ((Header*)info)->total_size;
@@ -26,7 +26,7 @@ void multiboot2_find_tags(Header* info,
 
     // Walk all tags contained in the info structure.
     while ((uintptr_t)ptr < limit) {
-        struct mb2_tag* tag = (struct mb2_tag*)ptr;
+        struct Tag* tag = (struct Tag*)ptr;
 
         // If the current tag matches the desired type, call the handler function.
         // If the handler function returned true that means we can stop searching.

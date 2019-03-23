@@ -12,52 +12,60 @@ struct Header {
     uint32_t reserved;
 } __attribute__((packed));
 
-enum mb2_tag_type {
-    MB_TAG_CMDLINE = 1,
-    MB_TAG_MODULE  = 3,
-    MB_TAG_MEMORY  = 4,
-    MB_TAG_MMAP    = 6,
-    MB_TAG_FRAMEBUFFER = 8
+enum class TagType : uint32_t {
+    CommandLine = 1,
+    Module = 3,
+    Memory = 4,
+    MemoryMap = 6,
+    Framebuffer = 8
 };
 
-struct mb2_tag {
-    uint32_t type;
+struct Tag {
+    TagType type;
     uint32_t size;
 } __attribute__((packed));
 
-struct mb2_module_tag : mb2_tag {
+struct ModuleTag : Tag {
     uint32_t mod_start;
     uint32_t mod_end;
     char string; /* array */
 } __attribute__((packed));
 
-struct mb2_memory_tag : mb2_tag {
+struct MemoryTag : Tag {
     /* in kilobytes */
     uint32_t mem_lower;
     uint32_t mem_upper;
 } __attribute__((packed));
 
-struct mb2_mmap_tag : mb2_tag {
+struct MemoryMapTag : Tag {
     uint32_t entry_size;
     uint32_t entry_version;
 } __attribute__((packed));
 
-enum mb2_mmap_type {
+/*enum mb2_mmap_type {
     MB_MMAP_RESERVED  = 0,
     MB_MMAP_AVAILABLE = 1,
     MB_MMAP_ACPI_INFO = 3,
     MB_MMAP_HIBERNATE = 4,
     MB_MMAP_DEFECTIVE = 5
+};*/
+
+enum class MemoryMapType : uint32_t {
+    Reserved = 0,
+    Available = 1,
+    AcpiInfo = 3,
+    Hibernate = 4,
+    Defective = 5
 };
 
-struct mb2_mmap_ent {
+struct MemoryMapEntry {
     uint64_t base;
     uint64_t length;
-    uint32_t type;
+    MemoryMapType type;
     uint32_t reserved;
 } __attribute__((packed));
 
-struct mb2_fb_tag : mb2_tag {
+struct FramebufferTag : Tag {
     uint64_t address;
     uint32_t pitch;
     uint32_t width;
@@ -78,11 +86,11 @@ struct mb2_fb_tag : mb2_tag {
 
 bool multiboot2_verify(uint32_t magic);
 
-typedef bool (*tag_handler)(struct mb2_tag* tag, void* user_argument);
+typedef bool (*Callback)(Tag* tag, void* user_argument);
 
 void multiboot2_find_tags(Header* info,
-                          enum mb2_tag_type type,
-                          tag_handler handler,
+                          TagType type,
+                          Callback handler,
                           void* user_argument
                          );
 
