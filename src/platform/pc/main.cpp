@@ -5,7 +5,7 @@
 #include <arch/x86_64/idt.hpp>
 #include <arch/x86_64/pic.hpp>
 #include <kernel/version.hpp>
-#include "multiboot.hpp"
+#include <kernel/bootinfo.hpp>
 
 extern "C" void fpu_init();
 
@@ -16,6 +16,8 @@ extern "C" void __cxa_pure_virtual() {
 }
 
 kernel::BootInfo* g_bootinfo = nullptr;
+
+kernel::BootInfo* get_bootinfo(uint32_t magic, void* multiboot);
 
 extern "C" void kernel_main(uint32_t magic, void* multiboot) {
     fpu_init();
