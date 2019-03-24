@@ -1,15 +1,11 @@
 #pragma once
 
 #include <stdint.h>
+#include <stddef.h>
 
 namespace multiboot {
 
 const uint32_t kMagicNumber = 0x36D76289;
-
-struct Header {
-    uint32_t total_size;
-    uint32_t reserved;
-} __attribute__((packed));
 
 enum class TagType : uint32_t {
     CommandLine = 1,
@@ -27,11 +23,10 @@ struct Tag {
 struct ModuleTag : Tag {
     uint32_t mod_start;
     uint32_t mod_end;
-    char string; /* array */
+    char string; /* TODO: this is actually an array */
 } __attribute__((packed));
 
 struct MemoryTag : Tag {
-    /* in kilobytes */
     uint32_t mem_lower;
     uint32_t mem_upper;
 } __attribute__((packed));
@@ -75,13 +70,47 @@ struct FramebufferTag : Tag {
     uint8_t b_mask_len;
 } __attribute__((packed));
 
-typedef bool (*Callback)(Tag* tag, void* user_argument);
+struct Header {
+    uint32_t total_size;
+    uint32_t reserved;
 
-void find_tags(Header* info,
-               TagType type,
-               Callback handler,
-               void* user_argument
-              );
+    struct Iterator {
+        using value_type = Tag;
+        using difference_type = uint64_t; /* fixme */
+        using pointer = Tag*;
+        using reference = Tag&;
+
+        Iterator() : position(nullptr) { }
+        Iterator(Tag* position) : position(position) { }
+
+        Iterator  operator++(int) { return GetNextTag(); }
+        Iterator& operator++() { position = GetNextTag(); return *this; }
+        reference operator*()  const { return *position; }
+        pointer   operator->() const { return position; }
+        bool operator==(const Iterator& rhs) const { return position == rhs.position; }
+        bool operator!=(const Iterator& rhs) const { return position != rhs.position; }
+    private:
+
+        Tag* GetNextTag() {
+            auto next = (void*)position;
+            next += position->size;
+            if (((uintptr_t)next % 8) > 0) {
+                next += 8 - ((uintptr_t)next % 8);
+            }
+            return (Tag*)next;
+        }
+
+        Tag* position;
+    };
+
+    Iterator begin() {
+        return Iterator((Tag*)((void*)this + sizeof(Header)));
+    }
+
+    Iterator end() {
+        return Iterator((Tag*)((void*)this + this->total_size));
+    }
+} __attribute__((packed));
 
 }
 

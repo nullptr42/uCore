@@ -3,7 +3,6 @@ set(LIBRARY_SRC
     lib/terminal/emulator.cpp
     lib/cxx/snprintf.cpp
     lib/cxx/printf.cpp
-    lib/multiboot/multiboot2.cpp
 )
 
 include_directories(

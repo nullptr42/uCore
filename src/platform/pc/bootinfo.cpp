@@ -38,7 +38,16 @@ kernel::BootInfo* get_bootinfo(uint32_t magic, void* multiboot) {
     cxx::printf("bootinfo: Multiboot2 header located @ %p.\n", multiboot);
     cxx::printf("bootinfo: Bootinfo structure allocated @ %p.\n", bootinfo);
 
-    multiboot::find_tags((multiboot::Header*)multiboot, multiboot::TagType::MemoryMap, (multiboot::Callback)callback_mmap, bootinfo);
+    for (auto& tag : *(multiboot::Header*)multiboot) {
+        switch (tag.type) {
+            case multiboot::TagType::MemoryMap: {
+                callback_mmap((multiboot::MemoryMapTag*)&tag, bootinfo);
+                break;
+            }
+        }
+    }
+
+    cxx::printf("get_bootinfo completed!");
 
     return bootinfo;
 }
