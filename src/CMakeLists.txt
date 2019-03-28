@@ -12,6 +12,8 @@ include("arch/${REINIX_ARCH}/architecture.cmake")
 
 project(reinix-kernel C CXX)
 
+include("clang-format.cmake")
+
 # Target specific ASM language (e.g. ASM_NASM for i386 or x86_64)
 if(REINIX_ASM_LANG)
     enable_language(${REINIX_ASM_LANG})
