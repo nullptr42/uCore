@@ -3,6 +3,5 @@
 
 namespace platform {
 
-void print(const char* string);
-
+void print(const char *string);
 }

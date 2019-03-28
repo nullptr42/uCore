@@ -1,116 +1,118 @@
 #pragma once
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 namespace multiboot {
 
 const uint32_t kMagicNumber = 0x36D76289;
 
 enum class TagType : uint32_t {
-    CommandLine = 1,
-    Module = 3,
-    Memory = 4,
-    MemoryMap = 6,
-    Framebuffer = 8
+  CommandLine = 1,
+  Module = 3,
+  Memory = 4,
+  MemoryMap = 6,
+  Framebuffer = 8
 };
 
 struct Tag {
-    TagType type;
-    uint32_t size;
+  TagType type;
+  uint32_t size;
 } __attribute__((packed));
 
 struct ModuleTag : Tag {
-    uint32_t mod_start;
-    uint32_t mod_end;
-    char string; /* TODO: this is actually an array */
+  uint32_t mod_start;
+  uint32_t mod_end;
+  char string; /* TODO: this is actually an array */
 } __attribute__((packed));
 
 struct MemoryTag : Tag {
-    uint32_t mem_lower;
-    uint32_t mem_upper;
+  uint32_t mem_lower;
+  uint32_t mem_upper;
 } __attribute__((packed));
 
 struct MemoryMapTag : Tag {
-    uint32_t entry_size;
-    uint32_t entry_version;
+  uint32_t entry_size;
+  uint32_t entry_version;
 } __attribute__((packed));
 
 enum class MemoryMapType : uint32_t {
-    Reserved  = 0,
-    Available = 1,
-    AcpiInfo  = 3,
-    Hibernate = 4,
-    Defective = 5
+  Reserved = 0,
+  Available = 1,
+  AcpiInfo = 3,
+  Hibernate = 4,
+  Defective = 5
 };
 
 struct MemoryMapEntry {
-    uint64_t base;
-    uint64_t length;
-    MemoryMapType type;
-    uint32_t reserved;
+  uint64_t base;
+  uint64_t length;
+  MemoryMapType type;
+  uint32_t reserved;
 } __attribute__((packed));
 
 struct FramebufferTag : Tag {
-    uint64_t address;
-    uint32_t pitch;
-    uint32_t width;
-    uint32_t height;
-    uint8_t  bpp;
-    uint8_t  type;
-    uint16_t reserved; /* according to documentation this should
-                        * be uint8_t but it only works like this ¯\_(ツ)_/¯ */
+  uint64_t address;
+  uint32_t pitch;
+  uint32_t width;
+  uint32_t height;
+  uint8_t bpp;
+  uint8_t type;
+  uint16_t reserved; /* according to documentation this should
+                      * be uint8_t but it only works like this ¯\_(ツ)_/¯ */
 
-    /* TODO: support indexed modes (if they are of any use?). */
-    uint8_t r_shift;
-    uint8_t r_mask_len;
-    uint8_t g_shift;
-    uint8_t g_mask_len;
-    uint8_t b_shift;
-    uint8_t b_mask_len;
+  /* TODO: support indexed modes (if they are of any use?). */
+  uint8_t r_shift;
+  uint8_t r_mask_len;
+  uint8_t g_shift;
+  uint8_t g_mask_len;
+  uint8_t b_shift;
+  uint8_t b_mask_len;
 } __attribute__((packed));
 
 struct Header {
-    uint32_t total_size;
-    uint32_t reserved;
+  uint32_t total_size;
+  uint32_t reserved;
 
-    struct Iterator {
-        using value_type = Tag;
-        using difference_type = uint64_t; /* fixme */
-        using pointer = Tag*;
-        using reference = Tag&;
+  struct Iterator {
+    using value_type = Tag;
+    using difference_type = uint64_t; /* fixme */
+    using pointer = Tag *;
+    using reference = Tag &;
 
-        Iterator() : position(nullptr) { }
-        Iterator(Tag* position) : position(position) { }
+    Iterator() : position(nullptr) {}
+    Iterator(Tag *position) : position(position) {}
 
-        Iterator  operator++(int) { return GetNextTag(); }
-        Iterator& operator++() { position = GetNextTag(); return *this; }
-        reference operator*()  const { return *position; }
-        pointer   operator->() const { return position; }
-        bool operator==(const Iterator& rhs) const { return position == rhs.position; }
-        bool operator!=(const Iterator& rhs) const { return position != rhs.position; }
-    private:
-
-        Tag* GetNextTag() {
-            auto next = (void*)position;
-            next += position->size;
-            if (((uintptr_t)next % 8) > 0) {
-                next += 8 - ((uintptr_t)next % 8);
-            }
-            return (Tag*)next;
-        }
-
-        Tag* position;
-    };
-
-    Iterator begin() {
-        return Iterator((Tag*)((void*)this + sizeof(Header)));
+    Iterator operator++(int) { return GetNextTag(); }
+    Iterator &operator++() {
+      position = GetNextTag();
+      return *this;
+    }
+    reference operator*() const { return *position; }
+    pointer operator->() const { return position; }
+    bool operator==(const Iterator &rhs) const {
+      return position == rhs.position;
+    }
+    bool operator!=(const Iterator &rhs) const {
+      return position != rhs.position;
     }
 
-    Iterator end() {
-        return Iterator((Tag*)((void*)this + this->total_size));
+  private:
+    Tag *GetNextTag() {
+      auto next = (void *)position;
+      next += position->size;
+      if (((uintptr_t)next % 8) > 0) {
+        next += 8 - ((uintptr_t)next % 8);
+      }
+      return (Tag *)next;
     }
+
+    Tag *position;
+  };
+
+  Iterator begin() { return Iterator((Tag *)((void *)this + sizeof(Header))); }
+
+  Iterator end() { return Iterator((Tag *)((void *)this + this->total_size)); }
 } __attribute__((packed));
 
-}
-
+} // namespace multiboot
