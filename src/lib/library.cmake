@@ -1,8 +1,8 @@
 
 set(LIBRARY_SRC
-    src/lib/terminal/emulator.cpp
-    src/lib/cxx/snprintf.cpp
-    src/lib/cxx/printf.cpp
+    lib/terminal/emulator.cpp
+    lib/cxx/snprintf.cpp
+    lib/cxx/printf.cpp
 )
 
 include_directories(
