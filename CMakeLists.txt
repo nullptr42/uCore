@@ -35,6 +35,5 @@ include_directories(src/)
 # Get rid of these!
 include("src/kernel/kernel.cmake")
 include("src/lib/library.cmake")
-include_directories(src/include)
 
 add_executable(reinix ${KERNEL_SRC} ${LIBRARY_SRC} ${ARCH_SRC} ${PLATFORM_SRC})
