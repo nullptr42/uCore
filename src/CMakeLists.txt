@@ -12,8 +12,6 @@ include("arch/${REINIX_ARCH}/architecture.cmake")
 
 project(reinix-kernel C CXX)
 
-include("clang-format.cmake")
-
 # Target specific ASM language (e.g. ASM_NASM for i386 or x86_64)
 if(REINIX_ASM_LANG)
     enable_language(${REINIX_ASM_LANG})
@@ -22,7 +20,7 @@ endif()
 set(CMAKE_USE_RELATIVE_PATHS ON)
 
 # Set compiler flags
-set(COMPILE_FLAGS    "${COMPILE_FLAGS} -ffreestanding -O${REINIX_OPT_LEVEL} -Wall -Wextra -Wno-pointer-arith")
+set(COMPILE_FLAGS    "${COMPILE_FLAGS} -ffreestanding -O${REINIX_OPT_LEVEL} -Wall -Wextra -Wno-pointer-arith -Wno-switch")
 set(CMAKE_C_FLAGS    "${CMAKE_C_FLAGS}   ${COMPILE_FLAGS} -std=gnu99")
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${COMPILE_FLAGS} -std=c++17 -fno-rtti -fno-exceptions")
 
@@ -30,8 +28,10 @@ set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${COMPILE_FLAGS} -std=c++17 -fno-rtti -
 set(LINK_FLAGS "-T ${REINIX_LD_SCRIPT} -ffreestanding -O${REINIX_OPT_LEVEL} -nostdlib -lgcc ${REINIX_LD_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LINK_FLAGS}")
 
-include("kernel.cmake")
+include_directories(.)
+
+# Get rid of these!
+include("kernel/kernel.cmake")
 include("lib/library.cmake")
 
-include_directories(include)
-add_executable(kernel.bin ${KERNEL_SRC} ${LIBRARY_SRC} ${ARCH_SRC} ${PLATFORM_SRC})
+add_executable(reinix ${KERNEL_SRC} ${LIBRARY_SRC} ${ARCH_SRC} ${PLATFORM_SRC})

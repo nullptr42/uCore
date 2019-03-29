@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <stdint.h>
+
 namespace arch::x86_64::gdt {
 
 constexpr uint16_t descriptor(int ring, uint16_t entry) {

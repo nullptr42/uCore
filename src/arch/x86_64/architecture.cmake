@@ -17,8 +17,4 @@ set(COMPILE_FLAGS "-mno-red-zone -mcmodel=kernel -mno-sse")
 file(GLOB ARCH_SRC
     "${CMAKE_CURRENT_LIST_DIR}/*.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/asm/*.asm"
-    "${CMAKE_CURRENT_LIST_DIR}/interrupt/*.cpp"
-    "${CMAKE_CURRENT_LIST_DIR}/interrupt/*.asm"
 )
-
-include_directories(arch/x86_64/include)
