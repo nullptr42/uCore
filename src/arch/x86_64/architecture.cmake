@@ -18,5 +18,3 @@ file(GLOB ARCH_SRC
     "${CMAKE_CURRENT_LIST_DIR}/*.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/asm/*.asm"
 )
-
-include_directories(src/arch/x86_64/include)
