@@ -30,7 +30,7 @@ set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${COMPILE_FLAGS} -std=c++17 -fno-rtti -
 set(LINK_FLAGS "-T ${REINIX_LD_SCRIPT} -ffreestanding -O${REINIX_OPT_LEVEL} -nostdlib -lgcc ${REINIX_LD_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LINK_FLAGS}")
 
-include("kernel.cmake")
+include("kernel/kernel.cmake")
 include("lib/library.cmake")
 
 include_directories(include)
