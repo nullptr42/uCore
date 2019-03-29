@@ -10,7 +10,7 @@ set(CMAKE_CXX_COMPILER x86_64-elf-g++)
 # Setup NASM
 set(REINIX_ASM_LANG "ASM_NASM")
 set(CMAKE_ASM_NASM_OBJECT_FORMAT "elf64")
-set(CMAKE_ASM_NASM_FLAGS "${CMAKE_ASM_NASM_FLAGS} -I ${CMAKE_SOURCE_DIR}/")
+set(CMAKE_ASM_NASM_FLAGS "${CMAKE_ASM_NASM_FLAGS} -I ${CMAKE_SOURCE_DIR}/src/")
 
 set(COMPILE_FLAGS "-mno-red-zone -mcmodel=kernel -mno-sse")
 
@@ -19,4 +19,4 @@ file(GLOB ARCH_SRC
     "${CMAKE_CURRENT_LIST_DIR}/asm/*.asm"
 )
 
-include_directories(arch/x86_64/include)
+include_directories(src/arch/x86_64/include)

@@ -7,8 +7,8 @@ set(CMAKE_CXX_COMPILER_WORKS 1)
 # Project options
 set(REINIX_PLATFORM "pc" CACHE STRING "Platform")
 set(REINIX_OPT_LEVEL "2" CACHE STRING "Optimization Level (0, 1, 2, 3, fast, s, ...)")
-include("platform/${REINIX_PLATFORM}/platform.cmake")
-include("arch/${REINIX_ARCH}/architecture.cmake")
+include("src/platform/${REINIX_PLATFORM}/platform.cmake")
+include("src/arch/${REINIX_ARCH}/architecture.cmake")
 
 project(reinix-kernel C CXX)
 
@@ -30,8 +30,8 @@ set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${COMPILE_FLAGS} -std=c++17 -fno-rtti -
 set(LINK_FLAGS "-T ${REINIX_LD_SCRIPT} -ffreestanding -O${REINIX_OPT_LEVEL} -nostdlib -lgcc ${REINIX_LD_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LINK_FLAGS}")
 
-include("kernel/kernel.cmake")
-include("lib/library.cmake")
+include("src/kernel/kernel.cmake")
+include("src/lib/library.cmake")
 
-include_directories(include)
+include_directories(src/include)
 add_executable(kernel.bin ${KERNEL_SRC} ${LIBRARY_SRC} ${ARCH_SRC} ${PLATFORM_SRC})
