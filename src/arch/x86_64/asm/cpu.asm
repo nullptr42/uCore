@@ -7,8 +7,54 @@
 
 section .text
 
+global cpuid
+global rdmsr
+global wrmsr
 global gdt_reload
 global idt_reload
+
+
+; Get processor information
+;   rdi(arg0): cpuid function
+;   rsi(arg1): output structure
+cpuid:
+    push rbx
+
+    mov eax, edi
+    cpuid
+    mov [rsi + 0x0], eax
+    mov [rsi + 0x4], ebx
+    mov [rsi + 0x8], ecx
+    mov [rsi + 0xC], edx
+
+    pop rbx
+    ret
+
+; Read contents of a Model Specific Register (MSR).
+;   rdi(arg0): register id
+;   rsi(arg1): eax output address
+;   rdx(arg2): edx output address
+rdmsr:
+    mov r8, rdx
+
+    ; Read register
+    mov ecx, edi
+    rdmsr
+
+    ; Store result and return.
+    mov [rsi], eax
+    mov [r8], edx
+    ret
+
+; Write contents of a Model Specific Register (MSR).
+;   rdi(arg0): register id
+;   rsi(arg1): eax value
+;   rdx(arg2): edx value
+wrmsr:
+    mov ecx, edi
+    mov eax, esi
+    wrmsr
+    ret
 
 ; Reload GDT register
 ;   rdi(arg0) = GDT pointer
