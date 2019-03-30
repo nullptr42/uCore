@@ -20,6 +20,48 @@ static CpuVendor get_vendor_id(Result &result) {
   return CpuVendor::Unsupported;
 }
 
+static void read_cpu_name(CPU &cpu, Result &result) {
+  uint32_t *name = (uint32_t *)&cpu.name;
+
+  if (cpu.extended >= uint64_t(Function::GetProcessorName1)) {
+    run(Function::GetProcessorName1, result);
+    name[0] = result.eax;
+    name[1] = result.ebx;
+    name[2] = result.ecx;
+    name[3] = result.edx;
+  } else {
+    cpu.name[0] = '?';
+    cpu.name[1] = '?';
+    cpu.name[2] = '?';
+    cpu.name[3] =  0;
+    return;
+  }
+
+  if (cpu.extended >= uint64_t(Function::GetProcessorName2)) {
+    run(Function::GetProcessorName2, result);
+    name[4] = result.eax;
+    name[5] = result.ebx;
+    name[6] = result.ecx;
+    name[7] = result.edx;
+  } else {
+    name[4] = 0;
+    return;
+  }
+
+  if (cpu.extended >= uint64_t(Function::GetProcessorName3)) {
+    run(Function::GetProcessorName3, result);
+    name[8] = result.eax;
+    name[9] = result.ebx;
+    name[10] = result.ecx;
+    name[11] = result.edx;
+  } else {
+    name[8] = 0;
+    return;
+  }
+
+  cpu.name[48] = 0;
+}
+
 void read(CPU &cpu) {
   Result result;
 
@@ -31,27 +73,35 @@ void read(CPU &cpu) {
   vendor[2] = result.ecx;
   cpu.vendor_name[12] = '\0';
   cpu.vendor = get_vendor_id(result);
-  cpu.highest_func = result.eax;
+  cpu.supported = result.eax;
 
   /* Get feature information. */
-  if (cpu.highest_func < uint32_t(Function::GetFeatures))
-    return;
-  run(Function::GetFeatures, result);
-  cpu.features = ((uint64_t)result.edx << 32) | result.ecx;
+  if (cpu.supported < uint32_t(Function::GetFeatures)) {
+    run(Function::GetFeatures, result);
+    cpu.features = ((uint64_t)result.edx << 32) | result.ecx;
 
-  /* Decode processor information from eax. */
-  cpu.processor.stepping = (result.eax >> 0) & 0xF;
-  cpu.processor.model = (result.eax >> 4) & 0xF;
-  cpu.processor.family = (result.eax >> 8) & 0xF;
-  cpu.processor.type = (result.eax >> 12) & 0x3;
-  cpu.processor.ext_model = (result.eax >> 16) & 0xF;
-  cpu.processor.ext_family = (result.eax >> 20) & 0xFF;
+    /* Decode processor information from eax. */
+    cpu.processor.stepping = (result.eax >> 0) & 0xF;
+    cpu.processor.model = (result.eax >> 4) & 0xF;
+    cpu.processor.family = (result.eax >> 8) & 0xF;
+    cpu.processor.type = (result.eax >> 12) & 0x3;
+    cpu.processor.ext_model = (result.eax >> 16) & 0xF;
+    cpu.processor.ext_family = (result.eax >> 20) & 0xFF;
 
-  /* Decode miscellaneous information from ebx. */
-  cpu.misc.brand_id = (result.ebx >> 0) & 0xFF;
-  cpu.misc.clflush_size = (result.ebx >> 8) & 0xFF;
-  cpu.misc.logical_cpus = (result.ebx >> 16) & 0xFF;
-  cpu.misc.apic_id = (result.ebx >> 24) & 0xFF;
+    /* Decode miscellaneous information from ebx. */
+    cpu.misc.brand_id = (result.ebx >> 0) & 0xFF;
+    cpu.misc.clflush_size = (result.ebx >> 8) & 0xFF;
+    cpu.misc.logical_cpus = (result.ebx >> 16) & 0xFF;
+    cpu.misc.apic_id = (result.ebx >> 24) & 0xFF;
+  }
+
+  /* Get highest supported extended function. */
+  run(Function::GetHighestExtended, result);
+  cpu.extended = result.eax;
+
+  if (cpu.vendor == CpuVendor::Intel || cpu.vendor == CpuVendor::AMD) {
+    read_cpu_name(cpu, result);
+  }
 }
 
 } // namespace arch::x86_64::cpuid

@@ -33,6 +33,7 @@ extern "C" void kernel_main(uint32_t magic, void *multiboot) {
 
   /* Get basic information about the processor. */
   cpuid::read(cpu);
+  cxx::printf("%s (%s)\n", cpu.name, cpu.vendor_name);
 
   cxx::printf("\e[2;37m%s\e[0m %d.%d\n\n", kernel::g_kernel_info.name,
               kernel::g_kernel_info.version.major,

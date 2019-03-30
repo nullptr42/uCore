@@ -64,7 +64,14 @@ enum class Feature : uint64_t {
   PBE = 1ULL << 63
 };
 
-enum class Function : uint32_t { GetVendorString = 0, GetFeatures = 1 };
+enum class Function : uint32_t {
+  GetVendorString = 0,
+  GetFeatures = 1,
+  GetHighestExtended = 0x80000000,
+  GetProcessorName1 = 0x80000002,
+  GetProcessorName2 = 0x80000003,
+  GetProcessorName3 = 0x80000004
+};
 
 enum class CpuVendor { AMD, Intel, Unsupported };
 
@@ -75,28 +82,32 @@ struct Result {
   uint32_t edx;
 };
 
+/* TODO: Pick sane defaults. */
 struct CPU {
-  uint32_t highest_func;
+  uint32_t supported;
+  uint32_t extended;
+
+  char name[49];
   char vendor_name[13];
   CpuVendor vendor;
 
   struct Processor {
-    int stepping;
-    int model;
-    int family;
-    int type;
-    int ext_model;
-    int ext_family;
+    int stepping = 0;
+    int model = 0;
+    int family = 0;
+    int type = 0;
+    int ext_model = 0;
+    int ext_family = 0;
   } processor;
 
   struct Miscellaneous {
-    int brand_id;
-    int clflush_size;
-    int logical_cpus;
-    int apic_id;
+    int brand_id = 0;
+    int clflush_size = 0;
+    int logical_cpus = 0;
+    int apic_id = 0;
   } misc;
 
-  uint64_t features;
+  uint64_t features = 0;
 };
 
 void run(Function function, Result &result);
