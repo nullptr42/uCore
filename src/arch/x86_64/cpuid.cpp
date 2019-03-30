@@ -2,9 +2,9 @@
 
 namespace arch::x86_64::cpuid {
 
-extern "C" void cpu_cpuid(Function function, Result *result);
+extern "C" void cpuid(Function function, Result *result);
 
-void run(Function function, Result &result) { cpu_cpuid(function, &result); }
+void run(Function function, Result &result) { cpuid(function, &result); }
 
 static CpuVendor get_vendor_id(Result &result) {
   /* Check for "GenuineIntel" */
@@ -33,7 +33,7 @@ static void read_cpu_name(CPU &cpu, Result &result) {
     cpu.name[0] = '?';
     cpu.name[1] = '?';
     cpu.name[2] = '?';
-    cpu.name[3] =  0;
+    cpu.name[3] = 0;
     return;
   }
 
