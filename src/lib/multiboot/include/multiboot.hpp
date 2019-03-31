@@ -59,7 +59,7 @@ struct MemoryMap : Tag {
 
   struct Iterator {
     using value_type = Entry;
-    using difference_type = uint64_t; /* fixme */
+    using difference_type = ptrdiff_t;
     using pointer = Entry *;
     using reference = Entry &;
 
@@ -122,7 +122,7 @@ struct Header {
 
   struct Iterator {
     using value_type = Tag;
-    using difference_type = uint64_t; /* fixme */
+    using difference_type = ptrdiff_t;
     using pointer = Tag *;
     using reference = Tag &;
 

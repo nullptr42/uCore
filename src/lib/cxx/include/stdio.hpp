@@ -7,10 +7,10 @@
 
 #pragma once
 
-namespace cxx {
-
 #include <stdarg.h>
 #include <stddef.h>
+
+namespace cxx {
 
 int vsnprintf(char *buffer, size_t size, const char *format, va_list arg);
 int snprintf(char *buffer, size_t size, const char *format, ...);

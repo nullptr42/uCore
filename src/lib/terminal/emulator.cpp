@@ -338,7 +338,7 @@ void Emulator::SetDisplayAttribute(int code) {
   case 46:
   case 47: {
     /* Background color */
-    background = static_cast<Color>(code - 30);
+    background = static_cast<Color>(code - 40);
     break;
   }
   }

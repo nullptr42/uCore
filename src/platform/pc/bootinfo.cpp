@@ -8,6 +8,7 @@
 #include <kernel/bootinfo.hpp>
 #include <multiboot.hpp>
 #include <stdio.hpp>
+#include <kernel/panic.hpp>
 
 using namespace multiboot;
 
@@ -23,8 +24,7 @@ static bool convert_mmap(MemoryMap *mmap, kernel::BootInfo *bootinfo) {
 
 kernel::BootInfo *get_bootinfo(uint32_t magic, void *multiboot) {
   if (magic != multiboot::kMagicNumber) {
-    cxx::printf("bootinfo: Kernel was not booted via Multiboot2.\n");
-    return nullptr;
+    panic("multiboot2 magic number did not match.\n");
   }
 
   kernel::BootInfo *bootinfo = new kernel::BootInfo();
