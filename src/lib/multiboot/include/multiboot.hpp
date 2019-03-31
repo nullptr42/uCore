@@ -31,11 +31,6 @@ struct MemoryTag : Tag {
   uint32_t mem_upper;
 } __attribute__((packed));
 
-struct MemoryMapTag : Tag {
-  uint32_t entry_size;
-  uint32_t entry_version;
-} __attribute__((packed));
-
 enum class MemoryMapType : uint32_t {
   Reserved = 0,
   Available = 1,
@@ -49,6 +44,52 @@ struct MemoryMapEntry {
   uint64_t length;
   MemoryMapType type;
   uint32_t reserved;
+} __attribute__((packed));
+
+struct MemoryMapTag : Tag {
+  uint32_t entry_size;
+  uint32_t entry_version;
+
+  struct Iterator {
+    using value_type = MemoryMapEntry;
+    using difference_type = uint64_t; /* fixme */
+    using pointer = MemoryMapEntry *;
+    using reference = MemoryMapEntry &;
+
+    Iterator(MemoryMapEntry *entry, uint32_t entry_size)
+        : position(entry), entry_size(entry_size) {}
+
+    Iterator operator++(int) {
+      return Iterator((MemoryMapEntry *)((void *)position + entry_size),
+                      entry_size);
+    }
+    Iterator &operator++() {
+      position = (MemoryMapEntry *)((void *)position + entry_size);
+      return *this;
+    }
+
+    reference operator*() const { return *position; }
+    pointer operator->() const { return position; }
+
+    bool operator==(const Iterator &rhs) const {
+      return position == rhs.position;
+    }
+    bool operator!=(const Iterator &rhs) const {
+      return position != rhs.position;
+    }
+
+  private:
+    MemoryMapEntry *position;
+    uint32_t entry_size;
+  };
+
+  Iterator begin() {
+    return Iterator((MemoryMapEntry *)((void *)this + sizeof(MemoryMapTag)),
+                    entry_size);
+  }
+  Iterator end() {
+    return Iterator((MemoryMapEntry *)((void *)this + this->size), entry_size);
+  }
 } __attribute__((packed));
 
 struct FramebufferTag : Tag {
@@ -88,8 +129,10 @@ struct Header {
       position = GetNextTag();
       return *this;
     }
+
     reference operator*() const { return *position; }
     pointer operator->() const { return position; }
+
     bool operator==(const Iterator &rhs) const {
       return position == rhs.position;
     }
@@ -111,7 +154,6 @@ struct Header {
   };
 
   Iterator begin() { return Iterator((Tag *)((void *)this + sizeof(Header))); }
-
   Iterator end() { return Iterator((Tag *)((void *)this + this->total_size)); }
 } __attribute__((packed));
 

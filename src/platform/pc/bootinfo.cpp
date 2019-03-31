@@ -1,27 +1,17 @@
 
 #include <kernel/bootinfo.hpp>
-#include <multiboot2.hpp>
+#include <multiboot.hpp>
 #include <stdio.hpp>
 
 using namespace multiboot;
 
-static bool callback_mmap(MemoryMapTag *mmap, kernel::BootInfo *bootinfo) {
-  // auto mmap = (mb2_mmap_tag*)tag;
-  auto size = uint32_t(sizeof(MemoryMapTag));
-  MemoryMapEntry *entry = (MemoryMapEntry *)((void *)mmap + size);
-
-  /* Number of entries is defined through entry size and total structure size.
-   */
-  while (size < mmap->size) {
-    auto base = entry->base;
-    auto last = entry->base + entry->length - 1;
+static bool convert_mmap(MemoryMapTag *mmap, kernel::BootInfo *bootinfo) {
+  for (auto &entry : *mmap) {
+    auto base = entry.base;
+    auto last = entry.base + entry.length - 1;
 
     cxx::printf("0x%016llx -> 0x%016llx\n", base, last);
     bootinfo->mmap.InsertBack({.base = base, .last = last});
-
-    /* Update size and entry address. */
-    size += mmap->entry_size;
-    entry = (MemoryMapEntry *)((void *)entry + mmap->entry_size);
   }
 
   return true;
@@ -42,7 +32,7 @@ kernel::BootInfo *get_bootinfo(uint32_t magic, void *multiboot) {
   for (auto &tag : *(multiboot::Header *)multiboot) {
     switch (tag.type) {
     case multiboot::TagType::MemoryMap: {
-      callback_mmap((multiboot::MemoryMapTag *)&tag, bootinfo);
+      convert_mmap((multiboot::MemoryMapTag *)&tag, bootinfo);
       break;
     }
     }
