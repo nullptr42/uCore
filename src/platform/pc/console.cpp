@@ -11,6 +11,9 @@
 
 #include "console.hpp"
 
+const uint8_t Console::kColorMap[] = {0, 4,  2,  6,  1, 5,  3,  7,
+                                      8, 12, 10, 14, 9, 13, 11, 15};
+
 auto Console::ToCode(lib::terminal::Char const &symbol) -> uint16_t {
   int offset = symbol.brightness * 8;
 
@@ -46,6 +49,3 @@ void Console::Present(lib::terminal::Point const &p1,
     }
   }
 }
-
-const uint8_t Console::kColorMap[] = {0, 4,  2,  6,  1, 5,  3,  7,
-                                      8, 12, 10, 14, 9, 13, 11, 15};
