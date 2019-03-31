@@ -12,8 +12,11 @@
 #include <kernel/bootinfo.hpp>
 #include <kernel/version.hpp>
 #include <list.hpp>
+#include <platform/print.hpp>
 #include <stdint.h>
 #include <stdio.hpp>
+
+#include "console.hpp"
 
 extern "C" void fpu_init();
 
@@ -24,8 +27,12 @@ extern "C" void __cxa_pure_virtual() {
   }
 }
 
-kernel::BootInfo *g_bootinfo = nullptr;
+static Console console;
+static lib::terminal::Emulator emulator(console);
 
+void platform::print(const char *string) { emulator.Write(string); }
+
+kernel::BootInfo *g_bootinfo = nullptr;
 kernel::BootInfo *get_bootinfo(uint32_t magic, void *multiboot);
 
 extern "C" void kernel_main(uint32_t magic, void *multiboot) {

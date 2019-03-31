@@ -30,7 +30,7 @@ struct Tag {
 struct Module : Tag {
   uint32_t start;
   uint32_t end;
-  const char* string = (const char*)&end + sizeof(uint32_t);
+  const char *string = (const char *)&end + sizeof(uint32_t);
 } __attribute__((packed));
 
 struct Memory : Tag {
