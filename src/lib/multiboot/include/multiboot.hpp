@@ -20,51 +20,50 @@ struct Tag {
   uint32_t size;
 } __attribute__((packed));
 
-struct ModuleTag : Tag {
+struct Module : Tag {
   uint32_t mod_start;
   uint32_t mod_end;
   char string; /* TODO: this is actually an array */
 } __attribute__((packed));
 
-struct MemoryTag : Tag {
+struct Memory : Tag {
   uint32_t mem_lower;
   uint32_t mem_upper;
 } __attribute__((packed));
 
-enum class MemoryMapType : uint32_t {
-  Reserved = 0,
-  Available = 1,
-  AcpiInfo = 3,
-  Hibernate = 4,
-  Defective = 5
-};
-
-struct MemoryMapEntry {
-  uint64_t base;
-  uint64_t length;
-  MemoryMapType type;
-  uint32_t reserved;
-} __attribute__((packed));
-
-struct MemoryMapTag : Tag {
+struct MemoryMap : Tag {
   uint32_t entry_size;
   uint32_t entry_version;
 
-  struct Iterator {
-    using value_type = MemoryMapEntry;
-    using difference_type = uint64_t; /* fixme */
-    using pointer = MemoryMapEntry *;
-    using reference = MemoryMapEntry &;
+  enum class Type : uint32_t {
+    Reserved = 0,
+    Available = 1,
+    AcpiInfo = 3,
+    Hibernate = 4,
+    Defective = 5
+  };
 
-    Iterator(MemoryMapEntry *entry, uint32_t entry_size)
+  struct Entry {
+    uint64_t base;
+    uint64_t length;
+    Type type;
+    uint32_t reserved;
+  } __attribute__((packed));
+
+  struct Iterator {
+    using value_type = Entry;
+    using difference_type = uint64_t; /* fixme */
+    using pointer = Entry *;
+    using reference = Entry &;
+
+    Iterator(Entry *entry, uint32_t entry_size)
         : position(entry), entry_size(entry_size) {}
 
     Iterator operator++(int) {
-      return Iterator((MemoryMapEntry *)((void *)position + entry_size),
-                      entry_size);
+      return Iterator((Entry *)((void *)position + entry_size), entry_size);
     }
     Iterator &operator++() {
-      position = (MemoryMapEntry *)((void *)position + entry_size);
+      position = (Entry *)((void *)position + entry_size);
       return *this;
     }
 
@@ -79,20 +78,19 @@ struct MemoryMapTag : Tag {
     }
 
   private:
-    MemoryMapEntry *position;
+    Entry *position;
     uint32_t entry_size;
   };
 
   Iterator begin() {
-    return Iterator((MemoryMapEntry *)((void *)this + sizeof(MemoryMapTag)),
-                    entry_size);
+    return Iterator((Entry *)((void *)this + sizeof(MemoryMap)), entry_size);
   }
   Iterator end() {
-    return Iterator((MemoryMapEntry *)((void *)this + this->size), entry_size);
+    return Iterator((Entry *)((void *)this + this->size), entry_size);
   }
 } __attribute__((packed));
 
-struct FramebufferTag : Tag {
+struct Framebuffer : Tag {
   uint64_t address;
   uint32_t pitch;
   uint32_t width;

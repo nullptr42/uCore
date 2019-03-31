@@ -5,9 +5,9 @@
 
 using namespace multiboot;
 
-static bool convert_mmap(MemoryMapTag *mmap, kernel::BootInfo *bootinfo) {
+static bool convert_mmap(MemoryMap *mmap, kernel::BootInfo *bootinfo) {
   for (auto &entry : *mmap) {
-    if (entry.type == MemoryMapType::Available) {
+    if (entry.type == MemoryMap::Type::Available) {
       bootinfo->mmap.InsertBack(
           {.base = entry.base, .last = entry.base + entry.length - 1});
     }
@@ -23,10 +23,10 @@ kernel::BootInfo *get_bootinfo(uint32_t magic, void *multiboot) {
 
   kernel::BootInfo *bootinfo = new kernel::BootInfo();
 
-  for (auto &tag : *(multiboot::Header *)multiboot) {
+  for (auto &tag : *(Header *)multiboot) {
     switch (tag.type) {
-    case multiboot::TagType::MemoryMap: {
-      convert_mmap((multiboot::MemoryMapTag *)&tag, bootinfo);
+    case TagType::MemoryMap: {
+      convert_mmap((MemoryMap *)&tag, bootinfo);
       break;
     }
     }
