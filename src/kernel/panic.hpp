@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include <stdio.hpp>
 #include <stdarg.h>
+#include <stdio.hpp>
 
 /* TODO: Implement a proper panic function. */
 inline void panic(const char *format, ...) {
@@ -17,5 +17,6 @@ inline void panic(const char *format, ...) {
   cxx::printf("\e[2;41;37mpanic\e[0m: ");
   cxx::vprintf(format, arg1);
   va_end(arg1);
-  while (1) { }
+  while (1) {
+  }
 }

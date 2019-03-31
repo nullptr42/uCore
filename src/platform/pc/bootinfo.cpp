@@ -6,9 +6,9 @@
  */
 
 #include <kernel/bootinfo.hpp>
+#include <kernel/panic.hpp>
 #include <multiboot.hpp>
 #include <stdio.hpp>
-#include <kernel/panic.hpp>
 
 using namespace multiboot;
 
