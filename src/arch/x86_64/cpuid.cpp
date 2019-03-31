@@ -76,7 +76,7 @@ void read(CPU &cpu) {
   cpu.supported = result.eax;
 
   /* Get feature information. */
-  if (cpu.supported < uint32_t(Function::GetFeatures)) {
+  if (cpu.supported >= uint32_t(Function::GetFeatures)) {
     run(Function::GetFeatures, result);
     cpu.features = ((uint64_t)result.edx << 32) | result.ecx;
 

@@ -31,19 +31,24 @@ extern "C" void kernel_main(uint32_t magic, void *multiboot) {
   idt::initialize();
   pic::initialize();
 
-  /* Get basic information about the processor. */
-  cpuid::read(cpu);
-  cxx::printf("%s (%s)\n", cpu.name, cpu.vendor_name);
-
   cxx::printf("\e[2;37m%s\e[0m %d.%d\n\n", kernel::g_kernel_info.name,
               kernel::g_kernel_info.version.major,
               kernel::g_kernel_info.version.minor);
 
-  pic::set_mask(0);
+  cpuid::read(cpu);
+  cxx::printf("%s (%s)\n", cpu.name, cpu.vendor_name);
 
-  g_bootinfo = get_bootinfo(magic, multiboot);
+  //g_bootinfo = get_bootinfo(magic, multiboot);
+
+  if (cpu.features & uint64_t(cpuid::Feature::APIC)) {
+    pic::set_mask(0xFFFF);
+    /* TODO: Initialize the APIC. */
+  } else {
+    pic::set_mask(0);
+  }
 
   asm("sti");
   for (;;)
     asm("hlt");
+
 }
