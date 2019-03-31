@@ -36,4 +36,6 @@ include_directories(src)
 include("src/kernel/kernel.cmake")
 include("src/lib/library.cmake")
 
-add_executable(reinix ${KERNEL_SRC} ${LIBRARY_SRC} ${ARCH_SRC} ${PLATFORM_SRC})
+add_executable(reinix ${KERNEL_SRC} ${ARCH_SRC} ${PLATFORM_SRC})
+
+target_link_libraries(reinix ${REINIX_LIBRARY_LIST})
