@@ -8,9 +8,9 @@
 #pragma once
 
 #include <stdint.h>
-#include <terminal/emulator.hpp>
+#include <lib/terminal/emulator.hpp>
 
-struct Console : public lib::terminal::Display {
+struct Console : public terminal::Display {
   static const int kVgaPortRegister = 0x3D4;
   static const int kVgaPortData = 0x3D5;
   static const int kVgaCursorReg = 14;
@@ -19,8 +19,8 @@ struct Console : public lib::terminal::Display {
 
   Console() : Display(80, 25) {}
 
-  auto ToCode(lib::terminal::Char const &symbol) -> uint16_t;
-  void SetCursor(lib::terminal::Point const &p) final override;
-  void Present(lib::terminal::Point const &p1, lib::terminal::Point const &p2,
-               const lib::terminal::Char *frame) final override;
+  auto ToCode(terminal::Char const &symbol) -> uint16_t;
+  void SetCursor(terminal::Point const &p) final override;
+  void Present(terminal::Point const &p1, terminal::Point const &p2,
+               const terminal::Char *frame) final override;
 };

@@ -7,21 +7,20 @@
 
 #include <arch/x86_64/io_port.hpp>
 #include <stdint.h>
-#include <terminal/emulator.hpp>
 
 #include "console.hpp"
 
 const uint8_t Console::kColorMap[] = {0, 4,  2,  6,  1, 5,  3,  7,
                                       8, 12, 10, 14, 9, 13, 11, 15};
 
-auto Console::ToCode(lib::terminal::Char const &symbol) -> uint16_t {
+auto Console::ToCode(terminal::Char const &symbol) -> uint16_t {
   int offset = symbol.brightness * 8;
 
   return symbol.character | (kColorMap[int(symbol.fg) + offset] << 8) |
          (kColorMap[int(symbol.bg)] << 12);
 }
 
-void Console::SetCursor(lib::terminal::Point const &p) {
+void Console::SetCursor(terminal::Point const &p) {
   if (p.x < 0 || p.x >= width || p.y < 0 || p.y >= height) {
     /* TODO: Hide/show cursor. */
     return;
@@ -38,9 +37,9 @@ void Console::SetCursor(lib::terminal::Point const &p) {
   outb(kVgaPortData, address & 0xFF);
 }
 
-void Console::Present(lib::terminal::Point const &p1,
-                      lib::terminal::Point const &p2,
-                      const lib::terminal::Char *frame) {
+void Console::Present(terminal::Point const &p1,
+                      terminal::Point const &p2,
+                      const terminal::Char *frame) {
   for (int y = p1.y; y <= p2.y; y++) {
     auto dst = &((uint16_t *)0xFFFFFFFF800B8000)[y * width];
     auto src = &frame[y * width];

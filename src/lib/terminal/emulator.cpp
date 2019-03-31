@@ -5,9 +5,9 @@
  * found in the LICENSE file.
  */
 
-#include <terminal/emulator.hpp>
+#include "emulator.hpp"
 
-using namespace lib::terminal;
+using namespace terminal;
 
 Emulator::Emulator(Display &display)
     : display(display), width(display.width), height(display.height) {

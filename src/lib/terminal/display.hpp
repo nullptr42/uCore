@@ -9,7 +9,7 @@
 
 #include <stdint.h>
 
-namespace lib::terminal {
+namespace terminal {
 
 enum class Color : uint8_t {
   Black,
@@ -48,4 +48,4 @@ struct Display {
   virtual void Present(Point const &p1, Point const &p2, const Char *frame) = 0;
 };
 
-} // namespace lib::terminal
+} // namespace terminal

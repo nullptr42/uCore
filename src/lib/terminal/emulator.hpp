@@ -9,7 +9,7 @@
 
 #include "display.hpp"
 
-namespace lib::terminal {
+namespace terminal {
 
 class Emulator {
 
@@ -51,4 +51,4 @@ private:
   void SetDisplayAttribute(int code);
 };
 
-} // namespace lib::terminal
+} // namespace terminal

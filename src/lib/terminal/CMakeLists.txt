@@ -3,8 +3,8 @@ set (SOURCES
 )
 
 set (HEADERS
-    include/terminal/display.hpp
-    include/terminal/emulator.hpp
+    display.hpp
+    emulator.hpp
 )
 
 add_library(terminal STATIC ${SOURCES} ${HEADERS})

@@ -28,7 +28,7 @@ extern "C" void __cxa_pure_virtual() {
 }
 
 static Console console;
-static lib::terminal::Emulator emulator(console);
+static terminal::Emulator emulator(console);
 
 void platform::print(const char *string) { emulator.Write(string); }
 
