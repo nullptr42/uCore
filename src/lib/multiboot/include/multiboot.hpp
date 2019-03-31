@@ -28,14 +28,14 @@ struct Tag {
 } __attribute__((packed));
 
 struct Module : Tag {
-  uint32_t mod_start;
-  uint32_t mod_end;
+  uint32_t start;
+  uint32_t end;
   char string; /* TODO: this is actually an array */
 } __attribute__((packed));
 
 struct Memory : Tag {
-  uint32_t mem_lower;
-  uint32_t mem_upper;
+  uint32_t lower;
+  uint32_t upper;
 } __attribute__((packed));
 
 struct MemoryMap : Tag {
