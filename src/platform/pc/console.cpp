@@ -37,8 +37,7 @@ void Console::SetCursor(terminal::Point const &p) {
   outb(kVgaPortData, address & 0xFF);
 }
 
-void Console::Present(terminal::Point const &p1,
-                      terminal::Point const &p2,
+void Console::Present(terminal::Point const &p1, terminal::Point const &p2,
                       const terminal::Char *frame) {
   for (int y = p1.y; y <= p2.y; y++) {
     auto dst = &((uint16_t *)0xFFFFFFFF800B8000)[y * width];

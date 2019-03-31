@@ -4,9 +4,9 @@ set(SOURCES
 )
 
 set(HEADERS
-    include/allocator.hpp
-    include/list.hpp
-    include/stdio.hpp
+    allocator.hpp
+    list.hpp
+    stdio.hpp
 )
 
 add_library(rcxx STATIC ${SOURCES} ${HEADERS})

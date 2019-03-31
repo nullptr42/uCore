@@ -7,8 +7,8 @@
 
 #pragma once
 
+#include <lib/cxx/stdio.hpp>
 #include <stdarg.h>
-#include <stdio.hpp>
 
 /* TODO: Implement a proper panic function. */
 inline void panic(const char *format, ...) {

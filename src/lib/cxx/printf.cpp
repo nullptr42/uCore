@@ -9,7 +9,7 @@
 #include <stdarg.h>
 #include <stddef.h>
 
-#include "include/stdio.hpp"
+#include "stdio.hpp"
 
 namespace cxx {
 

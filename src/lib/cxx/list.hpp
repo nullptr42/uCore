@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <stdio.hpp>
+#include <lib/cxx/stdio.hpp>
 
 namespace cxx {
 

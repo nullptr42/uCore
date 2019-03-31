@@ -11,10 +11,10 @@
 #include <arch/x86_64/pic.hpp>
 #include <kernel/bootinfo.hpp>
 #include <kernel/version.hpp>
-#include <list.hpp>
+#include <lib/cxx/list.hpp>
+#include <lib/cxx/stdio.hpp>
 #include <platform/print.hpp>
 #include <stdint.h>
-#include <stdio.hpp>
 
 #include "console.hpp"
 

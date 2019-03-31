@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include <stdint.h>
 #include <lib/terminal/emulator.hpp>
+#include <stdint.h>
 
 struct Console : public terminal::Display {
   static const int kVgaPortRegister = 0x3D4;

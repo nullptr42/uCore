@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include <allocator.hpp>
+#include <lib/cxx/allocator.hpp>
 #include <stdint.h>
 
 /**
