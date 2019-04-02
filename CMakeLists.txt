@@ -31,6 +31,7 @@ set(LINK_FLAGS "-T ${REINIX_LD_SCRIPT} -ffreestanding -O${REINIX_OPT_LEVEL} -nos
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LINK_FLAGS}")
 
 include_directories(src)
+include_directories(include)
 
 include("src/kernel/kernel.cmake")
 include("src/lib/library.cmake")
