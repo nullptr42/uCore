@@ -32,7 +32,6 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LINK_FLAGS}")
 
 include_directories(src)
 
-# Get rid of these!
 include("src/kernel/kernel.cmake")
 include("src/lib/library.cmake")
 
