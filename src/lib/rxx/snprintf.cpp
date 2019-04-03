@@ -11,7 +11,7 @@
 
 /* Reference: http://www.cplusplus.com/reference/cstdio/printf/ */
 
-namespace cxx {
+namespace rxx {
 
 enum class DataType {
   None,
@@ -559,4 +559,4 @@ int snprintf(char *buffer, size_t size, const char *format, ...) {
   return total;
 }
 
-} // namespace cxx
+} // namespace rxx

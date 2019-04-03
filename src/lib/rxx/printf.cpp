@@ -11,7 +11,7 @@
 
 #include "stdio.hpp"
 
-namespace cxx {
+namespace rxx {
 
 void putc(char c) {
   char str[] = {c, 0};
@@ -57,4 +57,4 @@ int vprintf(const char *format, va_list arg) {
   return total;
 }
 
-} // namespace cxx
+} // namespace rxx

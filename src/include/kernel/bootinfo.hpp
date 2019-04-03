@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <lib/cxx/list.hpp>
+#include <lib/rxx/list.hpp>
 #include <stdint.h>
 
 namespace kernel {
@@ -28,8 +28,8 @@ struct BootInfo {
     uint64_t last;
   };
 
-  cxx::List<Module> modules;
-  cxx::List<Memory> mmap;
+  rxx::List<Module> modules;
+  rxx::List<Memory> mmap;
 
   struct Framebuffer {
     bool present;

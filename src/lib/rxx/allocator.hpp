@@ -9,7 +9,7 @@
 
 #include <stddef.h>
 
-namespace cxx {
+namespace rxx {
 
 /**
  * Generic interface for memory allocation.
@@ -19,4 +19,4 @@ struct Allocator {
   virtual void Free(void *ptr) = 0;
 };
 
-} // namespace cxx
+} // namespace rxx
