@@ -14,7 +14,7 @@ set(CMAKE_ASM_NASM_FLAGS "${CMAKE_ASM_NASM_FLAGS} -I ${CMAKE_SOURCE_DIR}/src/")
 
 set(COMPILE_FLAGS "-mno-red-zone -mcmodel=kernel -mno-sse")
 
-file(GLOB ARCH_SRC
+file(GLOB_RECURSE ARCH_SRC
     "${CMAKE_CURRENT_LIST_DIR}/*.cpp"
-    "${CMAKE_CURRENT_LIST_DIR}/asm/*.asm"
+    "${CMAKE_CURRENT_LIST_DIR}/*.asm"
 )

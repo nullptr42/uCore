@@ -9,6 +9,7 @@
 #include <arch/x86_64/gdt.hpp>
 #include <arch/x86_64/idt.hpp>
 #include <arch/x86_64/pic.hpp>
+#include <arch/x86_64/pm/pm.hpp>
 #include <kernel/bootinfo.hpp>
 #include <kernel/version.hpp>
 #include <lib/rxx/list.hpp>
@@ -35,6 +36,8 @@ void platform::print(const char *string) { emulator.Write(string); }
 kernel::BootInfo *g_bootinfo = nullptr;
 kernel::BootInfo *get_bootinfo(uint32_t magic, void *multiboot);
 
+PhysicalMemoryAllocator *g_pma;
+
 extern "C" void kernel_main(uint32_t magic, void *multiboot) {
   cpuid::CPU cpu;
 
@@ -54,6 +57,7 @@ extern "C" void kernel_main(uint32_t magic, void *multiboot) {
   rxx::printf("%s (%s)\n\n", cpu.name, cpu.vendor_name);
 
   g_bootinfo = get_bootinfo(magic, multiboot);
+  g_pma = new PhysicalMemoryAllocator(g_bootinfo);
 
   if (cpu.features & uint64_t(cpuid::Feature::APIC)) {
     pic::set_mask(0xFFFF);

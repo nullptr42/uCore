@@ -7,8 +7,8 @@
 
 #include <kernel/bootinfo.hpp>
 #include <kernel/panic.hpp>
-#include <lib/rxx/stdio.hpp>
 #include <lib/multiboot.hpp>
+#include <lib/rxx/stdio.hpp>
 
 using namespace multiboot;
 

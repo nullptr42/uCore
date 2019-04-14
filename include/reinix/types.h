@@ -16,10 +16,12 @@
 #endif
 
 #ifdef __x86_64__
-typedef uint64_t paddr_t;
-typedef uint64_t vaddr_t;
+typedef uint64_t addr_t;
 #else
 #error "Unknown CPU architecture, either not detected or unsupported by reinix."
 #endif
+
+typedef addr_t paddr_t;
+typedef addr_t vaddr_t;
 
 #endif // _REINIX_TYPES_H_
