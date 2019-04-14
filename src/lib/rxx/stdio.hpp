@@ -10,7 +10,7 @@
 #include <stdarg.h>
 #include <stddef.h>
 
-namespace cxx {
+namespace rxx {
 
 int vsnprintf(char *buffer, size_t size, const char *format, va_list arg);
 int snprintf(char *buffer, size_t size, const char *format, ...);
@@ -20,4 +20,4 @@ void puts(const char *str);
 int printf(const char *format, ...);
 int vprintf(const char *format, va_list arg);
 
-} // namespace cxx
+} // namespace rxx

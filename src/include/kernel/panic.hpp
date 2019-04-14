@@ -7,15 +7,15 @@
 
 #pragma once
 
-#include <lib/cxx/stdio.hpp>
+#include <lib/rxx/stdio.hpp>
 #include <stdarg.h>
 
 /* TODO: Implement a proper panic function. */
 inline void panic(const char *format, ...) {
   va_list arg1;
   va_start(arg1, format);
-  cxx::printf("\e[2;41;37mpanic\e[0m: ");
-  cxx::vprintf(format, arg1);
+  rxx::printf("\e[2;41;37mpanic\e[0m: ");
+  rxx::vprintf(format, arg1);
   va_end(arg1);
   while (1) {
   }

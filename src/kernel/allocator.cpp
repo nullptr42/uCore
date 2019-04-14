@@ -5,13 +5,13 @@
  * found in the LICENSE file.
  */
 
-#include <lib/cxx/allocator.hpp>
+#include <lib/rxx/allocator.hpp>
 #include <stdint.h>
 
 /**
  * Initial bump allocator used to bootstrap memory management.
  */
-template <size_t capacity> struct BumpAllocator : public cxx::Allocator {
+template <size_t capacity> struct BumpAllocator : public rxx::Allocator {
   uint8_t data[capacity];
   uint8_t *position = &data[0];
 
@@ -30,17 +30,17 @@ template <size_t capacity> struct BumpAllocator : public cxx::Allocator {
 
 BumpAllocator<32768> g_bump_alloc;
 
-cxx::Allocator *g_allocator = &g_bump_alloc;
+rxx::Allocator *g_allocator = &g_bump_alloc;
 
 static void *wrap_alloc(size_t size) {
-  void *data = g_allocator->Alloc(sizeof(cxx::Allocator *) + size);
-  ((cxx::Allocator **)data)[0] = g_allocator;
-  return data + sizeof(cxx::Allocator *);
+  void *data = g_allocator->Alloc(sizeof(rxx::Allocator *) + size);
+  ((rxx::Allocator **)data)[0] = g_allocator;
+  return data + sizeof(rxx::Allocator *);
 }
 
 static void wrap_free(void *data) {
-  data -= sizeof(cxx::Allocator *);
-  cxx::Allocator *allocator = ((cxx::Allocator **)data)[0];
+  data -= sizeof(rxx::Allocator *);
+  rxx::Allocator *allocator = ((rxx::Allocator **)data)[0];
   allocator->Free(data);
 }
 

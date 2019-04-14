@@ -11,8 +11,8 @@
 #include <arch/x86_64/pic.hpp>
 #include <kernel/bootinfo.hpp>
 #include <kernel/version.hpp>
-#include <lib/cxx/list.hpp>
-#include <lib/cxx/stdio.hpp>
+#include <lib/rxx/list.hpp>
+#include <lib/rxx/stdio.hpp>
 #include <platform/print.hpp>
 #include <stdint.h>
 
@@ -46,12 +46,12 @@ extern "C" void kernel_main(uint32_t magic, void *multiboot) {
   pic::initialize();
 
   /* Print kernel name and version. */
-  cxx::printf("\e[2;37m%s\e[0m %d.%d\n\n", kernel::g_kernel_info.name,
+  rxx::printf("\e[2;37m%s\e[0m %d.%d\n\n", kernel::g_kernel_info.name,
               kernel::g_kernel_info.version.major,
               kernel::g_kernel_info.version.minor);
 
   cpuid::read(cpu);
-  cxx::printf("%s (%s)\n\n", cpu.name, cpu.vendor_name);
+  rxx::printf("%s (%s)\n\n", cpu.name, cpu.vendor_name);
 
   g_bootinfo = get_bootinfo(magic, multiboot);
 

@@ -9,4 +9,4 @@ set(HEADERS
     stdio.hpp
 )
 
-add_library(rcxx STATIC ${SOURCES} ${HEADERS})
+add_library(rxx STATIC ${SOURCES} ${HEADERS})

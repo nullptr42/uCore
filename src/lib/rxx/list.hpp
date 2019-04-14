@@ -9,7 +9,7 @@
 
 #include <stddef.h>
 
-namespace cxx {
+namespace rxx {
 
 template <typename T> class List {
   struct ListNode {
@@ -98,4 +98,4 @@ public:
   Iterator end() { return Iterator(nullptr); }
 };
 
-} // namespace cxx
+} // namespace rxx
