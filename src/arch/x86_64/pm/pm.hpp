@@ -13,6 +13,9 @@
 namespace arch::x86_64 {
 
 class PhysicalMemoryAllocator {
+  uint64_t *pages = nullptr;
+  int capacity;
+  int index = 0;
 
 public:
   PhysicalMemoryAllocator(kernel::BootInfo *bootinfo);

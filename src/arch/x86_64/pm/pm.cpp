@@ -29,6 +29,37 @@ PhysicalMemoryAllocator::PhysicalMemoryAllocator(kernel::BootInfo *bootinfo) {
   }
 
   minimum = round_up(minimum);
+  // rxx::printf("[pm] minimum=0x%016x\n", minimum);
+
+  uint64_t usable = 0;
+
+  /* Count the amount of usable RAM. */
+  for (auto &entry : bootinfo->mmap) {
+    usable += entry.last - entry.base + 1;
+  }
+
+  usable = round_down(usable);
+  // rxx::printf("[pm] detected %lld bytes of available memory.\n", usable);
+
+  capacity = pagecount(usable);
+
+  /* Search for a suitable location for the page stack. */
+  for (auto &entry : bootinfo->mmap) {
+    auto base = entry.base;
+
+    if (base < minimum)
+      base = minimum;
+    if (base > entry.last)
+      continue;
+
+    if ((entry.last - base + 1) >= sizeof(uint64_t) * capacity) {
+      entry.base = base + sizeof(uint64_t) * capacity;
+      pages = (uint64_t *)base;
+      break;
+    }
+  }
+
+  // rxx::printf("[pm] page frame stack allocated @ 0x%016llx.\n", pages);
 }
 
 } // namespace arch::x86_64

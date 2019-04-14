@@ -23,5 +23,6 @@ typedef uint64_t addr_t;
 
 typedef addr_t paddr_t;
 typedef addr_t vaddr_t;
+typedef unsigned int uint;
 
 #endif // _REINIX_TYPES_H_

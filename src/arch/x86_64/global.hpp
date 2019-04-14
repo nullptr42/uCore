@@ -33,4 +33,6 @@ constexpr addr_t round_down(addr_t address) {
   return address;
 }
 
+constexpr int pagecount(uint64_t size) { return size / 4096; }
+
 } // namespace arch::x86_64
