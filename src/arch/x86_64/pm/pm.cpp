@@ -29,7 +29,7 @@ PhysicalMemoryAllocator::PhysicalMemoryAllocator(kernel::BootInfo *bootinfo) {
   }
 
   minimum = round_up(minimum);
-  // rxx::printf("[pm] minimum=0x%016x\n", minimum);
+  rxx::printf("[pm] minimum=0x%016x\n", minimum);
 
   uint64_t usable = 0;
 
@@ -39,7 +39,7 @@ PhysicalMemoryAllocator::PhysicalMemoryAllocator(kernel::BootInfo *bootinfo) {
   }
 
   usable = round_down(usable);
-  // rxx::printf("[pm] detected %lld bytes of available memory.\n", usable);
+  rxx::printf("[pm] detected %lld bytes of available memory.\n", usable);
 
   capacity = pagecount(usable);
 
@@ -52,14 +52,46 @@ PhysicalMemoryAllocator::PhysicalMemoryAllocator(kernel::BootInfo *bootinfo) {
     if (base > entry.last)
       continue;
 
+    entry.base = base;
+
     if ((entry.last - base + 1) >= sizeof(uint64_t) * capacity) {
-      entry.base = base + sizeof(uint64_t) * capacity;
+      entry.base += sizeof(uint64_t) * capacity;
       pages = (uint64_t *)base;
       break;
     }
   }
 
-  // rxx::printf("[pm] page frame stack allocated @ 0x%016llx.\n", pages);
+  rxx::printf("[pm] page frame stack allocated @ 0x%016llx.\n", pages);
+
+  /* Release all free pages into the stack. */
+  for (auto &entry : bootinfo->mmap) {
+    for (uint64_t pg = page(round_up(entry.base));
+         pg <= page(round_down(entry.last)); pg++) {
+      Free(1, &pg);
+    }
+  }
+}
+
+auto PhysicalMemoryAllocator::Alloc(size_t count, uint64_t* pages) -> Status {
+  if (count > index)
+    return Status::OutOfMemory;
+
+  index -= count;
+  for (size_t i = 0; i < count; i++)
+    pages[i] = this->pages[index + i];
+
+  return Status::OK;
+}
+
+auto PhysicalMemoryAllocator::Free(size_t count, uint64_t* pages) -> Status {
+  if ((index + count) > capacity)
+    return Status::BadRequest;
+  
+  for (size_t i = 0; i < count; i++)
+    this->pages[index + i] = pages[i];
+  index += count;
+
+  return Status::OK;
 }
 
 } // namespace arch::x86_64

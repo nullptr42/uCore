@@ -66,6 +66,12 @@ extern "C" void kernel_main(uint32_t magic, void *multiboot) {
     pic::set_mask(0);
   }
 
+  uint64_t pgs[11];
+  g_pma->Alloc(11, pgs);
+  for (int i = 0; i < 11; i++) {
+    rxx::printf("%d ", pgs[i]);
+  }
+
   asm("sti");
   for (;;)
     asm("hlt");
