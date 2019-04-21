@@ -77,6 +77,17 @@ extern "C" void kernel_main(uint32_t magic, void *multiboot) {
   rxx::printf("\n");
   rxx::printf("VirtualRangeAllocator Test: %p\n", (void *)alloc.Alloc(0xDEADBEEF, 1337));
 
+  rxx::List<int> test;
+  test.InsertBack(1);
+  test.InsertBack(2);
+  test.InsertBack(3);
+  test.InsertBack(4);
+  test.Erase(test.begin());
+  test.InsertBack(1337);
+  for (auto v : test) {
+    rxx::printf("test %d\n", v);
+  }
+
   asm("sti");
   for (;;)
     asm("hlt");
