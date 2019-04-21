@@ -93,6 +93,19 @@ public:
     }
   }
 
+  void InsertAfter(const Iterator iter, const T &value) {
+    auto prev = iter.position;
+    auto node = new ListNode(value, prev, prev->next);
+
+    if (prev != tail) {
+      prev->next->prev = node;
+    } else {
+      tail = node;
+    }
+    
+    prev->next = node;
+  }
+
   void Erase(const Iterator iter) { 
     auto node = iter.position;
     

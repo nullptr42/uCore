@@ -7,6 +7,8 @@
 
 #include "virtual_alloc.hpp"
 
+#include <lib/rxx/stdio.hpp>
+
 using namespace kernel;
 
 VirtualRangeAllocator::VirtualRangeAllocator(vaddr_t base, vaddr_t last) {
@@ -17,22 +19,48 @@ vaddr_t VirtualRangeAllocator::Alloc(vaddr_t base, size_t size) {
   vaddr_t last = base + size - 1;
   vaddr_t result = 0;
 
-  for (auto &range : ranges) {
+  // TODO: round base down and size up.
+  // How do we keep the code for this arch-independant? granularity parameter in the constructor?
+
+  for (auto it = ranges.begin(); it != ranges.end(); ++it) {
+    auto &range = *it;
     size_t available = range.last - range.base + 1;
 
+    /* If the current range is too small don't bother with it. */
     if (available < size)
       continue;
 
+    /* If the range base address already is higher than
+     * the requested base address just allocate space from
+     * the start of this range. 
+     */
     if (range.base >= base) {
       result = range.base;
       range.base += size;
-      // TODO: get rid of empty ranges.
+      /* Remove the range if its size is zero after the allocation. */
+      if (range.base > range.last)
+        ranges.Erase(it);
       break;
     }
 
+    /* The range base address is lower than the requested base address
+     * and is large enough. The requested range is fully contained.
+     */
     if (range.last >= last) {
-      // TODO: split range to create a hole.
+      result = base;
+      /* Create a free range following the hole if there is free space
+       * following the allocated range.
+       */
+      if (range.last > last)
+        ranges.InsertAfter(it, {last+1, range.last});
+      range.last = base - 1;
+      break;
     }
+  }
+
+  // debug ranges
+  for (auto &range : ranges) {
+    rxx::printf("base=0x%08llx last=0x%08llx\n", range.base, range.last);
   }
 
   return result;
