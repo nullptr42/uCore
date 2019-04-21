@@ -78,6 +78,7 @@ extern "C" void kernel_main(uint32_t magic, void *multiboot) {
   rxx::printf("\n");
   rxx::printf("alloc: 0x%016llx\n", (void *)alloc.Alloc(0xDEADBEEF, 1337));
   rxx::printf("alloc: 0x%016llx\n", (void *)alloc.Alloc(0xFEEDFACE, 0x1000000));
+  rxx::printf("free: 0x%016llx\n", (void *)alloc.Free(0xFEEDFACE, 0x1000000));
 
   asm("sti");
   for (;;)

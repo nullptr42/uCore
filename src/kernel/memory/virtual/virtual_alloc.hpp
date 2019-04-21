@@ -20,6 +20,7 @@ class VirtualRangeAllocator {
     vaddr_t last;
   };
 
+  vaddr_t last;
   int granularity;
 
   rxx::List<MemoryRange> ranges;

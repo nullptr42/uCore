@@ -13,7 +13,7 @@ using namespace kernel;
 
 VirtualRangeAllocator::VirtualRangeAllocator(vaddr_t base, vaddr_t last,
                                              int granularity)
-    : granularity(granularity) {
+    : last(last), granularity(granularity) {
   ranges.InsertBack({base, last});
 }
 
@@ -74,4 +74,54 @@ vaddr_t VirtualRangeAllocator::Alloc(vaddr_t base, size_t size) {
   return result;
 }
 
-vaddr_t VirtualRangeAllocator::Free(vaddr_t base, size_t size) { return base; }
+vaddr_t VirtualRangeAllocator::Free(vaddr_t base, size_t size) {
+  vaddr_t result = 0;
+
+  /* TODO: check if base should round up and size round down or vice versa.
+   * Right now I can see arguments for both.
+   */
+
+  /* Round base down to the nearest page. */
+  if ((base % granularity) != 0)
+    base -= (base % granularity);
+
+  /* Round size up to the nearest page. */
+  if ((size % granularity) != 0)
+    size += granularity - (size % granularity);
+
+  vaddr_t last = base + size - 1;
+
+  for (auto it = ranges.begin(); it != ranges.end(); ++it) {
+    // TODO: this is ugly because we have to work on the internal ListNode
+    // structure itself.
+    auto node = it.position;
+    auto next = node->next;
+    vaddr_t max = next ? next->value.base : this->last;
+    if (base > node->value.last && last < max) {
+      MemoryRange range = {base, last};
+      result = base;
+
+      /* Try to merge with the next block. */
+      if (next && (range.last + 1) == next->value.base) {
+        range.last = next->value.last;
+        ranges.Erase(it + 1);
+      }
+
+      /* Try to merge into the previous block. Otherwise insert the new range.
+       */
+      if ((range.base - 1) == node->value.last) {
+        node->value.last = range.last;
+      } else {
+        ranges.InsertAfter(it, range);
+      }
+      break;
+    }
+  }
+
+  // debug ranges
+  for (auto &range : ranges) {
+    rxx::printf("base=0x%016llx last=0x%016llx\n", range.base, range.last);
+  }
+
+  return result;
+}
