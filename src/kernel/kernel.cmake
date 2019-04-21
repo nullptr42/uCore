@@ -1,4 +1,4 @@
 
-file(GLOB KERNEL_SRC
+file(GLOB_RECURSE KERNEL_SRC
     "${CMAKE_CURRENT_LIST_DIR}/*.cpp"
 )
