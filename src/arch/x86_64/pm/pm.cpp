@@ -65,14 +65,16 @@ PhysicalMemoryAllocator::PhysicalMemoryAllocator(kernel::BootInfo *bootinfo) {
 
   /* Release all free pages into the stack. */
   for (auto &entry : bootinfo->mmap) {
-    for (uint64_t pg = page(round_up(entry.base));
-         pg <= page(round_down(entry.last)); pg++) {
+    auto base = page(round_up(entry.base));
+    auto last = page(round_down(entry.last));
+
+    for (uint64_t pg = base; pg <= last; pg++) {
       Free(1, &pg);
     }
   }
 }
 
-auto PhysicalMemoryAllocator::Alloc(size_t count, uint64_t* pages) -> Status {
+auto PhysicalMemoryAllocator::Alloc(size_t count, uint64_t *pages) -> Status {
   if (count > index)
     return Status::OutOfMemory;
 
@@ -83,10 +85,10 @@ auto PhysicalMemoryAllocator::Alloc(size_t count, uint64_t* pages) -> Status {
   return Status::OK;
 }
 
-auto PhysicalMemoryAllocator::Free(size_t count, uint64_t* pages) -> Status {
+auto PhysicalMemoryAllocator::Free(size_t count, uint64_t *pages) -> Status {
   if ((index + count) > capacity)
     return Status::BadRequest;
-  
+
   for (size_t i = 0; i < count; i++)
     this->pages[index + i] = pages[i];
   index += count;

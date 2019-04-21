@@ -33,8 +33,8 @@ constexpr addr_t round_down(addr_t address) {
   return address;
 }
 
-constexpr int pagecount(uint64_t size) { return size / 4096; }
+constexpr size_t pagecount(uint64_t size) { return size / 4096; }
 
-constexpr int page(addr_t address) { return address / 4096; }
+constexpr uint64_t page(addr_t address) { return address / 4096; }
 
 } // namespace arch::x86_64

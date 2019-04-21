@@ -8,8 +8,8 @@
 #pragma once
 
 #include <kernel/bootinfo.hpp>
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 namespace arch::x86_64 {
 
@@ -19,11 +19,7 @@ class PhysicalMemoryAllocator {
   size_t index = 0;
 
 public:
-  enum class Status {
-    BadRequest = -2,
-    OutOfMemory = -1,
-    OK = 0
-  };
+  enum class Status { BadRequest = -2, OutOfMemory = -1, OK = 0 };
 
   PhysicalMemoryAllocator(kernel::BootInfo *bootinfo);
 
