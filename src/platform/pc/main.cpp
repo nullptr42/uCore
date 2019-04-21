@@ -73,10 +73,11 @@ extern "C" void kernel_main(uint32_t magic, void *multiboot) {
     rxx::printf("%d ", pgs[i]);
   }
 
-  kernel::VirtualRangeAllocator alloc{0x0000000000001000, 0xFFFF7FFFFFFFFFFF};
+  kernel::VirtualRangeAllocator alloc{0x0000000000001000, 0xFFFF7FFFFFFFFFFF,
+                                      4096};
   rxx::printf("\n");
-  rxx::printf("alloc: 0x%08llx\n", (void *)alloc.Alloc(0xDEADBEEF, 1337));
-  rxx::printf("alloc: 0x%08llx\n", (void *)alloc.Alloc(0xFEEDFACE, 0x1000000));
+  rxx::printf("alloc: 0x%016llx\n", (void *)alloc.Alloc(0xDEADBEEF, 1337));
+  rxx::printf("alloc: 0x%016llx\n", (void *)alloc.Alloc(0xFEEDFACE, 0x1000000));
 
   asm("sti");
   for (;;)

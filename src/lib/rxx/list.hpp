@@ -102,19 +102,19 @@ public:
     } else {
       tail = node;
     }
-    
+
     prev->next = node;
   }
 
-  void Erase(const Iterator iter) { 
+  void Erase(const Iterator iter) {
     auto node = iter.position;
-    
+
     if (node != head) {
       node->prev->next = node->next;
     } else {
       head = node->next;
     }
-      
+
     if (node != tail) {
       node->next->prev = node->prev;
     } else {

@@ -11,16 +11,24 @@
 
 using namespace kernel;
 
-VirtualRangeAllocator::VirtualRangeAllocator(vaddr_t base, vaddr_t last) {
+VirtualRangeAllocator::VirtualRangeAllocator(vaddr_t base, vaddr_t last,
+                                             int granularity)
+    : granularity(granularity) {
   ranges.InsertBack({base, last});
 }
 
 vaddr_t VirtualRangeAllocator::Alloc(vaddr_t base, size_t size) {
-  vaddr_t last = base + size - 1;
   vaddr_t result = 0;
 
-  // TODO: round base down and size up.
-  // How do we keep the code for this arch-independant? granularity parameter in the constructor?
+  /* Round base down to the nearest page. */
+  if ((base % granularity) != 0)
+    base -= (base % granularity);
+
+  /* Round size up to the nearest page. */
+  if ((size % granularity) != 0)
+    size += granularity - (size % granularity);
+
+  vaddr_t last = base + size - 1;
 
   for (auto it = ranges.begin(); it != ranges.end(); ++it) {
     auto &range = *it;
@@ -32,7 +40,7 @@ vaddr_t VirtualRangeAllocator::Alloc(vaddr_t base, size_t size) {
 
     /* If the range base address already is higher than
      * the requested base address just allocate space from
-     * the start of this range. 
+     * the start of this range.
      */
     if (range.base >= base) {
       result = range.base;
@@ -52,7 +60,7 @@ vaddr_t VirtualRangeAllocator::Alloc(vaddr_t base, size_t size) {
        * following the allocated range.
        */
       if (range.last > last)
-        ranges.InsertAfter(it, {last+1, range.last});
+        ranges.InsertAfter(it, {last + 1, range.last});
       range.last = base - 1;
       break;
     }
@@ -60,7 +68,7 @@ vaddr_t VirtualRangeAllocator::Alloc(vaddr_t base, size_t size) {
 
   // debug ranges
   for (auto &range : ranges) {
-    rxx::printf("base=0x%08llx last=0x%08llx\n", range.base, range.last);
+    rxx::printf("base=0x%016llx last=0x%016llx\n", range.base, range.last);
   }
 
   return result;
