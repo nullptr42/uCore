@@ -19,12 +19,11 @@
 extern "C" void fpu_init();
 
 /* Original PML4 table. */
-extern "C" uint64_t vm_level1;
+extern "C" uint64_t boot_pml4;
 
 namespace arch::x86_64 {
 
-/* Kernel PML4 table. */
-static ptentry_t pml4[512] __pgalign;  
+static ptentry_t new_pml4[512] __pgalign;  
 
 static void init_cpu() {
   fpu_init();
@@ -49,17 +48,17 @@ static void init_cpu() {
 }
 
 static void init_mm(kernel::BootInfo *bootinfo) {
-  X64_AddressSpace aspace1 { (ptentry_t*)physical(vaddr_t(&vm_level1)) };
-  X64_AddressSpace aspace2 { (ptentry_t*)physical(vaddr_t(&pml4[0])) };
+  X64_AddressSpace aspace1 { (ptentry_t*)physical(vaddr_t(&boot_pml4)) };
+  X64_AddressSpace aspace2 { (ptentry_t*)physical(vaddr_t(&new_pml4[0])) };
   
   /* Setup recursive mapping to new PML4 in old and new PML4. 
    * This way we can use standard mapping functions to map the kernel 
    * to the new PML4 nicely and then switch to the new context.
    */
-  (&vm_level1)[256] = pml4[256]
+  (&boot_pml4)[256] = new_pml4[256]
                     = X64_AddressSpace::PT_MAPPED | 
                       X64_AddressSpace::PT_WRITEABLE |
-                      physical(vaddr_t(pml4));
+                      physical(vaddr_t(new_pml4));
   
   /* ... */
   

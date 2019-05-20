@@ -19,7 +19,7 @@ PAGE_SIZE_2MB  equ (1<<7)
 %include "arch/x86_64/cpu/gdt.inc"
 %include "arch/x86_64/global.inc"
 
-global vm_level1
+global boot_pml4
 
 section .multiboot
 
@@ -134,7 +134,7 @@ _start:
     mov cr4, eax  ; write back to CR4
 
     ; Setup level 3 which will map to the first 1GiB of physical memory.
-    mov eax, vm_level3 - VM_BASE_KERNEL_ELF
+    mov eax, boot_pdt - VM_BASE_KERNEL_ELF
     mov ecx, 512
     xor edx, edx
     .map_1gb:
@@ -144,13 +144,13 @@ _start:
         dec ecx
         jnz .map_1gb
 
-    or dword [vm_level2_a.entry - VM_BASE_KERNEL_ELF], vm_level3 - VM_BASE_KERNEL_ELF
-    or dword [vm_level2_b.entry - VM_BASE_KERNEL_ELF], vm_level3 - VM_BASE_KERNEL_ELF
+    or dword [boot_pdpt_a.entry - VM_BASE_KERNEL_ELF], boot_pdt - VM_BASE_KERNEL_ELF
+    or dword [boot_pdpt_b.entry - VM_BASE_KERNEL_ELF], boot_pdt - VM_BASE_KERNEL_ELF
 
-    or dword [vm_level1.lo - VM_BASE_KERNEL_ELF], vm_level2_a - VM_BASE_KERNEL_ELF ; 0x0000000000000000
-    or dword [vm_level1.hi - VM_BASE_KERNEL_ELF], vm_level2_b - VM_BASE_KERNEL_ELF ; 0xFFFFFFFF80000000
+    or dword [boot_pml4.lo - VM_BASE_KERNEL_ELF], boot_pdpt_a - VM_BASE_KERNEL_ELF ; 0x0000000000000000
+    or dword [boot_pml4.hi - VM_BASE_KERNEL_ELF], boot_pdpt_b - VM_BASE_KERNEL_ELF ; 0xFFFFFFFF80000000
 
-    mov eax, vm_level1 - VM_BASE_KERNEL_ELF
+    mov eax, boot_pml4 - VM_BASE_KERNEL_ELF
     mov cr3, eax
 
     ; Enable long mode (LM)
@@ -214,19 +214,19 @@ sz_amd64_required:
     db "AMD64 cpu required. Cannot boot.", 0
 
 align 4096
-vm_level3:
+boot_pdt:
     times 512 dq PAGE_IN_MEMORY | PAGE_WRITEABLE | PAGE_SIZE_2MB
 
-vm_level2_a:
+boot_pdpt_a:
     .entry: dq PAGE_IN_MEMORY | PAGE_WRITEABLE
     times 511 dq 0
 
-vm_level2_b:
+boot_pdpt_b:
     times 510 dq 0
     .entry: dq PAGE_IN_MEMORY | PAGE_WRITEABLE
     dq 0
 
-vm_level1:
+boot_pml4:
     ; 0x0000000000000000
     .lo:
         dq PAGE_IN_MEMORY | PAGE_WRITEABLE
