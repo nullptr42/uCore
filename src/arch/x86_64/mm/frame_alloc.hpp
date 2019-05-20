@@ -8,23 +8,22 @@
 #pragma once
 
 #include <kernel/bootinfo.hpp>
+#include <kernel/memory/physical/frame_alloc.hpp>
 #include <stddef.h>
 #include <stdint.h>
 
 namespace arch::x86_64 {
 
-class PhysicalMemoryAllocator {
-  uint64_t *pages = nullptr;
+class X64_FrameAllocator : kernel::FrameAllocator {
+  page_t *pages = nullptr;
   size_t capacity;
   size_t index = 0;
 
 public:
-  enum class Status { BadRequest = -2, OutOfMemory = -1, OK = 0 };
+  X64_FrameAllocator(kernel::BootInfo *bootinfo);
 
-  PhysicalMemoryAllocator(kernel::BootInfo *bootinfo);
-
-  auto Alloc(size_t count, uint64_t *pages) -> Status;
-  auto Free(size_t count, uint64_t *pages) -> Status;
+  auto Alloc(rxx::Array<page_t> &pages, int flags) -> Status final;
+  auto Free(rxx::Array<page_t> &pages) -> Status final;
 };
 
 } // namespace arch::x86_64

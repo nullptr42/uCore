@@ -11,6 +11,7 @@
 #include <arch/x86_64/cpu/cpuid.hpp>
 #include <arch/x86_64/cpu/gdt.hpp>
 #include <arch/x86_64/cpu/idt.hpp>
+#include <arch/x86_64/mm/frame_alloc.hpp>
 #include <lib/rxx/stdio.hpp>
 
 extern "C" void fpu_init();
@@ -39,7 +40,8 @@ static void init_cpu() {
   }
 }
 
-static void init_mm(kernel::BootInfo *bootinfo) { /* ... */
+static void init_mm(kernel::BootInfo *bootinfo) {
+  auto frame_alloc = new X64_FrameAllocator(bootinfo);
 }
 
 void initialize(kernel::BootInfo *bootinfo) {

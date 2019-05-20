@@ -14,8 +14,8 @@ struct FrameAllocator {
 
   enum class Status { BadRequest, OutOfMemory, Success };
 
-  virtual Status Alloc(Array<page_t>& pages, int flags) = 0;
-  virtual Status Free(Array<page_t>& pages) = 0;
+  virtual Status Alloc(rxx::Array<page_t> &pages, int flags) = 0;
+  virtual Status Free(rxx::Array<page_t> &pages) = 0;
 };
 
 } // namespace kernel

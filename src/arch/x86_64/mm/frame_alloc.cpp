@@ -5,8 +5,8 @@
  * found in the LICENSE file.
  */
 
-#include "pm.hpp"
-#include "../global.hpp"
+#include "frame_alloc.hpp"
+#include <arch/x86_64/global.hpp>
 #include <lib/rxx/stdio.hpp>
 #include <reinix/types.h>
 
@@ -18,7 +18,7 @@ extern const uint8_t kernel_end;
 
 namespace arch::x86_64 {
 
-PhysicalMemoryAllocator::PhysicalMemoryAllocator(kernel::BootInfo *bootinfo) {
+X64_FrameAllocator::X64_FrameAllocator(kernel::BootInfo *bootinfo) {
   paddr_t minimum = physical((vaddr_t)&kernel_end) + 1;
 
   /* Determine the lowest safe memory address. */
@@ -63,18 +63,31 @@ PhysicalMemoryAllocator::PhysicalMemoryAllocator(kernel::BootInfo *bootinfo) {
 
   rxx::printf("[pm] page frame stack allocated @ 0x%016llx.\n", pages);
 
+  /* FIXME: workaround because we don't have nice things. */
+  page_t _page;
+  rxx::Array<page_t> pages{&_page, 1};
+
   /* Release all free pages into the stack. */
   for (auto &entry : bootinfo->mmap) {
     auto base = page(round_up(entry.base));
     auto last = page(round_down(entry.last));
 
     for (uint64_t pg = base; pg <= last; pg++) {
-      Free(1, &pg);
+      pages[0] = pg;
+      Free(pages);
     }
   }
 }
 
-auto PhysicalMemoryAllocator::Alloc(size_t count, uint64_t *pages) -> Status {
+auto X64_FrameAllocator::Alloc(rxx::Array<page_t> &pages, int flags) -> Status {
+  auto count = pages.length();
+
+  if (flags & FrameAllocator::Linear) {
+    rxx::printf(
+        "X64_FrameAllocator::Alloc and linear flag. Not implemented!\n");
+    return Status::BadRequest;
+  }
+
   if (count > index)
     return Status::OutOfMemory;
 
@@ -82,10 +95,12 @@ auto PhysicalMemoryAllocator::Alloc(size_t count, uint64_t *pages) -> Status {
   for (size_t i = 0; i < count; i++)
     pages[i] = this->pages[index + i];
 
-  return Status::OK;
+  return Status::Success;
 }
 
-auto PhysicalMemoryAllocator::Free(size_t count, uint64_t *pages) -> Status {
+auto X64_FrameAllocator::Free(rxx::Array<page_t> &pages) -> Status {
+  auto count = pages.length();
+
   if ((index + count) > capacity)
     return Status::BadRequest;
 
@@ -93,7 +108,7 @@ auto PhysicalMemoryAllocator::Free(size_t count, uint64_t *pages) -> Status {
     this->pages[index + i] = pages[i];
   index += count;
 
-  return Status::OK;
+  return Status::Success;
 }
 
 } // namespace arch::x86_64

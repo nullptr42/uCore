@@ -6,7 +6,6 @@
  */
 
 #include <arch/x86_64/init.hpp>
-#include <arch/x86_64/pm/pm.hpp>
 #include <kernel/bootinfo.hpp>
 #include <kernel/memory/virtual/virtual_alloc.hpp>
 #include <lib/rxx/list.hpp>
@@ -31,13 +30,13 @@ void platform::print(const char *string) { emulator.Write(string); }
 // kernel::BootInfo *g_bootinfo = nullptr;
 kernel::BootInfo *get_bootinfo(uint32_t magic, void *multiboot);
 
-// PhysicalMemoryAllocator *g_pma;
+// X64_FrameAllocator *g_pma;
 
 extern "C" void kernel_main(uint32_t magic, void *multiboot) {
   auto bootinfo = get_bootinfo(magic, multiboot);
 
   arch::x86_64::initialize(bootinfo);
-  
+
   //  /* Print kernel name and version. */
   //  rxx::printf("\e[2;37m%s\e[0m %d.%d\n\n", kernel::g_kernel_info.name,
   //              kernel::g_kernel_info.version.major,
