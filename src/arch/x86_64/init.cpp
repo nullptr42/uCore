@@ -39,7 +39,8 @@ static void init_cpu() {
   }
 }
 
-static void init_mm(kernel::BootInfo *bootinfo) { /* ... */ }
+static void init_mm(kernel::BootInfo *bootinfo) { /* ... */
+}
 
 void initialize(kernel::BootInfo *bootinfo) {
   init_cpu();
