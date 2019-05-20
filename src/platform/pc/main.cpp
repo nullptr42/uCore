@@ -11,6 +11,7 @@
 #include <arch/x86_64/pic.hpp>
 #include <arch/x86_64/pm/pm.hpp>
 #include <kernel/bootinfo.hpp>
+#include <kernel/memory/virtual/virtual_alloc.hpp>
 #include <kernel/version.hpp>
 #include <lib/rxx/list.hpp>
 #include <lib/rxx/stdio.hpp>
@@ -71,6 +72,13 @@ extern "C" void kernel_main(uint32_t magic, void *multiboot) {
   for (int i = 0; i < 11; i++) {
     rxx::printf("%d ", pgs[i]);
   }
+
+  kernel::VirtualRangeAllocator alloc{0x0000000000001000, 0xFFFF7FFFFFFFFFFF,
+                                      4096};
+  rxx::printf("\n");
+  rxx::printf("alloc: 0x%016llx\n", (void *)alloc.Alloc(0xDEADBEEF, 1337));
+  rxx::printf("alloc: 0x%016llx\n", (void *)alloc.Alloc(0xFEEDFACE, 0x1000000));
+  rxx::printf("free: 0x%016llx\n", (void *)alloc.Free(0xFEEDFACE, 0x1000000));
 
   asm("sti");
   for (;;)

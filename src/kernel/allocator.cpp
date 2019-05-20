@@ -45,9 +45,9 @@ static void wrap_free(void *data) {
 }
 
 void *operator new(size_t size) { return wrap_alloc(size); }
-
 void *operator new[](size_t size) { return wrap_alloc(size); }
 
 void operator delete(void *ptr) { wrap_free(ptr); }
-
 void operator delete[](void *ptr) { wrap_free(ptr); }
+void operator delete(void *ptr, unsigned long) { wrap_free(ptr); }
+void operator delete[](void *ptr, unsigned long) { wrap_free(ptr); }

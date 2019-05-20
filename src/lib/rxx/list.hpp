@@ -25,6 +25,8 @@ template <typename T> class List {
   ListNode *head = nullptr;
   ListNode *tail = nullptr;
 
+  size_t length = 0;
+
   struct Iterator {
     using value_type = T;
     using difference_type = ptrdiff_t;
@@ -73,6 +75,8 @@ public:
   List() {}
   ~List() {}
 
+  int Length() const { return length; }
+
   void InsertBack(const T &value) {
     if (head == nullptr) {
       head = new ListNode(value);
@@ -82,6 +86,8 @@ public:
       tail->next = node;
       tail = node;
     }
+
+    length++;
   }
 
   void InsertFront(const T &value) {
@@ -91,6 +97,41 @@ public:
     } else {
       head = new ListNode(value, nullptr, head);
     }
+
+    length++;
+  }
+
+  void InsertAfter(const Iterator iter, const T &value) {
+    auto prev = iter.position;
+    auto node = new ListNode(value, prev, prev->next);
+
+    if (prev != tail) {
+      prev->next->prev = node;
+    } else {
+      tail = node;
+    }
+
+    prev->next = node;
+    length++;
+  }
+
+  void Erase(const Iterator iter) {
+    auto node = iter.position;
+
+    if (node != head) {
+      node->prev->next = node->next;
+    } else {
+      head = node->next;
+    }
+
+    if (node != tail) {
+      node->next->prev = node->prev;
+    } else {
+      tail = node->prev;
+    }
+
+    delete node;
+    length--;
   }
 
   Iterator begin() { return Iterator(head); }
