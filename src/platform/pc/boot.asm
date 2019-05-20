@@ -16,8 +16,8 @@ PAGE_IN_MEMORY equ (1<<0)
 PAGE_WRITEABLE equ (1<<1)
 PAGE_SIZE_2MB  equ (1<<7)
 
-%include "arch/x86_64/asm/gdt.inc"
-%include "arch/x86_64/asm/global.inc"
+%include "arch/x86_64/cpu/gdt.inc"
+%include "arch/x86_64/global.inc"
 
 global vm_level1
 
