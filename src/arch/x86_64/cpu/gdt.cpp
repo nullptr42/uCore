@@ -5,8 +5,9 @@
  * found in the LICENSE file.
  */
 
-#include <arch/x86_64/gdt.hpp>
-#include <stdint.h>
+#include "gdt.hpp"
+
+#include <reinix/types.h>
 
 namespace arch::x86_64::gdt {
 

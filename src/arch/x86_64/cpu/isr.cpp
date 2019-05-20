@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include <arch/x86_64/cpu_state.hpp>
+#include "state.hpp"
 
 using namespace arch::x86_64;
 

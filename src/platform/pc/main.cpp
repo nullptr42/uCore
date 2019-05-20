@@ -28,37 +28,38 @@ static terminal::Emulator emulator(console);
 
 void platform::print(const char *string) { emulator.Write(string); }
 
-//kernel::BootInfo *g_bootinfo = nullptr;
+// kernel::BootInfo *g_bootinfo = nullptr;
 kernel::BootInfo *get_bootinfo(uint32_t magic, void *multiboot);
 
-//PhysicalMemoryAllocator *g_pma;
+// PhysicalMemoryAllocator *g_pma;
 
 extern "C" void kernel_main(uint32_t magic, void *multiboot) {
   auto bootinfo = get_bootinfo(magic, multiboot);
-  
+
   arch::x86_64::initialize(bootinfo);
-  
-//  /* Print kernel name and version. */
-//  rxx::printf("\e[2;37m%s\e[0m %d.%d\n\n", kernel::g_kernel_info.name,
-//              kernel::g_kernel_info.version.major,
-//              kernel::g_kernel_info.version.minor);
-  
 
-//  uint64_t pgs[11];
-//  g_pma->Alloc(11, pgs);
-//  for (int i = 0; i < 11; i++) {
-//    rxx::printf("%d ", pgs[i]);
-//  }
-//
-//  kernel::VirtualRangeAllocator alloc{0x0000000000001000, 0xFFFF7FFFFFFFFFFF,
-//                                      4096};
-//  rxx::printf("\n");
-//  rxx::printf("alloc: 0x%016llx\n", (void *)alloc.Alloc(0xDEADBEEF, 1337));
-//  rxx::printf("alloc: 0x%016llx\n", (void *)alloc.Alloc(0xFEEDFACE, 0x1000000));
-//  rxx::printf("free: 0x%016llx\n", (void *)alloc.Free(0xFEEDFACE, 0x1000000));
+  //  /* Print kernel name and version. */
+  //  rxx::printf("\e[2;37m%s\e[0m %d.%d\n\n", kernel::g_kernel_info.name,
+  //              kernel::g_kernel_info.version.major,
+  //              kernel::g_kernel_info.version.minor);
 
-  rxx::printf("halting...\n");
-  
+  //  uint64_t pgs[11];
+  //  g_pma->Alloc(11, pgs);
+  //  for (int i = 0; i < 11; i++) {
+  //    rxx::printf("%d ", pgs[i]);
+  //  }
+  //
+  //  kernel::VirtualRangeAllocator alloc{0x0000000000001000,
+  //  0xFFFF7FFFFFFFFFFF,
+  //                                      4096};
+  //  rxx::printf("\n");
+  //  rxx::printf("alloc: 0x%016llx\n", (void *)alloc.Alloc(0xDEADBEEF, 1337));
+  //  rxx::printf("alloc: 0x%016llx\n", (void *)alloc.Alloc(0xFEEDFACE,
+  //  0x1000000)); rxx::printf("free: 0x%016llx\n", (void
+  //  *)alloc.Free(0xFEEDFACE, 0x1000000));
+
+  rxx::printf("\nhalting...\n");
+
   asm("sti");
   for (;;)
     asm("hlt");

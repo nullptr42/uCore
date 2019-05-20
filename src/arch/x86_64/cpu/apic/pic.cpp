@@ -5,9 +5,10 @@
  * found in the LICENSE file.
  */
 
-#include <arch/x86_64/io_port.hpp>
-#include <arch/x86_64/pic.hpp>
-#include <stdint.h>
+#include <arch/x86_64/cpu/io_port.hpp>
+#include <reinix/types.h>
+
+#include "pic.hpp"
 
 namespace arch::x86_64::pic {
 

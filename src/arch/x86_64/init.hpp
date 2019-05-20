@@ -12,5 +12,4 @@
 namespace arch::x86_64 {
 
 void initialize(kernel::BootInfo *bootinfo);
-
 }

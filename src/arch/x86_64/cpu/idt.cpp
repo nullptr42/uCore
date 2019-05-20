@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include <arch/x86_64/gdt.hpp>
+#include <arch/x86_64/cpu/gdt.hpp>
 #include <stddef.h>
 #include <stdint.h>
 

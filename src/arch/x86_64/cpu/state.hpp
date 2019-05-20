@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <stdint.h>
+#include <reinix/types.h>
 
 namespace arch::x86_64 {
 

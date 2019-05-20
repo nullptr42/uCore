@@ -5,8 +5,8 @@
  * found in the LICENSE file.
  */
 
-#include <arch/x86_64/io_port.hpp>
-#include <stdint.h>
+#include <arch/x86_64/cpu/io_port.hpp>
+#include <reinix/types.h>
 
 #include "console.hpp"
 
