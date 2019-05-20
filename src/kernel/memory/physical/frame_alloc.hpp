@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include <reinix/types.h>
+#include <lib/rxx/array.hpp>
 
 namespace kernel {
 
@@ -14,17 +14,8 @@ struct FrameAllocator {
 
   enum class Status { BadRequest, OutOfMemory, Success };
 
-  virtual Status Alloc(size_t count, uint64_t *pages, int flags) = 0;
-  virtual Status Free(size_t count, uint64_t *pages) = 0;
-
-  // Status Alloc(rxx::Array<page_t>& )
-
-  /*enum class Status {
-
-  };
-
-  virtual Status Alloc(size_t count, uint64_t* pages) = 0;
-  virtual Status Free(size_t count, uint64_t* pages) = 0;*/
+  virtual Status Alloc(Array<page_t>& pages, int flags) = 0;
+  virtual Status Free(Array<page_t>& pages) = 0;
 };
 
 } // namespace kernel

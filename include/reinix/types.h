@@ -17,6 +17,7 @@
 
 #ifdef __x86_64__
 typedef uint64_t addr_t;
+typedef uint64_t page_t;
 #else
 #error "Unknown CPU architecture, either not detected or unsupported by reinix."
 #endif

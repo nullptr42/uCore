@@ -33,5 +33,3 @@ public:
 };
 
 } // namespace kernel
-
-// address range allocator
