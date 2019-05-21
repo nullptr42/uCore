@@ -46,17 +46,13 @@ public:
 private:
   static ptentry_t *GetChildAddress(ptentry_t *parent, int child);
   static ptentry_t *GetOrCreateTable(ptentry_t *parent, int child);
-  
+
   static int GetX64Flags(int flags);
-  
+
   constexpr vaddr_t BuildAddress(int pml4, int pdpt, int pd, int pt) {
-    return vaddr_t(
-        ((vaddr_t)pml4 << 39) |
-        ((vaddr_t)pdpt << 30) |
-        ((vaddr_t)pd   << 21) |
-        ((vaddr_t)pt   << 12) |
-        0xFFFF000000000000ULL
-    );
+    return vaddr_t(((vaddr_t)pml4 << 39) | ((vaddr_t)pdpt << 30) |
+                   ((vaddr_t)pd << 21) | ((vaddr_t)pt << 12) |
+                   0xFFFF000000000000ULL);
   }
 
   ptentry_t *pml4;

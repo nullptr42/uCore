@@ -42,16 +42,16 @@ ptentry_t *X64_AddressSpace::GetOrCreateTable(ptentry_t *parent, int child) {
 
 int X64_AddressSpace::GetX64Flags(int flags) {
   int x64_flags = PT_MAPPED;
-  
+
   if (flags & AddressSpace::PAGE_WRITABLE)
     x64_flags |= PT_WRITEABLE;
-  
+
   if (flags & AddressSpace::PAGE_USERSPACE)
     x64_flags |= PT_USERSPACE;
-  
+
   if (~flags & AddressSpace::PAGE_EXECUTE)
     x64_flags |= PT_NO_EXECUTE;
-  
+
   return x64_flags;
 }
 
@@ -60,27 +60,28 @@ void X64_AddressSpace::Map(vaddr_t virt, paddr_t phys, int flags) {
   int lvl3_idx = ((uint64_t)virt >> 21) & 0x1FF;
   int lvl2_idx = ((uint64_t)virt >> 30) & 0x1FF;
   int lvl1_idx = ((uint64_t)virt >> 39) & 0x1FF;
-  
+
   Bind();
-  
-  auto pml4 = (ptentry_t*)BuildAddress(256, 256, 256, 256);
+
+  auto pml4 = (ptentry_t *)BuildAddress(256, 256, 256, 256);
   auto pdpt = GetOrCreateTable(pml4, lvl1_idx);
   auto pd = GetOrCreateTable(pdpt, lvl2_idx);
   auto pt = GetOrCreateTable(pd, lvl3_idx);
-  
+
   /* FIXME: use flags for GetX64Flags. */
-  pt[lvl4_idx] = GetX64Flags(PAGE_WRITABLE|PAGE_EXECUTE) | ptentry_t(phys);
+  pt[lvl4_idx] = GetX64Flags(PAGE_WRITABLE | PAGE_EXECUTE) | ptentry_t(phys);
 }
 
 void X64_AddressSpace::Map(vaddr_t virt, paddr_t phys, size_t size, int flags) {
   /* TODO: implement this properly. */
-  
+
   auto count = size / 4096;
-  
-  if ((size % 4096) != 0) count++;
-  
+
+  if ((size % 4096) != 0)
+    count++;
+
   phys &= ~0xFFF;
-  
+
   for (size_t i = 0; i < count; i++) {
     Map(virt, phys, flags);
     virt += 4096;

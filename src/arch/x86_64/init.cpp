@@ -57,7 +57,7 @@ static void init_mm(kernel::BootInfo *bootinfo) {
 
   for (int i = 0; i < 512; i++)
     new_pml4[i] = 0;
-  
+
   /* Setup recursive mapping to new PML4 in old and new PML4.
    * This way we can use standard mapping functions to map the kernel
    * to the new PML4 nicely and then switch to the new context.
@@ -65,24 +65,20 @@ static void init_mm(kernel::BootInfo *bootinfo) {
   (&boot_pml4)[256] = new_pml4[256] = X64_AddressSpace::PT_MAPPED |
                                       X64_AddressSpace::PT_WRITEABLE |
                                       physical(vaddr_t(new_pml4));
-  
+
   auto frame_alloc = new X64_FrameAllocator();
-  
+
   kernel::g_frame_alloc = frame_alloc;
   frame_alloc->Init(bootinfo);
-  
+
   aspace1.Map(0xFFFFFFFF800B8000, 0xB8000, 0);
-  
-  aspace1.Map(
-    vaddr_t(&kernel_start), 
-    paddr_t(physical(vaddr_t(&kernel_start))),
-    size_t(&kernel_end - &kernel_start + 1),
-    0
-  );
+
+  aspace1.Map(vaddr_t(&kernel_start), paddr_t(physical(vaddr_t(&kernel_start))),
+              size_t(&kernel_end - &kernel_start + 1), 0);
 
   frame_alloc->Map(aspace1, 0xFFFFFFFF00000000);
   aspace2.Bind();
-  
+
   rxx::printf("Survived init_mm!\n");
 }
 

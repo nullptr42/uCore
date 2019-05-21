@@ -43,7 +43,7 @@ void X64_FrameAllocator::Init(kernel::BootInfo *bootinfo) {
   rxx::printf("[pm] detected %lld bytes of available memory.\n", usable);
 
   capacity = pagecount(usable);
-  
+
   auto bytes = capacity * sizeof(page_t);
 
   /* Search for a suitable location for the page stack. */
@@ -84,9 +84,9 @@ void X64_FrameAllocator::Init(kernel::BootInfo *bootinfo) {
 
 void X64_FrameAllocator::Map(X64_AddressSpace &aspace, vaddr_t where) {
   aspace.Map(where, paddr_t(pages), sizeof(page_t) * capacity, 0);
-  pages = (page_t*)where;
+  pages = (page_t *)where;
 }
-  
+
 auto X64_FrameAllocator::Alloc(rxx::Array<page_t> &pages, int flags) -> Status {
   auto count = pages.length();
 
