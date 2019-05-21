@@ -19,8 +19,7 @@ extern const uint8_t kernel_end;
 
 namespace arch::x86_64 {
 
-void X64_FrameAllocator::Init(kernel::BootInfo *bootinfo,
-                              X64_AddressSpace &aspace) {
+void X64_FrameAllocator::Init(kernel::BootInfo *bootinfo) {
   paddr_t minimum = physical((vaddr_t)&kernel_end) + 1;
 
   /* Determine the lowest safe memory address. */
@@ -81,11 +80,13 @@ void X64_FrameAllocator::Init(kernel::BootInfo *bootinfo,
       Free(hack);
     }
   }
-  
-  aspace.Map(0xFFFFFFFF00000000, paddr_t(pages), bytes, 0);
-  //pages = (page_t*)0xFFFFFFFF00000000;
 }
 
+void X64_FrameAllocator::Map(X64_AddressSpace &aspace, vaddr_t where) {
+  aspace.Map(where, paddr_t(pages), sizeof(page_t) * capacity, 0);
+  pages = (page_t*)where;
+}
+  
 auto X64_FrameAllocator::Alloc(rxx::Array<page_t> &pages, int flags) -> Status {
   auto count = pages.length();
 

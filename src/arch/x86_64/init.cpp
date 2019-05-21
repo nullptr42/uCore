@@ -68,12 +68,8 @@ static void init_mm(kernel::BootInfo *bootinfo) {
   
   auto frame_alloc = new X64_FrameAllocator();
   
-  /* NOTE: g_frame_alloc must be set BEFORE calling Init(...).
-   * The reason for that is that Init(...) calls aspace1.Map(...)
-   * which in turn will call g_frame_alloc->Alloc(...).
-   */
   kernel::g_frame_alloc = frame_alloc;
-  frame_alloc->Init(bootinfo, aspace1);
+  frame_alloc->Init(bootinfo);
   
   aspace1.Map(0xFFFFFFFF800B8000, 0xB8000, 0);
   
@@ -84,6 +80,7 @@ static void init_mm(kernel::BootInfo *bootinfo) {
     0
   );
 
+  frame_alloc->Map(aspace1, 0xFFFFFFFF00000000);
   aspace2.Bind();
   
   rxx::printf("Survived init_mm!\n");

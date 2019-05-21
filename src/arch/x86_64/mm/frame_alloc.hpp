@@ -22,7 +22,8 @@ class X64_FrameAllocator : public kernel::FrameAllocator {
   size_t index = 0;
 
 public:
-  void Init(kernel::BootInfo *bootinfo, X64_AddressSpace &aspace);
+  void Init(kernel::BootInfo *bootinfo);
+  void Map(X64_AddressSpace &aspace, vaddr_t where);
 
   auto Alloc(rxx::Array<page_t> &pages, int flags) -> Status final;
   auto Free(rxx::Array<page_t> &pages) -> Status final;
