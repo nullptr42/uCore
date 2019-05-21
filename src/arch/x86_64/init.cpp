@@ -14,6 +14,7 @@
 #include <arch/x86_64/cpu/idt.hpp>
 #include <arch/x86_64/mm/address_space.hpp>
 #include <arch/x86_64/mm/frame_alloc.hpp>
+#include <kernel/memory/memory.hpp>
 #include <lib/rxx/stdio.hpp>
 
 extern "C" void fpu_init();
@@ -23,7 +24,7 @@ extern "C" uint64_t boot_pml4;
 
 namespace arch::x86_64 {
 
-static ptentry_t new_pml4[512] __pgalign;  
+static ptentry_t new_pml4[512] __pgalign;
 
 static void init_cpu() {
   fpu_init();
@@ -48,24 +49,22 @@ static void init_cpu() {
 }
 
 static void init_mm(kernel::BootInfo *bootinfo) {
-  X64_AddressSpace aspace1 { (ptentry_t*)physical(vaddr_t(&boot_pml4)) };
-  X64_AddressSpace aspace2 { (ptentry_t*)physical(vaddr_t(&new_pml4[0])) };
-  
-  /* Setup recursive mapping to new PML4 in old and new PML4. 
-   * This way we can use standard mapping functions to map the kernel 
+  X64_AddressSpace aspace1{(ptentry_t *)physical(vaddr_t(&boot_pml4))};
+  X64_AddressSpace aspace2{(ptentry_t *)physical(vaddr_t(&new_pml4[0]))};
+
+  /* Setup recursive mapping to new PML4 in old and new PML4.
+   * This way we can use standard mapping functions to map the kernel
    * to the new PML4 nicely and then switch to the new context.
    */
-  (&boot_pml4)[256] = new_pml4[256]
-                    = X64_AddressSpace::PT_MAPPED | 
-                      X64_AddressSpace::PT_WRITEABLE |
-                      physical(vaddr_t(new_pml4));
-  
+  (&boot_pml4)[256] = new_pml4[256] = X64_AddressSpace::PT_MAPPED |
+                                      X64_AddressSpace::PT_WRITEABLE |
+                                      physical(vaddr_t(new_pml4));
+
+  kernel::g_frame_alloc = new X64_FrameAllocator(bootinfo, aspace1);
   /* ... */
-  
+
   /* TODO: change this to aspace2 as soon as we mapped everything. */
   aspace1.Bind();
-  
-  auto frame_alloc = new X64_FrameAllocator(bootinfo);
 }
 
 void initialize(kernel::BootInfo *bootinfo) {

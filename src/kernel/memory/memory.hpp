@@ -9,8 +9,5 @@
 
 namespace kernel {
 
-class AddressSpace {
-  /* ... */
-};
-
-} // namespace kernel
+extern FrameAllocator *g_frame_alloc;
+}

@@ -5,12 +5,9 @@
  * found in the LICENSE file.
  */
 
-#pragma once
+#include "physical/frame_alloc.hpp"
 
 namespace kernel {
 
-class AddressSpace {
-  /* ... */
-};
-
-} // namespace kernel
+FrameAllocator *g_frame_alloc = nullptr;
+}

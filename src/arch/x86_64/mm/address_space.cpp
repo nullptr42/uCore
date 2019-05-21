@@ -5,12 +5,8 @@
  * found in the LICENSE file.
  */
 
-#pragma once
+#include "address_space.hpp"
 
-namespace kernel {
+using namespace arch::x86_64;
 
-class AddressSpace {
-  /* ... */
-};
-
-} // namespace kernel
+/* ... */

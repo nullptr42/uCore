@@ -6,6 +6,7 @@
  */
 
 #include "frame_alloc.hpp"
+#include "address_space.hpp"
 #include <arch/x86_64/global.hpp>
 #include <lib/rxx/stdio.hpp>
 #include <reinix/types.h>
@@ -18,7 +19,8 @@ extern const uint8_t kernel_end;
 
 namespace arch::x86_64 {
 
-X64_FrameAllocator::X64_FrameAllocator(kernel::BootInfo *bootinfo) {
+X64_FrameAllocator::X64_FrameAllocator(kernel::BootInfo *bootinfo,
+                                       X64_AddressSpace &aspace) {
   paddr_t minimum = physical((vaddr_t)&kernel_end) + 1;
 
   /* Determine the lowest safe memory address. */

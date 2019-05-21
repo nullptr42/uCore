@@ -14,13 +14,15 @@
 
 namespace arch::x86_64 {
 
-class X64_FrameAllocator : kernel::FrameAllocator {
+class X64_AddressSpace;
+
+class X64_FrameAllocator : public kernel::FrameAllocator {
   page_t *pages = nullptr;
   size_t capacity;
   size_t index = 0;
 
 public:
-  X64_FrameAllocator(kernel::BootInfo *bootinfo);
+  X64_FrameAllocator(kernel::BootInfo *bootinfo, X64_AddressSpace &aspace);
 
   auto Alloc(rxx::Array<page_t> &pages, int flags) -> Status final;
   auto Free(rxx::Array<page_t> &pages) -> Status final;
