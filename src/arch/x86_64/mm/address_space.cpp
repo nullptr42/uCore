@@ -40,6 +40,35 @@ ptentry_t *X64_AddressSpace::GetOrCreateTable(ptentry_t *parent, int child) {
   return table;
 }
 
-void X64_AddressSpace::Map(vaddr_t virt, paddr_t phys, int flags) {}
+void X64_AddressSpace::Map(vaddr_t virt, paddr_t phys, int flags) {
+  int lvl4_idx = ((uint64_t)virt >> 12) & 0x1FF;
+  int lvl3_idx = ((uint64_t)virt >> 21) & 0x1FF;
+  int lvl2_idx = ((uint64_t)virt >> 30) & 0x1FF;
+  int lvl1_idx = ((uint64_t)virt >> 39) & 0x1FF;
+  
+  Bind();
+  
+  auto pml4 = (ptentry_t*)BuildAddress(256, 256, 256, 256);
+  auto pdpt = GetOrCreateTable(pml4, lvl1_idx);
+  auto pd = GetOrCreateTable(pdpt, lvl2_idx);
+  auto pt = GetOrCreateTable(pd, lvl3_idx);
+  
+  /* TODO: convert flags to x86_64 flags. */
+  pt[lvl4_idx] = PT_MAPPED | PT_WRITEABLE | ptentry_t(phys);
+}
 
-/* ... */
+void X64_AddressSpace::Map(vaddr_t virt, paddr_t phys, size_t size, int flags) {
+  /* TODO: implement this properly. */
+  
+  auto count = size / 4096;
+  
+  if ((size % 4096) != 0) count++;
+  
+  phys &= ~0xFFF;
+  
+  for (size_t i = 0; i < count; i++) {
+    Map(virt, phys, flags);
+    virt += 4096;
+    phys += 4096;
+  }
+}

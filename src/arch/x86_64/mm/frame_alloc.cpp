@@ -19,8 +19,8 @@ extern const uint8_t kernel_end;
 
 namespace arch::x86_64 {
 
-X64_FrameAllocator::X64_FrameAllocator(kernel::BootInfo *bootinfo,
-                                       X64_AddressSpace &aspace) {
+void X64_FrameAllocator::Init(kernel::BootInfo *bootinfo,
+                              X64_AddressSpace &aspace) {
   paddr_t minimum = physical((vaddr_t)&kernel_end) + 1;
 
   /* Determine the lowest safe memory address. */
@@ -44,6 +44,8 @@ X64_FrameAllocator::X64_FrameAllocator(kernel::BootInfo *bootinfo,
   rxx::printf("[pm] detected %lld bytes of available memory.\n", usable);
 
   capacity = pagecount(usable);
+  
+  auto bytes = capacity * sizeof(page_t);
 
   /* Search for a suitable location for the page stack. */
   for (auto &entry : bootinfo->mmap) {
@@ -56,8 +58,8 @@ X64_FrameAllocator::X64_FrameAllocator(kernel::BootInfo *bootinfo,
 
     entry.base = base;
 
-    if ((entry.last - base + 1) >= sizeof(uint64_t) * capacity) {
-      entry.base += sizeof(uint64_t) * capacity;
+    if ((entry.last - base + 1) >= bytes) {
+      entry.base += bytes;
       pages = (uint64_t *)base;
       break;
     }
@@ -67,7 +69,7 @@ X64_FrameAllocator::X64_FrameAllocator(kernel::BootInfo *bootinfo,
 
   /* FIXME: workaround because we don't have nice things. */
   page_t _page;
-  rxx::Array<page_t> pages{&_page, 1};
+  rxx::Array<page_t> hack{&_page, 1};
 
   /* Release all free pages into the stack. */
   for (auto &entry : bootinfo->mmap) {
@@ -75,10 +77,13 @@ X64_FrameAllocator::X64_FrameAllocator(kernel::BootInfo *bootinfo,
     auto last = page(round_down(entry.last));
 
     for (uint64_t pg = base; pg <= last; pg++) {
-      pages[0] = pg;
-      Free(pages);
+      hack[0] = pg;
+      Free(hack);
     }
   }
+  
+  aspace.Map(0xFFFFFFFF00000000, paddr_t(pages), bytes, 0);
+  //pages = (page_t*)0xFFFFFFFF00000000;
 }
 
 auto X64_FrameAllocator::Alloc(rxx::Array<page_t> &pages, int flags) -> Status {

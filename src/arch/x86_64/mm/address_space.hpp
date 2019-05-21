@@ -36,6 +36,7 @@ public:
   X64_AddressSpace(uint64_t *pml4) : pml4(pml4) {}
 
   void Map(vaddr_t virt, paddr_t phys, int flags) final;
+  void Map(vaddr_t virt, paddr_t phys, size_t size, int flags) final;
 
   void Bind() {
     /* TODO: check if CR3 is up to date. */
@@ -45,6 +46,16 @@ public:
 private:
   static ptentry_t *GetChildAddress(ptentry_t *parent, int child);
   static ptentry_t *GetOrCreateTable(ptentry_t *parent, int child);
+  
+  constexpr vaddr_t BuildAddress(int pml4, int pdpt, int pd, int pt) {
+    return vaddr_t(
+        ((vaddr_t)pml4 << 39) |
+        ((vaddr_t)pdpt << 30) |
+        ((vaddr_t)pd   << 21) |
+        ((vaddr_t)pt   << 12) |
+        0xFFFF000000000000ULL
+    );
+  }
 
   ptentry_t *pml4;
 };

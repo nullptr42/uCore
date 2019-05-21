@@ -22,7 +22,7 @@ class AddressSpace {
   };
 
   virtual void Map(vaddr_t virt, paddr_t phys, int flags) = 0;
-
+  virtual void Map(vaddr_t virt, paddr_t phys, size_t size, int flags) = 0;
   /* ... */
 };
 

@@ -22,6 +22,9 @@ extern "C" void fpu_init();
 /* Original PML4 table. */
 extern "C" uint64_t boot_pml4;
 
+extern "C" const uint8_t kernel_start;
+extern "C" const uint8_t kernel_end;
+
 namespace arch::x86_64 {
 
 static ptentry_t new_pml4[512] __pgalign;
@@ -52,6 +55,9 @@ static void init_mm(kernel::BootInfo *bootinfo) {
   X64_AddressSpace aspace1{(ptentry_t *)physical(vaddr_t(&boot_pml4))};
   X64_AddressSpace aspace2{(ptentry_t *)physical(vaddr_t(&new_pml4[0]))};
 
+  for (int i = 0; i < 512; i++)
+    new_pml4[i] = 0;
+  
   /* Setup recursive mapping to new PML4 in old and new PML4.
    * This way we can use standard mapping functions to map the kernel
    * to the new PML4 nicely and then switch to the new context.
@@ -59,12 +65,28 @@ static void init_mm(kernel::BootInfo *bootinfo) {
   (&boot_pml4)[256] = new_pml4[256] = X64_AddressSpace::PT_MAPPED |
                                       X64_AddressSpace::PT_WRITEABLE |
                                       physical(vaddr_t(new_pml4));
+  
+  auto frame_alloc = new X64_FrameAllocator();
+  
+  /* NOTE: g_frame_alloc must be set BEFORE calling Init(...).
+   * The reason for that is that Init(...) calls aspace1.Map(...)
+   * which in turn will call g_frame_alloc->Alloc(...).
+   */
+  kernel::g_frame_alloc = frame_alloc;
+  frame_alloc->Init(bootinfo, aspace1);
+  
+  aspace1.Map(0xFFFFFFFF800B8000, 0xB8000, 0);
+  
+  aspace1.Map(
+    vaddr_t(&kernel_start), 
+    paddr_t(physical(vaddr_t(&kernel_start))),
+    size_t(&kernel_end - &kernel_start + 1),
+    0
+  );
 
-  kernel::g_frame_alloc = new X64_FrameAllocator(bootinfo, aspace1);
-  /* ... */
-
-  /* TODO: change this to aspace2 as soon as we mapped everything. */
-  aspace1.Bind();
+  aspace2.Bind();
+  
+  rxx::printf("Survived init_mm!\n");
 }
 
 void initialize(kernel::BootInfo *bootinfo) {
