@@ -12,6 +12,8 @@
 namespace kernel {
 
 class AddressSpace {
+
+public:
   enum Flag {
     // PAGE_READABLE = 1 << 0,
     PAGE_WRITABLE = 1 << 1,
