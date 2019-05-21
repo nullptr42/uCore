@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "physical/frame_alloc.hpp"
+
 namespace kernel {
 
 extern FrameAllocator *g_frame_alloc;

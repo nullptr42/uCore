@@ -35,12 +35,17 @@ public:
 
   X64_AddressSpace(uint64_t *pml4) : pml4(pml4) {}
 
+  void Map(vaddr_t virt, paddr_t phys, int flags) final;
+
   void Bind() {
     /* TODO: check if CR3 is up to date. */
     asm("mov %0, %%cr3\n" : : "r"(pml4));
   }
 
 private:
+  static ptentry_t *GetChildAddress(ptentry_t *parent, int child);
+  static ptentry_t *GetOrCreateTable(ptentry_t *parent, int child);
+
   ptentry_t *pml4;
 };
 

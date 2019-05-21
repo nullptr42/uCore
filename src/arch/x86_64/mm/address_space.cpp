@@ -7,6 +7,39 @@
 
 #include "address_space.hpp"
 
+#include <kernel/memory/memory.hpp>
+
 using namespace arch::x86_64;
+
+ptentry_t *X64_AddressSpace::GetChildAddress(ptentry_t *parent, int child) {
+  return (ptentry_t *)((uint64_t(parent) << 9) | (child << 12) |
+                       0xFFFF000000000000ULL);
+}
+
+ptentry_t *X64_AddressSpace::GetOrCreateTable(ptentry_t *parent, int child) {
+  auto table = GetChildAddress(parent, child);
+
+  /* Create table if it doesn't exist yet. */
+  if (~parent[child] & PT_MAPPED) {
+    page_t page_new;
+    rxx::Array<page_t> hack{&page_new, 1};
+
+    if (kernel::g_frame_alloc->Alloc(hack, 0) !=
+        kernel::FrameAllocator::Status::Success) {
+      /* TODO: we ran out of memory, maybe we should panic.. */
+      while (1)
+        ;
+    }
+
+    /* Map table in parent table and clear its contents. */
+    parent[child] = PT_MAPPED | PT_WRITEABLE | ptentry_t(page_new * 4096);
+    for (int i = 0; i < 512; i++)
+      table[i] = 0;
+  }
+
+  return table;
+}
+
+void X64_AddressSpace::Map(vaddr_t virt, paddr_t phys, int flags) {}
 
 /* ... */

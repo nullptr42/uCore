@@ -5,6 +5,8 @@
  * found in the LICENSE file.
  */
 
+#pragma once
+
 #include <lib/rxx/array.hpp>
 
 namespace kernel {
