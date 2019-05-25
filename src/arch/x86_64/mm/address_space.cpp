@@ -7,6 +7,7 @@
 
 #include "address_space.hpp"
 
+#include <arch/x86_64/global.hpp>
 #include <kernel/memory/memory.hpp>
 #include <lib/rxx/stdio.hpp>
 
@@ -57,9 +58,10 @@ int X64_AddressSpace::GetX64Flags(int flags) {
   return x64_flags;
 }
 
-/* TODO: decide how we handle virt/phys addresses that aren't on page boundaries. */
-
 void X64_AddressSpace::Map(vaddr_t virt, paddr_t phys, int flags) {
+  virt = round_down(virt);
+  phys = round_down(phys);
+  
   int lvl4_idx = ((uint64_t)virt >> 12) & 0x1FF;
   int lvl3_idx = ((uint64_t)virt >> 21) & 0x1FF;
   int lvl2_idx = ((uint64_t)virt >> 30) & 0x1FF;
@@ -77,19 +79,18 @@ void X64_AddressSpace::Map(vaddr_t virt, paddr_t phys, int flags) {
 }
 
 void X64_AddressSpace::Map(vaddr_t virt, paddr_t phys, size_t size, int flags) {
-  auto count = size / 4096;
-
-  if ((size % 4096) != 0)
-    count++;
-
-  phys &= ~0xFFF;
-
+  virt = round_down(virt);
+  phys = round_down(phys);
+  size = round_up(size);
+  
   auto virt_s = virt;
-  auto virt_e = virt + (count - 1) * 4096;
-  auto pml4 = (ptentry_t *)BuildAddress(256, 256, 256, 256);
-
+  auto virt_e = virt + size - 4096;
+  auto pml4 = (ptentry_t *)BuildAddress(256, 256, 256, 256); 
+    
   int s1 = (virt_s >> 39) & 0x1FF;
   int e1 = (virt_e >> 39) & 0x1FF;
+  
+  int x86_flags = GetX64Flags(PAGE_WRITABLE | PAGE_EXECUTE);
 
   for (int i = s1; i <= e1; i++) {
     int s2 = 0;
@@ -125,8 +126,7 @@ void X64_AddressSpace::Map(vaddr_t virt, paddr_t phys, size_t size, int flags) {
         auto pt = GetOrCreateTable(pd, k);
 
         for (int m = s4; m <= e4; m++) {
-          /* FIXME: use flags for GetX64Flags. */
-          pt[m] = GetX64Flags(PAGE_WRITABLE | PAGE_EXECUTE) | ptentry_t(phys);
+          pt[m] = ptentry_t(phys) | x86_flags;
           phys += 4096;
         }
       }
