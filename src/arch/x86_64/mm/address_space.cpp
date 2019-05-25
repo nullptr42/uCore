@@ -93,7 +93,7 @@ void X64_AddressSpace::Map(vaddr_t virt, paddr_t phys, size_t size, int flags) {
 
   for (int i = s1; i <= e1; i++) {
     int s2 = 0;
-    int e2 = 512;
+    int e2 = 511;
 
     if (i == s1)
       s2 = (virt_s >> 30) & 0x1FF;
@@ -104,7 +104,7 @@ void X64_AddressSpace::Map(vaddr_t virt, paddr_t phys, size_t size, int flags) {
 
     for (int j = s2; j <= e2; j++) {
       int s3 = 0;
-      int e3 = 512;
+      int e3 = 511;
 
       if (i == s1 && j == s2)
         s3 = (virt_s >> 21) & 0x1FF;
@@ -115,7 +115,7 @@ void X64_AddressSpace::Map(vaddr_t virt, paddr_t phys, size_t size, int flags) {
 
       for (int k = s3; k <= e3; k++) {
         int s4 = 0;
-        int e4 = 512;
+        int e4 = 511;
 
         if (i == s1 && j == s2 && k == s3)
           s4 = (virt_s >> 12) & 0x1FF;
