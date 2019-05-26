@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <lib/rxx/array.hpp>
 #include <reinix/types.h>
 
 namespace kernel {
@@ -25,6 +26,10 @@ public:
 
   virtual void Map(vaddr_t virt, paddr_t phys, int flags) = 0;
   virtual void Map(vaddr_t virt, paddr_t phys, size_t size, int flags) = 0;
+  virtual void Map(vaddr_t virt, const rxx::Array<page_t> &pages,
+                   int flags) = 0;
+  virtual void Unmap(vaddr_t virt, size_t size) = 0;
+  virtual void Protect(vaddr_t virt, size_t size, int flags) = 0;
   /* ... */
 };
 

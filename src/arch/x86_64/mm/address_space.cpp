@@ -61,7 +61,7 @@ int X64_AddressSpace::GetX64Flags(int flags) {
 void X64_AddressSpace::Map(vaddr_t virt, paddr_t phys, int flags) {
   virt = round_down(virt);
   phys = round_down(phys);
-  
+
   int lvl4_idx = ((uint64_t)virt >> 12) & 0x1FF;
   int lvl3_idx = ((uint64_t)virt >> 21) & 0x1FF;
   int lvl2_idx = ((uint64_t)virt >> 30) & 0x1FF;
@@ -82,18 +82,18 @@ void X64_AddressSpace::Map(vaddr_t virt, paddr_t phys, size_t size, int flags) {
   virt = round_down(virt);
   phys = round_down(phys);
   size = round_up(size);
-  
+
   auto virt_s = virt;
   auto virt_e = virt + size - 4096;
-  auto pml4 = (ptentry_t *)BuildAddress(256, 256, 256, 256); 
-    
+  auto pml4 = (ptentry_t *)BuildAddress(256, 256, 256, 256);
+
   int s1 = (virt_s >> 39) & 0x1FF;
   int e1 = (virt_e >> 39) & 0x1FF;
-  
+
   int x86_flags = GetX64Flags(PAGE_WRITABLE | PAGE_EXECUTE);
 
   Bind();
-  
+
   for (int i = s1; i <= e1; i++) {
     int s2 = 0;
     int e2 = 511;

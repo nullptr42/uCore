@@ -72,10 +72,10 @@ static void init_mm(kernel::BootInfo *bootinfo) {
   frame_alloc->Init(bootinfo);
 
   aspace1.Map(0xFFFFFFFF800B8000, 0xB8000, 0);
-  
+
   aspace1.Map(vaddr_t(&kernel_start), paddr_t(physical(vaddr_t(&kernel_start))),
               size_t(&kernel_end - &kernel_start + 1), 0);
-  
+
   frame_alloc->Map(aspace1, 0xFFFFFFFF00000000);
   aspace2.Bind();
 

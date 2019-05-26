@@ -37,6 +37,9 @@ public:
 
   void Map(vaddr_t virt, paddr_t phys, int flags) final;
   void Map(vaddr_t virt, paddr_t phys, size_t size, int flags) final;
+  void Map(vaddr_t virt, const rxx::Array<page_t> &pages, int flags) final { }
+  void Unmap(vaddr_t virt, size_t size) final { }
+  void Protect(vaddr_t virt, size_t size, int flags) final { }
 
   void Bind() {
     /* TODO: check if CR3 is up to date. */
