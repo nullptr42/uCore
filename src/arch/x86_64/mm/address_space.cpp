@@ -92,6 +92,8 @@ void X64_AddressSpace::Map(vaddr_t virt, paddr_t phys, size_t size, int flags) {
   
   int x86_flags = GetX64Flags(PAGE_WRITABLE | PAGE_EXECUTE);
 
+  Bind();
+  
   for (int i = s1; i <= e1; i++) {
     int s2 = 0;
     int e2 = 511;
