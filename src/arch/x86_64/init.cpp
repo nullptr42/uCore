@@ -25,7 +25,55 @@ extern "C" uint64_t boot_pml4;
 extern "C" const uint8_t kernel_start;
 extern "C" const uint8_t kernel_end;
 
+// REMOVEME???
+#include <kernel/memory/heap_alloc.hpp>
+
 namespace arch::x86_64 {
+
+// TODO: this does not belong here.
+class X64_HeapBreak : public kernel::HeapBreak {
+  void *base = (void *)0xFFFF808000000000;
+  void *last = (void *)0xFFFFFFFF00000000;
+  void *curr = base;
+
+  X64_AddressSpace &aspace;
+
+public:
+  X64_HeapBreak(X64_AddressSpace &aspace) : aspace(aspace) {}
+
+  void *Grow(size_t size) final {
+    size = round_up(size);
+
+    if ((curr + size) > last) {
+      return nullptr;
+    }
+
+    int count = size / 4096;
+    page_t page;
+    rxx::Array<page_t> pages{&page, 1};
+
+    /* TODO: this is total crap and needs to be fixed... */
+    for (int i = 0; i < count; i++) {
+      if (kernel::g_frame_alloc->Alloc(pages, 0) !=
+          kernel::FrameAllocator::Status::Success) {
+        rxx::printf("Ran out of memory!\n");
+        while (1)
+          ;
+      }
+      
+      aspace.Map(vaddr_t(curr), page*4096, 0);
+      curr += 4096;
+    }
+
+    return curr;
+  }
+
+  void *Shrink(size_t size) final {
+    //size = round_down(size);
+    /* heap break on viagra */
+    return curr;
+  }
+};
 
 static ptentry_t new_pml4[512] __pgalign;
 
@@ -78,6 +126,12 @@ static void init_mm(kernel::BootInfo *bootinfo) {
 
   frame_alloc->Map(aspace1, 0xFFFFFFFF00000000);
   aspace2.Bind();
+
+  X64_HeapBreak brake{aspace2};
+  
+  rxx::printf("break: %p\n", brake.Grow(0));
+  rxx::printf("break: %p\n", brake.Grow(100));
+  rxx::printf("break: %p\n", brake.Grow(8192));
 
   rxx::printf("Survived init_mm!\n");
 
