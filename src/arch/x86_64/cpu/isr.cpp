@@ -7,6 +7,13 @@
 
 #include "state.hpp"
 
+#include <lib/rxx/stdio.hpp>
+
 using namespace arch::x86_64;
 
-extern "C" CpuState *handle_interrupt(CpuState *cpu) { return cpu; }
+extern "C" CpuState *handle_interrupt(CpuState *cpu) {
+  if (cpu->intr == 0x30) {
+    rxx::printf("syscall 0x30!\n");
+  }
+  return cpu;
+}

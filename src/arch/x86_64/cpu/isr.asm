@@ -142,3 +142,6 @@ isr_stub 0x2C
 isr_stub 0x2D
 isr_stub 0x2E
 isr_stub 0x2F
+
+; Syscalls
+isr_stub 0x30

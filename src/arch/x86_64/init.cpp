@@ -80,6 +80,9 @@ static void init_mm(kernel::BootInfo *bootinfo) {
   aspace2.Bind();
 
   rxx::printf("Survived init_mm!\n");
+
+  asm("int $0x30;"
+      "int $0x30;");
 }
 
 void initialize(kernel::BootInfo *bootinfo) {

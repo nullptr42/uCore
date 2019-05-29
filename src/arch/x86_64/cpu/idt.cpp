@@ -203,6 +203,8 @@ void initialize() {
                        GateType::Interrupt};
   g_idt_table[0x2F] = {isr_routine_0x2F,   true, true, 0, gdt::kKernelCodeSeg,
                        GateType::Interrupt};
+  g_idt_table[0x30] = {isr_routine_0x30,   true, true, 3, gdt::kKernelCodeSeg,
+                       GateType::Interrupt};
 
   idt_reload(&g_idt_pointer);
 }
